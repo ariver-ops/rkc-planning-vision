@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111111">
+  <meta name="description" content="Maquette interactive d’un planning dynamique, autonome et intelligent pour le RKC.">
+  <title>RKC | Vision du planning intelligent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Aller au contenu</a>
+  <span class="top-anchor" id="top" aria-hidden="true"></span>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="RKC planning, accueil">
+      <span class="brand-mark">RKC</span>
+      <span class="brand-copy"><strong>Planning</strong><small>Vision produit</small></span>
+    </a>
+    <nav class="main-nav" aria-label="Navigation principale">
+      <a href="#vision">La logique</a>
+      <a href="#experience">La maquette</a>
+      <a href="#adaptation">L’adaptation</a>
+    </nav>
+    <div class="header-actions">
+      <span class="concept-label"><i></i> Données fictives</span>
+      <button class="button button-compact button-ghost" data-action="restart">Rejouer</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero section-dark">
+      <div class="hero-track" aria-hidden="true">
+        <svg viewBox="0 0 900 640" fill="none">
+          <path d="M136 87c92-60 146 15 217 16 89 2 90-64 195-38 101 25 120 128 70 193-43 55-108 37-133 86-25 49 33 88 16 148-21 76-132 97-206 55-65-37-71-106-128-124-46-15-95 17-132-21-54-55-13-136 43-166 53-28 99-1 128-28 26-25-20-68-70-121Z" stroke="currentColor" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M136 87c92-60 146 15 217 16 89 2 90-64 195-38 101 25 120 128 70 193-43 55-108 37-133 86-25 49 33 88 16 148-21 76-132 97-206 55-65-37-71-106-128-124-46-15-95 17-132-21-54-55-13-136 43-166 53-28 99-1 128-28 26-25-20-68-70-121Z" stroke="currentColor" stroke-width="2" stroke-dasharray="8 12" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="hero-copy">
+        <p class="eyebrow"><span>Vision du futur planning RKC</span> · maquette interactive</p>
+        <h1>Un planning dynamique.<br>Autonome. Intelligent.<br><em>Le contrôle reste au RKC.</em></h1>
+        <p class="hero-lead">Cette maquette montre comment le RKC peut croiser son programme, ses équipes et les disponibilités des extras pour obtenir une proposition de planning prête à arbitrer.</p>
+      </div>
+    </section>
+
+    <section class="story-section executive-flow" id="vision">
+      <div class="section-heading split-heading">
+        <div>
+          <p class="eyebrow eyebrow-dark">01 · Le fonctionnement</p>
+          <h2>Du programme au planning,<br>en quatre temps.</h2>
+        </div>
+        <p>Le RKC fournit le programme et les données de ses équipes : contrats, métiers, niveaux, congés, arrêts maladie et autres indisponibilités. Chaque semaine, l’outil recueille les disponibilités des extras, prépare une proposition cohérente de planning et laisse la décision au responsable.</p>
+      </div>
+      <div class="director-flow" aria-label="Les quatre temps de préparation du planning RKC">
+        <article class="director-step">
+          <span class="director-number">01</span><p class="director-kicker">L’activité</p><h3>Le programme réel de chaque journée est connu.</h3><p>Le socle quotidien reste visible, puis les activités de la 1200 m, les groupes du soir et les courses du week-end s’ajoutent sans masquer le reste.</p>
+          <div class="director-events"><span><i>TOUS</i><b>Location 1000 m</b><small>Ouverte chaque jour</small></span><span><i>TOUS</i><b>Location piste enfants</b><small>Couverture dédiée chaque jour</small></span><span><i>JOUR</i><b>1200 m · roulage licenciés</b><small>Selon le programme</small></span><span><i>SOIR</i><b>Groupes et événements</b><small>Après la location ou le roulage</small></span><span><i>W-E</i><b>Courses sur la 1200 m</b><small>Trophée · 6 h · 12 h · 24 h</small></span></div>
+        </article>
+        <article class="director-step">
+          <span class="director-number">02</span><p class="director-kicker">Les équipes</p><h3>Deux viviers complets, plusieurs métiers et niveaux.</h3><p>Le RKC connaît chaque CDI et chaque extra : contrat, métiers, niveau débutant, confirmé ou expert dans chaque métier, ainsi que les contraintes de planning.</p>
+          <div class="director-pools"><section><header><span>CDI</span><b>6</b></header><div><span><i>CM</i><b>Camille</b><small>Piste · Expert</small></span><span><i>MB</i><b>Malik</b><small>Mécanique · Expert</small></span><span><i>LD</i><b>Léa</b><small>Accueil · Expert</small></span><span><i>HL</i><b>Hugo</b><small>Piste · Confirmé</small></span><em>+ 2 profils</em></div></section><section><header><span>EXTRAS</span><b>12</b></header><div><span><i>NB</i><b>Noa</b><small>Piste · Confirmé</small></span><span><i>IM</i><b>Inès</b><small>Piste · Expert</small></span><span><i>YK</i><b>Yassine</b><small>Piste · Débutant</small></span><span><i>SC</i><b>Sarah</b><small>Piste · Expert</small></span><em>+ 8 profils</em></div></section></div>
+          <small class="director-note">Chaque fiche distingue congés, arrêts maladie, jours off hebdomadaires et repos minimal entre deux missions.</small>
+        </article>
+        <article class="director-step">
+          <span class="director-number">03</span><p class="director-kicker">Les disponibilités</p><h3>Le RKC choisit qui solliciter pour la semaine.</h3><p>Les CDI disponibles sont intégrés automatiquement. Dans le vivier, le responsable coche les extras auxquels il souhaite demander leurs disponibilités pour le prochain planning.</p>
+          <div class="director-week"><header><span>SEMAINE À PLANIFIER</span><b>Du 2 au 8 juin</b></header><div><span><b>12</b><small>extras dans le vivier</small></span><i>→</i><span><b>9</b><small>extras sollicités</small></span><i>→</i><span><b>7 / 9</b><small>réponses reçues</small></span></div><footer><i></i> SMS envoyé aux profils cochés · réponses en direct</footer></div>
+        </article>
+        <article class="director-step director-proposal">
+          <span class="director-number">04</span><p class="director-kicker">La décision</p><h3>Une proposition complète, sans trou de couverture.</h3><p>L’outil planifie les CDI selon leur contrat, puis complète avec les extras selon leurs disponibilités, métiers, niveaux et pondérations.</p>
+          <div class="director-checks"><span><i>✓</i> Contrats, congés et arrêts maladie</span><span><i>✓</i> 2 ou 3 jours off selon la saison</span><span><i>✓</i> Repos minimal entre deux missions</span><span><i>✓</i> Métiers, niveaux et pondérations extras</span></div>
+          <div class="director-actions"><span>Ajuster</span><span>Remplacer</span><span>Renforcer</span><strong>VALIDER</strong></div><small>Rien n’est publié sans la décision du responsable.</small>
+        </article>
+      </div>
+      <div class="director-result"><span>LE GAIN CONCRET</span><b>Moins de temps passé à appeler, recouper et recomposer. Une proposition claire, toujours modifiable.</b><a href="#experience">Voir la maquette ↓</a></div>
+    </section>
+
+    <section class="ecosystem-section section-dark">
+      <div class="section-heading split-heading">
+        <div>
+          <p class="eyebrow">Comprendre l’exploitation réelle</p>
+          <h2>La piste seule ne suffit jamais<br>à calculer l’équipe.</h2>
+        </div>
+        <p>Type d’activité, piste, nombre de karts, participants, durée et plage horaire sont croisés pour définir l’effectif, les rôles, les niveaux requis et les relèves. Tous ces paramètres restent modifiables par le responsable.</p>
+      </div>
+      <section class="staffing-map" aria-label="Exemple de calcul d’un besoin d’équipe">
+        <header class="staffing-map-head">
+          <div><span>EXEMPLE CONCRET</span><h3>Privatisation 1200 m</h3></div>
+          <p>Samedi · de 14 h à 18 h · Piste 1200 m</p>
+        </header>
+        <div class="staffing-route">
+          <section class="staffing-inputs" aria-label="Données connues du créneau">
+            <p class="map-label">CE QUE LE RKC CONNAÎT</p>
+            <div class="input-signal-grid">
+              <article class="signal-activity"><small>TYPE D’ACTIVITÉ</small><b>Privatisation</b><em>Créneau réservé</em></article>
+              <article><small>PISTE</small><b>1200 m</b><em>Configuration connue</em></article>
+              <article class="signal-karts"><small>KARTS EN PISTE</small><b>20</b><em>Premier facteur de volume</em></article>
+              <article><small>PARTICIPANTS</small><b>80</b><em>Organisation en rotations</em></article>
+              <article class="input-wide"><small>PLAGE HORAIRE ET DURÉE</small><b>De 14 h à 18 h</b><em>4 heures, sans relais de nuit</em></article>
+            </div>
+          </section>
+          <div class="rule-hub"><span>RÈGLES RKC</span><b>Calcul du besoin</b><small>Seuils · rôles · niveaux · relèves</small></div>
+          <section class="staffing-output" aria-label="Équipe nécessaire pour le créneau">
+            <p class="map-label">ÉQUIPE NÉCESSAIRE</p>
+            <div class="output-total"><b>5</b><span>personnes nécessaires<small>pour ce créneau</small></span></div>
+            <ul>
+              <li><i>RP</i><span><b>1 responsable piste</b><small>Niveau expert couvrant briefing et encadrement</small></span></li>
+              <li><i>PL</i><span><b>4 pisteurs</b><small>Confirmés ou experts, avec débutants encadrés</small></span></li>
+              <li><i>R</i><span><b>Pas de relève nécessaire</b><small>Durée limitée à 4 heures</small></span></li>
+            </ul>
+          </section>
+        </div>
+        <div class="same-track-comparison">
+          <div class="comparison-intro"><small>MÊME PISTE, AUTRE ACTIVITÉ</small><b>Le besoin change complètement.</b></div>
+          <article class="comparison-case is-staffed"><span>PRIVATISATION</span><b>5 personnes</b><small>Responsable et commissaires requis</small></article>
+          <article class="comparison-case is-zero"><span>ROULAGE LICENCIÉS · 1200 M</span><b>0 commissaire</b><small>Accueil ou mécanique seulement si nécessaire</small></article>
+        </div>
+      </section>
+      <p class="staffing-proof"><i>i</i><span><b>La même piste peut donc produire deux besoins opposés.</b> Le type d’activité et les données du créneau définissent l’équipe. La piste seule ne décide jamais de l’effectif. Les seuils et les effectifs proposés restent ajustables à la main.</span></p>
+      <div class="activity-type-grid">
+        <article><span class="activity-number">01</span><small>LOCATION 1000 M OU 1200 M</small><h3>Effectif progressif</h3><p>Le besoin évolue selon les réservations, les karts et les vagues prévues.</p><b>Ex. 62 réservations → 4 à 5 pisteurs</b></article>
+        <article><span class="activity-number">02</span><small>PRIVATISATION 1000 M OU 1200 M</small><h3>Équipe dédiée</h3><p>Karts, participants, plage horaire et format sont connus avant la journée.</p><b>Ex. 1200 m → 1 responsable + 4 pisteurs</b></article>
+        <article><span class="activity-number">03</span><small>TROPHÉE LICENCIÉS · 1200 M</small><h3>Une équipe à composer</h3><p>Direction de course, commissaires, affectations aux postes, mécanique compétition et relèves selon le format.</p><b>Niveaux, rôles et couverture continue</b></article>
+        <article class="activity-zero"><span class="activity-number">04</span><small>ROULAGE LICENCIÉS · 1200 M</small><h3>Zéro pisteur possible</h3><p>Les licenciés roulent avec leurs karts. Accueil ou mécanique seulement si le créneau le demande.</p><b>Le système sait aussi ne pas surdimensionner</b></article>
+        <article><span class="activity-number">05</span><small>LOCATION PISTE ENFANTS</small><h3>Besoin propre</h3><p>Réservations, horaires et nombre de karts déterminent une couverture dédiée.</p><b>Un modèle distinct des pistes 1000 m et 1200 m</b></article>
+      </div>
+    </section>
+
+    <section class="experience-section" id="experience">
+      <div class="section-heading demo-heading">
+        <div>
+          <p class="eyebrow eyebrow-dark">02 · La maquette</p>
+          <h2>À vous de jouer.</h2>
+        </div>
+        <p>Cette maquette est interactive : explorez les écrans, ajustez la proposition, répondez comme un extra ou simulez un imprévu.</p>
+      </div>
+
+      <div class="demo-start-marker"><span>MAQUETTE INTERACTIVE</span><b>ICI COMMENCE LE FUTUR POSTE DE CONTRÔLE</b><i>↓</i></div>
+      <div class="guided-tour interactive-invite" id="guided-tour">
+        <div><span class="tour-kicker">7 ÉCRANS MÉTIER · TOUS CLIQUABLES</span><h3 id="tour-title">Choisissez un écran dans le menu noir.</h3><p id="tour-copy">Modifiez un besoin, ouvrez une fiche équipe, testez le lien d’un extra, ajustez le planning ou déclenchez un imprévu.</p></div>
+        <div class="tour-progress"><i id="tour-progress" style="width:0%"></i></div>
+        <button class="button button-primary" data-action="guided-next"><span id="tour-button-label">Lancer la visite guidée</span> →</button>
+        <button class="tour-free" data-open-screen="availability">Tester le lien d’un extra</button>
+        <button class="mobile-open-screens" data-action="toggle-menu">☰ Ouvrir les écrans métier</button>
+      </div>
+
+      <div class="demo-shell" id="demo-shell">
+        <aside class="demo-sidebar">
+          <div class="demo-logo"><span>RKC</span><small>PLANNING</small></div>
+          <button class="sidebar-close" data-action="toggle-menu" aria-label="Fermer le menu">× <span>Fermer</span></button>
+          <p class="sidebar-explore"><span>↓</span> CLIQUEZ POUR EXPLORER</p>
+          <nav aria-label="Écrans de la maquette">
+            <button class="demo-nav is-active" data-screen="planning"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18M7 14h4M7 17h7"/><path d="m18 13 .5 1.2L20 15l-1.5.8L18 17l-.5-1.2L16 15l1.5-.8Z"/></svg><span>Proposition de la semaine</span><b class="nav-badge nav-badge-soft">À valider</b></button>
+            <button class="demo-nav" data-screen="programme"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/><circle cx="15.5" cy="15.5" r="3.5"/><path d="M15.5 13.5v2l1.3.8"/></svg><span>Programme et besoins</span><b class="nav-badge">1</b></button>
+            <button class="demo-nav" data-screen="team"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 20c.4-4 2.2-6 5.5-6s5.1 2 5.5 6M14 15c3.6-.8 6 1 6.5 5"/></svg><span>Équipe et compétences</span></button>
+            <button class="demo-nav" data-screen="availability"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H9l-5 4v-15Z"/><path d="m9 11 2 2 4-4"/></svg><span>Disponibilités des extras</span><b class="nav-badge nav-badge-soft">7/9</b></button>
+            <button class="demo-nav" data-screen="validation"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v6c0 4.5-3.2 7.5-8 9-4.8-1.5-8-4.5-8-9V6l8-3Z"/><path d="m8.5 12 2.3 2.3 4.8-5"/></svg><span>Validation et confirmations</span></button>
+            <button class="demo-nav" data-screen="rules"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M4 12h5M13 12h7"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/><circle cx="11" cy="12" r="2"/></svg><span>Règles et apprentissage</span></button>
+          </nav>
+          <div class="sidebar-bottom">
+            <button class="emergency-button" data-action="open-emergency"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17v-6a5 5 0 0 1 10 0v6M5 17h14v3H5zM12 3V1M4.2 5.2 2.8 3.8M19.8 5.2l1.4-1.4"/><path d="M10 11h4M12 9v4"/></svg><span><b>Urgence terrain</b><small>Trouver un remplaçant</small></span></button>
+            <div class="demo-user"><span>AR</span><p><b>Alexandre</b><small>Responsable planning</small></p><i>•••</i></div>
+          </div>
+        </aside>
+        <button class="sidebar-scrim" data-action="toggle-menu" aria-label="Fermer les écrans"></button>
+
+        <div class="demo-main">
+          <header class="demo-topbar">
+            <button class="mobile-menu" aria-label="Explorer les écrans" aria-expanded="false" data-action="toggle-menu"><i></i><i></i><span>Explorer les écrans</span></button>
+            <div><p>Semaine d’exemple</p><button class="week-picker">DU 2 AU 8 JUIN <span>⌄</span></button></div>
+            <div class="topbar-actions">
+              <span class="sync-chip"><i></i> Données à jour</span>
+              <button class="icon-button" aria-label="Notifications"><span>3</span>◔</button>
+              <span class="avatar">AR</span>
+            </div>
+          </header>
+
+          <section class="demo-screen" data-screen-panel="programme">
+            <div class="screen-heading">
+              <div><p class="screen-kicker">Programme et besoins</p><h3>Transformer l’activité en effectifs.</h3><span>Les besoins sont proposés automatiquement, puis restent ajustables avant le calcul des affectations.</span></div>
+              <div class="screen-actions"><button class="button button-light" data-demo-message="L’import de l’activité ouvrira la source de réservations connectée au RKC.">Importer une activité</button><button class="button button-dark" data-open-screen="planning">Calculer les affectations</button></div>
+            </div>
+            <div class="source-strip"><div><span class="source-logo">A</span><p><b>Apex Timing · intégration cible</b><small>31 dossiers de réservation et 4 événements synchronisés dans cet exemple</small></p></div><span><i></i> Simulation à jour · 09:42</span><button data-action="integration-info">Configurer</button></div>
+            <div class="programme-layout">
+              <div class="programme-list">
+                <div class="list-toolbar"><h4>Semaine du 2 au 8 juin</h4><div><button class="chip is-active">Toute l’activité</button><button class="chip">Par typologie</button><button class="chip">Par piste</button></div></div>
+                <button class="event-card event-zero" data-event="licensed">
+                  <span class="event-time"><em>VEN. 06</em>18:00<small>22:00</small></span><i class="event-line line-blue"></i>
+                  <span class="event-copy"><small>1200 M · ROULAGE</small><b>Réservation licenciés</b><em>24 pilotes inscrits · karts compétition</em></span>
+                  <span class="event-staff"><b>0</b><small>commissaire requis</small></span><i class="event-arrow">›</i>
+                </button>
+                <button class="event-card" data-event="location">
+                  <span class="event-time"><em>SAM. 07</em>09:00<small>20:00</small></span><i class="event-line line-orange"></i>
+                  <span class="event-copy"><small>1000 M · LOCATION</small><b>Location 1000 m</b><em>62 réservations · 7 vagues prévues</em></span>
+                  <span class="event-staff"><b>4 à 5</b><small>selon les créneaux</small></span><i class="event-arrow">›</i>
+                </button>
+                <button class="event-card is-selected" data-event="atlas">
+                  <span class="event-time"><em>SAM. 07</em>14:00<small>18:00</small></span>
+                  <i class="event-line line-dark"></i>
+                  <span class="event-copy"><small>1200 M · PRIVATISATION</small><b>Privatisation Atlas · 1200 m</b><em>20 karts · 80 participants · endurance 2 h</em></span>
+                  <span class="event-staff"><b id="event-total">5</b><small>personnes nécessaires</small></span>
+                  <i class="event-arrow">›</i>
+                </button>
+                <button class="event-card" data-event="discovery">
+                  <span class="event-time"><em>SAM. 07</em>10:00<small>19:00</small></span><i class="event-line line-teal"></i>
+                  <span class="event-copy"><small>PISTE ENFANTS · LOCATION</small><b>Location piste enfants</b><em>18 réservations · 4 vagues</em></span>
+                  <span class="event-staff"><b>2</b><small>personnes nécessaires</small></span><i class="event-arrow">›</i>
+                </button>
+                <button class="event-card" data-event="tg">
+                  <span class="event-time"><em>DIM. 08</em>08:00<small>15:00</small></span><i class="event-line line-gray"></i>
+                  <span class="event-copy"><small>1200 M · TROPHÉE LICENCIÉS</small><b>Trophée licenciés · 42 pilotes</b><em>Direction de course · commissaires · mécanique compétition</em></span>
+                  <span class="event-staff"><b>8</b><small>plusieurs rôles</small></span><i class="event-arrow">›</i>
+                </button>
+              </div>
+              <aside class="needs-panel" id="needs-panel">
+                <div class="needs-head"><span class="event-tag">1200 M</span><button aria-label="Fermer" data-action="close-needs">×</button></div>
+                <p class="screen-kicker">Privatisation Atlas · 1200 m</p><h4>20 karts · 80 participants</h4>
+                <div class="event-facts"><span><small>Activité</small><b>Privatisation</b></span><span><small>Horaire</small><b>14:00 à 18:00</b></span><span><small>Piste</small><b>1200 m</b></span></div>
+                <div class="needs-title"><div><p>Besoin proposé</p><small>Ajustez avant de calculer les affectations.</small></div><span><b id="need-total">5</b> pers.</span></div>
+                <div class="need-role"><span class="role-symbol">RP</span><p><b>Responsable piste</b><small>Niveau expert en piste location</small></p><div class="stepper"><button aria-label="Diminuer le nombre de responsables" data-need="manager" data-delta="-1">-</button><b id="need-manager">1</b><button aria-label="Augmenter le nombre de responsables" data-need="manager" data-delta="1">+</button></div></div>
+                <div class="need-role"><span class="role-symbol">PL</span><p><b>Pisteurs location</b><small>Un débutant reste encadré par un confirmé ou un expert</small></p><div class="stepper"><button aria-label="Diminuer le nombre de pisteurs" data-need="marshal" data-delta="-1">-</button><b id="need-marshal">4</b><button aria-label="Augmenter le nombre de pisteurs" data-need="marshal" data-delta="1">+</button></div></div>
+                <div class="need-role"><span class="role-symbol">BR</span><p><b>Capacité briefing</b><small>Incluse dans le niveau expert en piste location</small></p><span class="skill-required">Requis ✓</span></div>
+                <div class="recalc-note" id="recalc-note"><i>✦</i><p><b>Besoin issu du modèle « Privatisation 1200 m »</b><small>Dimensionné par la combinaison piste, karts, participants, format et durée.</small></p></div>
+                <button class="button button-dark button-full" data-action="recalculate">Recalculer la proposition</button>
+                <p class="needs-footnote">Les affectations déjà verrouillées seront conservées.</p>
+              </aside>
+            </div>
+          </section>
+
+          <section class="demo-screen" data-screen-panel="team">
+            <div class="screen-heading">
+              <div><p class="screen-kicker">Équipe et compétences</p><h3>Les métiers et le niveau de chaque personne.</h3><span>Le niveau se lit dans le métier concerné. Une personne peut par exemple être experte en piste location, confirmée à l’accueil et débutante en mécanique.</span></div>
+              <div class="screen-actions"><button class="button button-light" data-demo-message="L’import permettra de reprendre les profils, contrats et indisponibilités depuis la source RH retenue.">Importer l’équipe</button><button class="button button-dark" data-demo-message="Une fiche permettra de créer un CDI ou un extra, puis de renseigner ses métiers, ses niveaux et ses indisponibilités.">+ Ajouter une personne</button></div>
+            </div>
+            <div class="team-toolbar">
+              <div class="search-box">⌕ <input type="search" aria-label="Rechercher une personne" placeholder="Rechercher une personne"></div>
+              <div class="filter-group" aria-label="Filtrer l'équipe"><button class="chip is-active" data-team-filter="all">Tous · 15</button><button class="chip" data-team-filter="cdi">CDI · 6</button><button class="chip" data-team-filter="extra">Extras · 9</button><button class="chip" data-team-filter="beginner">Débutants</button><button class="chip" data-team-filter="confirmed">Confirmés</button><button class="chip" data-team-filter="expert">Experts</button></div>
+            </div>
+            <p class="team-count">6 profils illustratifs affichés sur 15 · identités fictives</p>
+            <div class="team-content">
+              <div class="people-grid">
+                <button class="person-card" data-type="cdi expert" data-person="camille"><span class="person-photo person-camille">CM</span><span class="contract-tag">CDI</span><h4>Camille M.</h4><p>Piste location · Expert</p><div class="skill-pills"><i>Niveau expert dans ce métier</i></div><footer><span><b>32 h</b> / 35 h</span><em>Voir la fiche →</em></footer></button>
+                <button class="person-card" data-type="cdi expert confirmed beginner" data-person="malik"><span class="person-photo person-malik">MB</span><span class="contract-tag">CDI</span><h4>Malik B.</h4><p>Mécanique location · Expert</p><div class="skill-pills"><i>Mécanique compétition · Confirmé</i><i>Piste location · Débutant</i></div><footer><span><b>35 h</b> / 35 h</span><em>Voir la fiche →</em></footer></button>
+                <button class="person-card" data-type="cdi expert confirmed beginner" data-person="lea"><span class="person-photo person-lea">LD</span><span class="contract-tag">CDI</span><h4>Léa D.</h4><p>Accueil · Expert</p><div class="skill-pills"><i>Magasin compétition · Confirmé</i><i>Piste location · Débutant</i></div><footer><span><b>29 h</b> / 35 h</span><em>Voir la fiche →</em></footer></button>
+                <button class="person-card" data-type="extra confirmed" data-person="noa"><span class="person-photo person-noa">NB</span><span class="contract-tag contract-extra">EXTRA</span><h4>Noa B.</h4><p>Piste location · Confirmé</p><div class="skill-pills"><i>Accueil · Confirmé</i><i>Pondération normale</i></div><footer><span class="available"><i></i> Disponible sam.</span><em>Voir la fiche →</em></footer></button>
+                <button class="person-card" data-type="extra expert" data-person="ines"><span class="person-photo person-ines">IM</span><span class="contract-tag contract-extra">EXTRA</span><h4>Inès M.</h4><p>Piste location · Expert</p><div class="skill-pills"><i>Pondération forte</i></div><footer><span class="available"><i></i> Disponible sam.</span><em>Voir la fiche →</em></footer></button>
+                <button class="person-card" data-type="extra confirmed beginner" data-person="yassine"><span class="person-photo person-yassine">YK</span><span class="contract-tag contract-extra">EXTRA</span><h4>Yassine K.</h4><p>Accueil · Confirmé</p><div class="skill-pills"><i>Piste location · Débutant</i><i>Pondération faible</i></div><footer><span class="pending"><i></i> Réponse attendue</span><em>Voir la fiche →</em></footer></button>
+              </div>
+              <aside class="matrix-card">
+                <p class="matrix-scroll-hint">Faites glisser pour voir toutes les catégories →</p>
+                <div class="panel-heading"><div><p>Lecture transversale</p><h4>Niveau dans chaque métier</h4></div><button data-demo-message="La vue complète permettra de filtrer toutes les personnes par métier et par niveau.">Tout afficher ↗</button></div>
+                <div class="matrix-legend"><span><i class="matrix-beginner">D</i> Débutant</span><span><i class="matrix-confirmed">C</i> Confirmé</span><span><i class="matrix-expert">E</i> Expert</span></div>
+                <p class="matrix-subtitle">NIVEAU PAR MÉTIER</p>
+                <div class="skills-matrix matrix-five">
+                  <div class="matrix-header"><span>Personne</span><b>MÉCA.<br>LOC.</b><b>MÉCA.<br>COMP.</b><b>MAG.<br>COMP.</b><b>ACCUEIL</b><b>PISTE<br>LOC.</b></div>
+                  <div><span>Camille M.</span><em></em><em></em><em></em><em></em><em class="matrix-expert">E</em></div>
+                  <div><span>Malik B.</span><em class="matrix-expert">E</em><em class="matrix-confirmed">C</em><em class="matrix-confirmed">C</em><em></em><em class="matrix-beginner">D</em></div>
+                  <div><span>Léa D.</span><em></em><em></em><em class="matrix-confirmed">C</em><em class="matrix-expert">E</em><em class="matrix-beginner">D</em></div>
+                  <div><span>Noa B.</span><em></em><em></em><em></em><em class="matrix-confirmed">C</em><em class="matrix-confirmed">C</em></div>
+                  <div><span>Inès M.</span><em></em><em></em><em></em><em></em><em class="matrix-expert">E</em></div>
+                  <div><span>Yassine K.</span><em></em><em></em><em></em><em class="matrix-confirmed">C</em><em class="matrix-beginner">D</em></div>
+                </div>
+                <p class="matrix-note"><b>Règle de lecture.</b> Le niveau résume ce que la personne sait prendre en charge dans le métier concerné. En piste location, un niveau expert inclut par exemple le briefing et l’encadrement. Le pointage reste une affectation de mission et la nuit une disponibilité.</p>
+              </aside>
+            </div>
+          </section>
+
+          <section class="demo-screen" data-screen-panel="availability">
+            <div class="screen-heading">
+              <div><p class="screen-kicker">Campagne de disponibilités</p><h3>Choisir les extras, puis recueillir leurs réponses.</h3><span>Les CDI disponibles sont intégrés automatiquement. Congé, arrêt ou déplacement les écartent du calcul. Le responsable choisit librement les extras à interroger.</span></div>
+              <div class="screen-actions"><button class="button button-light" data-action="preview-sms">Voir le lien reçu</button><button class="button button-dark" data-action="remind-extras">Relancer les <span data-nonresponse-count>2</span> sans réponse</button></div>
+            </div>
+            <div class="solicitation-map">
+              <article><span class="map-step">01</span><div><p>Intégration automatique</p><h4>5 CDI disponibles sur 6</h4><small>Congés, arrêts et déplacements connus sont automatiquement écartés</small></div><ul><li>Contrats</li><li>Métiers</li><li>Niveaux</li><li>Indisponibilités</li></ul></article>
+              <i class="map-arrow">→</i>
+              <article><span class="map-step">02</span><div><p>Liste pilotée par le responsable</p><h4><span data-selected-extra-count>9</span> extras sélectionnés</h4><small>Chaque personne choisie est visible juste en dessous</small></div><ul class="selected-extra-list"><li><span data-selected-extra-count>9</span> personnes choisies</li><li>Voir la liste complète ↓</li></ul></article>
+              <i class="map-arrow">→</i>
+              <article class="map-highlight"><span class="map-step">03</span><div><p>Envoi de la demande</p><h4>Environ 7 jours avant</h4><small>Les <span data-selected-extra-count>9</span> extras reçoivent un SMS avec leur lien personnel</small></div><button id="send-campaign-button" data-action="send-campaign">Simuler l’envoi aux <span data-selected-extra-count>9</span> extras</button></article>
+            </div>
+            <article class="extras-selection-panel">
+              <header><div><small>LISTE CHOISIE PAR LE RESPONSABLE</small><h4><span data-selected-extra-count>9</span> extras recevront la demande de disponibilités</h4><p>La sélection peut être modifiée avant l’envoi et complétée au fil de la semaine.</p></div><button data-action="selection-info">Modifier la sélection</button></header>
+              <div class="selected-extra-grid">
+                <label><input type="checkbox" checked><i>NB</i><span><b>Noa B.</b><small>Piste location · Confirmé</small></span></label>
+                <label><input type="checkbox" checked><i>IM</i><span><b>Inès M.</b><small>Piste location · Expert</small></span></label>
+                <label><input type="checkbox" checked><i>SC</i><span><b>Sarah C.</b><small>Piste location · Expert</small></span></label>
+                <label><input type="checkbox" checked><i>YK</i><span><b>Yassine K.</b><small>Accueil confirmé · piste débutant</small></span></label>
+                <label><input type="checkbox" checked><i>LR</i><span><b>Lucas R.</b><small>Mécanique location · Confirmé</small></span></label>
+                <label><input type="checkbox" checked><i>JP</i><span><b>Jade P.</b><small>Accueil · Expert</small></span></label>
+                <label><input type="checkbox" checked><i>HL</i><span><b>Hugo L.</b><small>Piste location · Confirmé</small></span></label>
+                <label><input type="checkbox" checked><i>MV</i><span><b>Manon V.</b><small>Piste location · Débutant</small></span></label>
+                <label><input type="checkbox" checked><i>TH</i><span><b>Théo G.</b><small>Mécanique compétition · Confirmé</small></span></label>
+              </div>
+              <footer><span><b><span data-selected-extra-count>9</span> sélectionnés sur 12 extras actifs</b><small>Seules les personnes cochées recevront la demande cette semaine.</small></span><button data-demo-message="Le responsable peut ajouter un extra au vivier ou sélectionner un profil déjà connu.">+ Ajouter un extra</button></footer>
+            </article>
+            <div class="availability-layout">
+              <div class="campaign-column">
+                <article class="campaign-card">
+                  <header><div><span class="campaign-icon">✦</span><p><small>CAMPAGNE D’EXEMPLE · ENVOYÉE</small><b>Disponibilités du 2 au 8 juin</b></p></div><span class="live-badge"><i></i> Réponses en cours</span></header>
+                  <div class="campaign-stats"><span><b>5</b><small>CDI disponibles sur 6</small></span><span><b data-selected-extra-count>9</b><small>extras sélectionnés sur 12</small></span><span><b><i data-response-count>7</i>/<i data-selected-extra-count>9</i></b><small>réponses fraîches</small></span><span><b data-nonresponse-count>2</b><small>extras à relancer</small></span></div>
+                  <div class="campaign-progress"><div><span><b data-response-count>7</b> extras sur <b data-selected-extra-count>9</b> ont répondu</span><span data-response-percent>78 %</span></div><i><em data-response-progress style="width:78%"></em></i></div>
+                  <footer><span>Envoyée aux <span data-selected-extra-count>9</span> extras le 21 mai à 10:00</span><b>Échéance : mercredi, 12:00</b></footer>
+                </article>
+                <article class="message-preview">
+                  <div class="panel-heading"><div><p>Message personnel envoyé</p><h4>Un lien pour la semaine demandée.</h4></div><span class="sms-tag">SMS</span></div>
+                  <div class="sms-bubble"><b>RKC</b><p>Bonjour Noa, le RKC prépare le planning du 2 au 8 juin. Indique toutes tes disponibilités, même larges, avant mercredi 12 h. Tu pourras aussi préciser les créneaux que tu peux couvrir.</p><a href="#phone-demo">planning.rkc.fr/mes-disponibilites/7H2K</a><small>Semaine du 2 au 8 juin · aucune création de compte</small></div>
+                  <div class="solicitation-logic"><p><b>Pourquoi Noa reçoit-il cette demande ?</b><small>Le responsable l’a sélectionné pour cette semaine. Son métier, son niveau et sa pondération restent visibles pour préparer la proposition.</small></p><button data-action="selection-info">Gérer la liste</button></div>
+                </article>
+              </div>
+              <div class="phone-stage" id="phone-demo">
+                <div class="phone-label"><span>LE LIEN PERSONNEL DE L’EXTRA</span><p>Une seule page pour indiquer ses jours, ses horaires, les créneaux possibles et sa souplesse.</p></div>
+                <div class="phone">
+                  <div class="phone-top"><span>9:41</span><i></i><b>● ◔ ▰</b></div>
+                  <div class="phone-app">
+                    <header><span class="phone-logo">RKC</span><small>Disponibilités</small></header>
+                    <div class="phone-copy"><span>MES DISPONIBILITÉS RKC</span><h4>Renseigne tes disponibilités du 2 au 8 juin.</h4><p>Donne les plages les plus larges possibles. Le RKC choisira ensuite ton rôle et ton affectation.</p></div>
+                    <div class="availability-week"><span>SEMAINE DEMANDÉE</span><b>Du 2 au 8 juin</b><small>Cette réponse concerne uniquement cette semaine.</small></div>
+                    <ol class="availability-guide"><li><b>1</b><span>Jours et horaires</span></li><li><b>2</b><span>Créneaux possibles</span></li><li><b>3</b><span>Souplesse</span></li></ol>
+                    <div class="phone-mode-panel is-active is-always-visible" data-phone-panel="hours">
+                      <div class="phone-section-title"><b>1. Mes jours et horaires</b><small>Touche une journée pour préciser une disponibilité large ou exacte.</small></div>
+                      <button class="all-week-button" data-action="all-week">Je suis disponible toute la semaine</button>
+                      <div class="day-list">
+                        <button class="day-row" data-day-toggle><span><b>Lun.</b><small>02 juin</small></span><i class="day-state off">Indisponible</i></button>
+                        <button class="day-row" data-day-toggle><span><b>Mar.</b><small>03 juin</small></span><i class="day-state custom">17:00 à 23:00</i></button>
+                        <button class="day-row" data-day-toggle><span><b>Mer.</b><small>04 juin</small></span><i class="day-state off">Indisponible</i></button>
+                        <button class="day-row" data-day-toggle><span><b>Jeu.</b><small>05 juin</small></span><i class="day-state custom">18:00 à 23:00</i></button>
+                        <button class="day-row" data-day-toggle><span><b>Ven.</b><small>06 juin</small></span><i class="day-state on">Toute la journée</i></button>
+                        <button class="day-row" data-day-toggle><span><b>Sam.</b><small>07 juin</small></span><i class="day-state on">Jour + nuit</i></button>
+                        <button class="day-row" data-day-toggle><span><b>Dim.</b><small>08 juin</small></span><i class="day-state custom">Jusqu’à 18:00</i></button>
+                      </div>
+                      <article class="day-editor"><header><b>Mardi 3 juin</b><span>Horaires précis</span></header><div><label>De<input type="time" value="17:00"></label><label>À<input type="time" value="23:00"></label></div><small>Exemple : Noa peut aussi choisir Toute la journée ou Indisponible.</small></article>
+                    </div>
+                    <div class="phone-mode-panel is-always-visible" data-phone-panel="events">
+                      <div class="phone-section-title"><b>2. Les créneaux que je peux couvrir</b><small>Cette information complète les horaires. Elle ne décide pas de l’affectation.</small></div>
+                      <article class="phone-event"><header><span>VEN. 06 · 17:00 à 22:00</span><i>1000 M</i></header><h5>Location 1000 m</h5><p>Piste location · horaires flexibles</p><div><button class="is-selected" data-event-choice>Disponible</button><button data-event-choice>Possible si besoin</button><button data-event-choice>Impossible</button></div></article>
+                      <article class="phone-event"><header><span>SAM. 07 · 14:00 à 18:00</span><i>1200 M</i></header><h5>Privatisation Atlas · 1200 m</h5><p>Possible uniquement sous supervision</p><div><button data-event-choice>Disponible</button><button class="is-selected" data-event-choice>Possible si besoin</button><button data-event-choice>Impossible</button></div></article>
+                      <article class="phone-event"><header><span>SAM. 07 · 10:00 à 19:00</span><i>PISTE ENFANTS</i></header><h5>Location piste enfants</h5><p>Piste location · niveau confirmé</p><div><button class="is-selected" data-event-choice>Disponible</button><button data-event-choice>Possible si besoin</button><button data-event-choice>Impossible</button></div></article>
+                    </div>
+                    <div class="phone-flexibility"><p>3. Ma souplesse</p><label class="phone-check"><input type="checkbox" checked><span></span><b>Je peux enchaîner plusieurs activités.</b></label><label class="phone-check"><input type="checkbox" checked><span></span><b>Je préfère la piste mais j’accepte l’accueil.</b></label><label class="phone-check"><input type="checkbox" checked><span></span><b>Je peux être appelé avec un délai court.</b></label><label class="phone-check"><input type="checkbox" checked><span></span><b>Je peux travailler sur un relais de nuit.</b></label></div>
+                    <div class="phone-response-summary"><span><b>5 jours</b><small>renseignés</small></span><span><b>38 h</b><small>potentiellement disponibles</small></span><span><b>3</b><small>créneaux précisés</small></span></div>
+                    <button class="phone-submit" data-action="submit-availability">Envoyer mes disponibilités</button>
+                    <small class="phone-legal">Le RKC choisira ensuite tes missions. Ceci n’est pas encore une affectation.</small>
+                  </div>
+                  <div class="phone-success" aria-live="polite"><span>✓</span><h4>Merci Noa !</h4><p>5 jours renseignés · 38 h possibles · 3 créneaux précisés · changement d’activité accepté.</p><small>Ta réponse alimente maintenant les propositions de planning. Ceci ne constitue pas encore une affectation.</small><button data-action="edit-availability">Modifier ma réponse</button></div>
+                  <div class="phone-bottom"></div>
+                </div>
+              </div>
+            </div>
+            <article class="response-matrix-card">
+              <div class="panel-heading"><div><p>Ce que voit le responsable</p><h4>Les réponses deviennent immédiatement comparables.</h4></div><span class="matrix-live"><i></i> Mise à jour en direct</span></div>
+              <div class="response-matrix">
+                <div class="response-matrix-head"><span>Personne</span><b>Ven. 06</b><b>Sam. 07</b><b>Dim. 08</b><b>Créneaux précisés</b><b>Réponse</b></div>
+                <div id="noa-response-row"><span><i class="person-avatar person-noa">NB</i><b>Noa B.</b></span><em>17:00 à 23:00</em><em class="full">Journée + nuit</em><em>Jusqu’à 18:00</em><small>Location 1000 m · location piste enfants</small><strong class="response-partial" id="noa-response-status">Brouillon</strong></div>
+                <div><span><i class="person-avatar person-ines">IM</i><b>Inès M.</b></span><em>14:00 à 23:00</em><em class="full">08:00 à 20:00</em><em class="off">Indisponible</em><small>Trophée licenciés · 1200 m</small><strong class="response-complete">Complète</strong></div>
+                <div><span><i class="person-avatar avatar-lucas">SC</i><b>Sarah C.</b></span><em class="off">Indisponible</em><em>16:00 à 22:00</em><em>Matin</em><small>Atlas</small><strong class="response-partial">Partielle</strong></div>
+                <div><span><i class="person-avatar person-yassine">YK</i><b>Yassine K.</b></span><em>Non renseigné</em><em>Non renseigné</em><em>Non renseigné</em><small>Aucune activité</small><strong class="response-wait">À relancer</strong></div>
+              </div>
+              <div class="mobile-response-cards">
+                <article><header><span class="person-avatar person-noa">NB</span><p><b>Noa B.</b><small>Location 1000 m · location piste enfants</small></p><strong class="response-partial" id="noa-response-status-mobile">Brouillon</strong></header><div><span><b>VEN.</b><small>17:00 à 23:00</small></span><span><b>SAM.</b><small>Journée + nuit</small></span><span><b>DIM.</b><small>Jusqu’à 18:00</small></span></div></article>
+                <article><header><span class="person-avatar person-ines">IM</span><p><b>Inès M.</b><small>Trophée licenciés · 1200 m</small></p><strong class="response-complete">Complète</strong></header><div><span><b>VEN.</b><small>14:00 à 23:00</small></span><span><b>SAM.</b><small>08:00 à 20:00</small></span><span><b>DIM.</b><small>Indisponible</small></span></div></article>
+                <article><header><span class="person-avatar avatar-lucas">SC</span><p><b>Sarah C.</b><small>Privatisation Atlas</small></p><strong class="response-partial">Partielle</strong></header><div><span><b>VEN.</b><small>Indisponible</small></span><span><b>SAM.</b><small>16:00 à 22:00</small></span><span><b>DIM.</b><small>Matin</small></span></div></article>
+                <article><header><span class="person-avatar person-yassine">YK</span><p><b>Yassine K.</b><small>Aucune réponse</small></p><strong class="response-wait">À relancer</strong></header><div><span class="no-response">Sans réponse, Yassine n’entre dans aucune proposition.</span></div></article>
+              </div>
+              <footer><span><b>31 missions potentiellement couvertes</b><small>Les réponses, métiers, niveaux et besoins peuvent maintenant être croisés.</small></span><button data-open-screen="planning">Préparer la proposition de planning →</button></footer>
+            </article>
+          </section>
+
+          <section class="demo-screen is-active" data-screen-panel="planning">
+            <div class="screen-heading">
+              <div><p class="screen-kicker">Proposition de planning · couverture continue</p><h3>Voici comment les postes restent couverts toute la semaine.</h3><span>Programme, contrats, congés, arrêts maladie, jours off, repos entre missions, métiers, niveaux et réponses des extras ont été croisés. Chaque affectation reste modifiable.</span></div>
+              <div class="screen-actions"><span class="status-pill status-prep" id="planning-status">Aucun envoi effectué</span><button class="button button-light" data-action="recalculate">↻ Recalculer</button><button class="button button-dark" data-open-screen="validation">Vérifier et valider</button></div>
+            </div>
+            <div class="planning-input-ribbon"><span><b>5 CDI</b><small>disponibles sur 6</small></span><i>+</i><span><b>7 extras</b><small>répondants sur 9 sollicités</small></span><i>+</i><span><b>Activités</b><small>besoins par zone et horaire</small></span><i>+</i><span><b>Métiers et niveaux</b><small>exigences de chaque poste</small></span><i>+</i><span><b>Repos et poids</b><small>jours off · inter-missions · extras</small></span><strong>→ COUVERTURE À VALIDER</strong></div>
+            <div class="planning-toolbar">
+              <div class="view-tabs" aria-label="Vue du planning"><button class="is-active" data-plan-view="person">Par personne</button><button data-plan-view="track">Par zone</button><button data-plan-view="role">Par rôle</button></div>
+              <div class="date-tabs"><button data-plan-day="ven">VEN 06</button><button class="is-active" data-plan-day="sam">SAM 07</button><button data-plan-day="dim">DIM 08</button></div>
+              <button class="filter-button" data-demo-message="Les filtres permettront d’isoler une piste, un rôle, un contrat ou une personne.">☷ Filtres <b>2</b></button>
+            </div>
+            <div class="proposal-strip proposal-single">
+              <p><span>✦</span><b>Une couverture continue, prête à ajuster</b><small>Chaque poste permanent reste occupé sur toute sa plage d’ouverture. Un changement de poste n’est proposé que si un relais compatible est identifié.</small></p>
+              <div class="proposal-principles"><span><i>✓</i> Postes continus</span><span><i>✓</i> Repos vérifiés</span><span><i>✓</i> 100 % modifiable</span></div>
+            </div>
+            <div class="coverage-rule"><span>RÈGLE DE LECTURE</span><p><b>Il n’y a jamais de trou.</b> Accueil, magasin, mécanique et pistes restent couverts du début à la fin. Toute pause ou bascule impose un relais identifié.</p></div>
+            <div class="mobile-plan-cards" aria-label="Proposition de planning mobile">
+              <article><header><span class="person-avatar person-camille">CM</span><p><b>Camille M.</b><small>CDI · responsable piste</small></p><em><b>35 h</b><small>/ 35 h cible</small></em></header><div><span><i>VEN. 06</i><b>Location 1000 m</b><small>08:30 à 17:00 · poste conservé</small></span><span><i>SAM. 07</i><b>Responsable location 1000 m</b><small>08:30 à 20:00 · pause relayée</small></span><span><i>DIM. 08</i><b>Direction trophée licenciés</b><small>08:00 à 15:00 · poste conservé</small></span></div><footer>✓ Affectations stables et repos conformes</footer></article>
+              <article><header><span class="person-avatar person-malik">MB</span><p><b>Malik B.</b><small>CDI · mécanique</small></p><em><b>32 h</b><small>/ 35 h cible</small></em></header><div><span><i>VEN. 06</i><b>Préparation endurance</b><small>08:00 à 13:00</small></span><span><i>SAM. 07</i><b>Mécanique + support terrain</b><small>08:00 à 18:30 · pause incluse</small></span><span><i>DIM. 08</i><b>Atelier</b><small>09:00 à 16:00</small></span></div><footer>✓ Compétence mécanique couverte</footer></article>
+              <article><header><span class="person-avatar person-lea">LD</span><p><b>Léa D.</b><small>CDI · accueil et magasin</small></p><em><b>35 h</b><small>/ 35 h cible</small></em></header><div><span><i>VEN. 06</i><b>Accueil et magasin</b><small>09:00 à 18:00 · poste conservé</small></span><span><i>SAM. 07</i><b>Accueil et magasin</b><small>09:00 à 20:00 · pause relayée</small></span><span><i>DIM. 08</i><b>Accueil et magasin</b><small>09:00 à 18:00 · poste conservé</small></span></div><footer>✓ Accueil couvert sur toute l’ouverture</footer></article>
+              <article><header><span class="person-avatar person-noa">NB</span><p><b>Noa B.</b><small>Extra · piste location · Confirmé</small></p><em><b>21 h</b><small>3 journées</small></em></header><div><span><i>VEN. 06</i><b>Location 1000 m</b><small>17:00 à 22:00 · poste conservé</small></span><span><i>SAM. 07</i><b>Location piste enfants</b><small>10:00 à 19:00 · pause relayée</small></span><span><i>DIM. 08</i><b>Location 1000 m</b><small>10:00 à 18:00 · poste conservé</small></span></div><footer>✓ Repos entre journées vérifié</footer></article>
+              <article><header><span class="person-avatar person-ines">IM</span><p><b>Inès M.</b><small>Extra · piste location · Expert</small></p><em><b>10 h</b><small>2 missions</small></em></header><div><span><i>SAM. 07</i><b>Privatisation Atlas · poste pointage</b><small>13:30 à 18:30</small></span><span><i>DIM. 08</i><b>Trophée licenciés · poste pointage</b><small>09:00 à 14:00</small></span></div><footer>✓ Repos et niveau vérifiés</footer></article>
+            </div>
+            <div class="planning-area">
+              <div class="schedule-card">
+                <div class="schedule-head"><span id="schedule-label">Personnes</span><b>08:00</b><b>10:00</b><b>12:00</b><b>14:00</b><b>16:00</b><b>18:00</b><b>20:00</b></div>
+                <div class="schedule-body" id="schedule-body"></div>
+                <div class="schedule-legend"><span><i class="legend-orange"></i> Location 1000 m</span><span><i class="legend-black"></i> Activité 1200 m</span><span><i class="legend-teal"></i> Location piste enfants</span><span><i class="legend-gray"></i> Atelier / accueil</span><span><i class="legend-break"></i> Pause</span></div>
+              </div>
+              <aside class="explanation-card" id="assignment-explanation">
+                <span class="explanation-icon">✦</span><p class="screen-kicker">Pourquoi cette proposition ?</p><h4>Les postes permanents restent couverts sans interruption.</h4><p>Léa reste à l’accueil et au magasin, Noa couvre la piste enfants et Camille conserve la responsabilité de la location 1000 m. Aucun changement de poste n’est proposé sans relais identifié.</p>
+                <ul><li><i>✓</i> Accueil, magasin et mécanique couverts</li><li><i>✓</i> Pistes couvertes sur leurs horaires</li><li><i>✓</i> Pauses relayées sans poste vacant</li><li><i>✓</i> Jours off et repos entre missions vérifiés</li><li><i>✓</i> Métiers, niveaux et pondérations respectés</li></ul>
+                <div class="explanation-actions"><button data-action="lock-default">Verrouiller</button><button data-action="replace-default">Remplacer</button><button data-action="add-reinforcement">+ Renfort</button></div>
+              </aside>
+            </div>
+            <div class="planning-summary"><span class="summary-good"><i>✓</i><p><b>5 / 5 zones continues couvertes</b><small>Aucun poste permanent n’est laissé sans titulaire</small></p></span><span class="summary-good"><i>✓</i><p><b>Pauses relayées, repos vérifiés</b><small>Jours off et repos entre missions conformes</small></p></span><span class="summary-good"><i>✓</i><p><b>0 bascule non couverte</b><small>Tout changement exige un relais identifié</small></p></span><button data-open-screen="validation">Passer à la validation →</button></div>
+          </section>
+
+          <section class="demo-screen" data-screen-panel="validation">
+            <div class="screen-heading">
+              <div><p class="screen-kicker">Validation et publication</p><h3>Le système contrôle. Le responsable décide.</h3><span>Avant publication, les contraintes, objectifs et préférences sont présentés séparément.</span></div>
+              <div class="screen-actions"><button class="button button-light" data-open-screen="planning">← Revenir au planning</button><button class="button button-primary" data-action="open-publish">Valider et publier</button></div>
+            </div>
+            <div class="validation-layout">
+              <article class="validation-card">
+                <header><span class="validation-score"><b>6</b><small>/ 7</small></span><div><p class="screen-kicker">Contrôles avant publication</p><h4>Le planning est presque prêt.</h4><small>Un arbitrage reste à effectuer ; aucune règle impérative n’est enfreinte.</small></div></header>
+                <div class="check-list">
+                  <div class="check-ok"><i>✓</i><p><b>Encadrement et rôles couverts</b><small>Responsable piste, briefing et niveaux d’expérience vérifiés.</small></p><span>Conforme</span></div>
+                  <div class="check-ok"><i>✓</i><p><b>Aucun chevauchement d’affectation</b><small>Les temps de transition entre zones sont intégrés.</small></p><span>Conforme</span></div>
+                  <div class="check-ok"><i>✓</i><p><b>Pauses prévues</b><small>Durées illustratives, à confirmer avec les règles RKC.</small></p><span>Conforme</span></div>
+                  <div class="check-ok"><i>✓</i><p><b>Jours off et repos entre missions contrôlés</b><small>Deux ou trois jours off selon la saison, puis repos minimal avant toute nouvelle prise de poste.</small></p><span>Conforme</span></div>
+                  <div class="check-ok"><i>✓</i><p><b>Congés et arrêts maladie respectés</b><small>Aucune personne indisponible n’entre dans la proposition.</small></p><span>Conforme</span></div>
+                  <div class="check-info"><i>i</i><p><b>Objectifs d’heures CDI visibles</b><small>184 h planifiées sur 196 h visées.</small></p><span>Information</span></div>
+                  <div class="check-warn"><i>!</i><p><b>Une préférence souple non satisfaite</b><small>Noa préfère la piste mais couvre l’accueil de 09:00 à 10:30.</small></p><span>À arbitrer</span></div>
+                </div>
+              </article>
+              <aside class="publish-summary">
+                <p class="screen-kicker">Résumé de publication</p><h4>14 personnes seront notifiées.</h4>
+                <div class="publish-numbers"><span><b>11</b><small>affectations inchangées</small></span><span><b>3</b><small>affectations modifiées</small></span><span><b>2</b><small>confirmations attendues</small></span></div>
+                <div class="notification-preview"><span class="sms-tag">SMS</span><p><b>RKC : ton planning est publié.</b><br>Samedi : 10:00 à 19:00, piste enfants. Consulte ton poste et confirme ta présence :</p><a>planning.rkc.fr/mon-planning/7H2K</a></div>
+                <label class="confirm-option"><input type="checkbox" checked><span></span><p><b>Demander une confirmation</b><small>aux extras et aux personnes modifiées</small></p></label>
+                <button class="employee-preview-link" data-action="open-employee-plan">Voir l’expérience salarié sur mobile →</button>
+                <button class="button button-primary button-full" data-action="open-publish">Valider et publier le planning</button>
+                <small class="publish-note">Le planning ne sera jamais publié automatiquement.</small>
+              </aside>
+            </div>
+          </section>
+
+          <section class="demo-screen" data-screen-panel="rules">
+            <div class="screen-heading">
+              <div><p class="screen-kicker">Règles et apprentissage</p><h3>Automatiser ce qui est stable. Suggérer ce qui évolue.</h3><span>Les règles impératives sont distinctes des objectifs d’optimisation et des simples préférences.</span></div>
+              <div class="screen-actions"><button class="button button-light" data-demo-message="L’historique expliquera chaque ajustement et la personne qui l’a validé.">Historique des décisions</button><button class="button button-dark" data-demo-message="Une nouvelle règle pourra être définie, testée puis validée par le responsable.">+ Nouvelle règle</button></div>
+            </div>
+            <div class="rule-categories"><article><span class="rule-icon rule-red">!</span><p><b>Obligatoire</b><small>Sécurité, niveau, rôle, repos et indisponibilité.</small></p><em>Bloque une proposition</em></article><article><span class="rule-icon rule-orange">↗</span><p><b>À optimiser</b><small>Heures CDI, continuité et pondération des extras.</small></p><em>Oriente la proposition</em></article><article><span class="rule-icon rule-blue">♡</span><p><b>Préférence</b><small>Activité souhaitée et habitudes.</small></p><em>Peut être arbitrée</em></article></div>
+            <article class="hr-framework">
+              <div class="hr-framework-title"><span>RH</span><p><small>PARAMÉTRAGE À VALIDER</small><b>Contrats, convention et accords applicables</b></p></div>
+              <div class="hr-facts"><span><b>Contrats</b><small>heures hebdomadaires et annuelles<br>selon chaque salarié</small></span><span><b>Jours off</b><small>2 jours l’été, 3 jours l’hiver<br>selon les règles validées</small></span><span><b>Repos inter-missions</b><small>temps minimal entre une fin de service<br>et la prochaine prise de poste</small></span><span><b>Indisponibilités</b><small>congés et arrêts maladie<br>écartent la personne du calcul</small></span></div>
+              <div class="hr-warning"><i>!</i><p><b>« Extra » n’est pas un type de contrat.</b><small>CDD saisonnier, CDI intermittent, intérim ou autre régime : le moteur applique les règles du contrat réel de chaque personne.</small></p></div>
+              <p class="hr-disclaimer">Repérage public pour la maquette. Les bulletins, contrats et accords à jour devront être vérifiés avec le conseil social du RKC avant paramétrage définitif.</p>
+            </article>
+            <article class="relay-scenario">
+              <div class="relay-title"><span>24H</span><p><small>CAS MÉTIER DIFFÉRENCIANT</small><b>Construire les relèves sans perdre la couverture.</b></p><button data-action="relay-info">Voir les contrôles →</button></div>
+              <div class="relay-timeline">
+                <div class="relay-hours"><span>SAM. 08:00</span><span>20:00</span><span>DIM. 08:00</span><span>20:00</span></div>
+                <div class="relay-track"><span class="relay-block relay-day" style="--left:0;--width:33.33"><b>Équipe jour A</b><small>responsable · piste · mécanique</small></span><span class="relay-block relay-night" style="--left:33.33;--width:33.34"><b>Équipe nuit</b><small>disponibilités · pauses · relève</small></span><span class="relay-block relay-day-two" style="--left:66.67;--width:33.33"><b>Équipe jour B</b><small>retours autorisés selon le repos</small></span></div>
+              </div>
+              <div class="relay-checks"><span><i>✓</i> Couverture continue par rôle</span><span><i>✓</i> Relèves et temps de transmission</span><span><i>✓</i> Repos avant tout retour</span><span><i>!</i> Vacations longues soumises à validation RH</span></div>
+            </article>
+            <div class="rules-layout">
+              <article class="rule-models">
+                <div class="panel-heading"><div><p>Modèles d’activité</p><h4>Comment le besoin est calculé</h4></div><button>Gérer les modèles →</button></div>
+                <div class="rule-model is-open"><button class="rule-model-head"><span class="model-color orange"></span><p><b>Location 1000 m</b><small>Modèle historique · à valider</small></p><em>Modifié il y a 12 j</em><i>⌃</i></button><div class="rule-model-body"><span><b>1 à 6</b><small>pilotes</small><em>1 personne</em></span><span><b>7 à 12</b><small>pilotes</small><em>2 personnes</em></span><span><b>13 à 24</b><small>pilotes</small><em>3 personnes</em></span><span><b>Forte affluence</b><small>selon le programme</small><em>Renfort conseillé</em></span><p>Exemple issu de l’historique ; les seuils actuels devront être confirmés par le RKC.</p></div></div>
+                <div class="rule-model"><button class="rule-model-head" data-demo-message="Le modèle Privatisation 1200 m croise karts, participants, durée, rôles et niveaux requis."><span class="model-color dark"></span><p><b>Privatisation 1200 m</b><small>Karts · participants · format</small></p><em>8 utilisations</em><i>⌄</i></button></div>
+                <div class="rule-model"><button class="rule-model-head" data-demo-message="Le modèle Location piste enfants dimensionne l’équipe selon les réservations, les karts et les horaires."><span class="model-color teal"></span><p><b>Location piste enfants</b><small>Réservations · karts · horaires</small></p><em>12 utilisations</em><i>⌄</i></button></div>
+                <div class="rule-model"><button class="rule-model-head" data-demo-message="Le modèle Endurance contrôle la couverture continue, les relèves, les pauses, la nuit et les repos."><span class="model-color gray"></span><p><b>Endurance 6 h / 24 h</b><small>Relais · nuit · rôles obligatoires</small></p><em>Règles spécifiques</em><i>⌄</i></button></div>
+              </article>
+              <aside class="learning-card" id="learning-card">
+                <span class="learning-badge">✦ SUGGESTION</span><p>Détecté dans les décisions du responsable</p><h4>Ajouter un renfort au-delà de 25 karts sur la 1200 m ?</h4><div class="learning-evidence"><span><b>8 / 8</b><small>dernières privatisations comparables</small></span><span><b>+1</b><small>renfort ajouté manuellement</small></span></div><p class="learning-copy">Cette suggestion ne devient jamais une règle sans validation. Elle pourra être modifiée ou désactivée à tout moment.</p><div class="threshold"><label>Seuil proposé</label><button aria-label="Diminuer le seuil">-</button><b id="threshold-value">25 karts</b><button aria-label="Augmenter le seuil">+</button></div><button class="button button-primary button-full" data-action="accept-rule">Accepter comme règle</button><button class="text-button" data-action="ignore-rule">Ignorer la suggestion</button>
+              </aside>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="emergency-story section-dark" id="adaptation">
+      <div class="emergency-copy">
+        <p class="eyebrow">03 · S’adapter sans reconstruire</p>
+        <h2>Une absence, un besoin imprévu, un nouvel événement.<br><em>Le planning reste ajustable.</em></h2>
+        <p>Maladie, retard, départ anticipé, renfort demandé ou nouvel événement : l’outil identifie uniquement ce qui est touché, conserve le reste du planning et propose des solutions compatibles. Le responsable garde la main sur chaque changement.</p>
+        <button class="button button-primary" data-action="open-emergency">Simuler un imprévu terrain</button>
+      </div>
+      <div class="emergency-demo">
+        <div class="emergency-header"><span class="emergency-pulse">!</span><p><b>IL ME MANQUE QUELQU’UN</b><small>Qui puis-je appeler maintenant ? · Samedi 07 juin · 15:24</small></p><span class="live-badge dark-live"><i></i> En direct</span></div>
+        <div class="emergency-issue"><span class="person-photo person-ines">IM</span><p><small>ABSENCE DÉCLARÉE</small><b>Inès quitte son poste à 16:00.</b><em>Commissaire 1200 m · poste pointage</em></p><i>→</i><span class="coverage-loss"><b>1</b><small>mission 1200 m fragilisée</small></span></div>
+        <div class="emergency-response"><p><span>✦</span><b>1 remplacement direct et 2 options partielles</b><small>Disponibilité, métier, niveau et repos vérifiés à 15:24.</small></p><ul><li><span>01</span><i class="person-avatar avatar-lucas">SC</i><p><b>Sarah C.</b><small>Piste location · Expert · arrivée 16:00</small></p><em>Recommandée</em></li><li><span>02</span><i class="person-avatar avatar-noa">NB</i><p><b>Noa B.</b><small>Sur site · piste location · Confirmé</small></p><em>Compatible</em></li><li><span>03</span><i class="person-avatar avatar-ines">YK</i><p><b>Yassine K.</b><small>Sur site · piste location · Débutant</small></p><em>Avec encadrement</em></li></ul><div><button data-demo-message="Une demande ciblée serait envoyée uniquement aux remplaçants compatibles.">Envoyer une demande ciblée</button><button data-demo-message="Le responsable pourrait affecter directement Sarah et notifier les personnes concernées.">Affecter directement</button></div></div>
+      </div>
+    </section>
+
+    <section class="conclusion-section" id="conclusion">
+      <p class="eyebrow eyebrow-dark">04 · Le résultat</p>
+      <h2>Un planning qui s’adapte.<br>Une proposition cohérente.<br><em>Une décision toujours humaine.</em></h2>
+      <div class="outcome-grid">
+        <article><span>01</span><i class="outcome-line"></i><h3>Centraliser</h3><p>Toute l’activité, les contrats, les métiers, les niveaux et les absences au même endroit.</p></article>
+        <article><span>02</span><i class="outcome-line"></i><h3>Proposer</h3><p>Une vision par personne, par activité et par semaine, avec les contrôles expliqués.</p></article>
+        <article><span>03</span><i class="outcome-line"></i><h3>Décider</h3><p>Le responsable ajuste, verrouille et publie la proposition une fois qu’elle lui convient.</p></article>
+        <article><span>04</span><i class="outcome-line"></i><h3>Réagir</h3><p>Maladie, absence, renfort ou nouvel événement : seule la partie concernée est recomposée.</p></article>
+      </div>
+      <div class="closing-card">
+        <div><span class="closing-mark">RKC</span><p><small>VISION PRODUIT</small><b>Une logique claire. Des ajustements simples. Toujours le contrôle.</b></p></div>
+        <a class="button button-dark" href="#experience">Revenir à la maquette ↑</a>
+      </div>
+      <p class="disclaimer">Cette maquette illustre le fonctionnement cible. Les règles contractuelles, seuils d’effectif et intégrations seront validés avec le RKC avant toute mise en production.</p>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="person-modal" hidden>
+    <section class="modal person-modal" role="dialog" aria-modal="true" aria-labelledby="person-modal-title">
+      <button class="modal-close" data-action="close-modal" aria-label="Fermer">×</button>
+      <div class="person-modal-head"><span class="person-photo person-camille" id="modal-avatar">CM</span><div><span class="contract-tag" id="modal-contract">CDI</span><h3 id="person-modal-title">Camille M.</h3><p id="modal-role">Responsable exploitation piste</p></div></div>
+      <div class="person-modal-grid"><span><small>Statut</small><b id="modal-status">Contrat actif</b></span><span><small>Objectif illustratif</small><b id="modal-hours">35 h / semaine</b></span><span><small>Indisponibilité</small><b id="modal-leave">Jeudi</b></span></div>
+      <div class="modal-section"><p class="screen-kicker">Métiers et niveaux</p><div class="modal-skills" id="modal-skills"></div></div>
+      <div class="modal-section"><p class="screen-kicker">Modèle de travail</p><p id="modal-pattern">Haute saison : mercredi à dimanche. Jours de repos proposés : lundi et mardi.</p></div>
+      <footer><button class="button button-light" data-action="close-modal">Fermer</button><button class="button button-dark" data-demo-message="Cette action ouvrirait l’édition du contrat, des métiers, des niveaux et des indisponibilités.">Modifier la fiche</button></footer>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="publish-modal" hidden>
+    <section class="modal publish-modal" role="dialog" aria-modal="true" aria-labelledby="publish-modal-title">
+      <button class="modal-close" data-action="close-modal" aria-label="Fermer">×</button>
+      <span class="modal-icon">↗</span><p class="screen-kicker">Dernière vérification</p><h3 id="publish-modal-title">Publier le planning d’exemple du 2 au 8 juin ?</h3><p>14 personnes recevront leur planning individuel. Trois sont concernées par une modification et deux devront confirmer leur présence.</p>
+      <div class="publish-modal-stats"><span><b>14</b><small>notifications</small></span><span><b>3</b><small>modifications</small></span><span><b>2</b><small>confirmations</small></span></div>
+      <label class="confirm-option"><input type="checkbox" id="publish-sms" checked><span></span><p><b>Envoyer maintenant par SMS</b><small>Chaque personne ne verra que ses propres missions.</small></p></label>
+      <footer><button class="button button-light" data-action="close-modal">Annuler</button><button class="button button-primary" data-action="confirm-publish">Confirmer la publication</button></footer>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="employee-plan-modal" hidden>
+    <section class="modal employee-plan-modal" role="dialog" aria-modal="true" aria-labelledby="employee-plan-title">
+      <button class="modal-close" data-action="close-modal" aria-label="Fermer">×</button>
+      <div class="employee-modal-heading"><p class="screen-kicker">Après la publication</p><h3 id="employee-plan-title">Chacun reçoit un planning personnel et lisible.</h3><p>Voici ce que voit Noa sur son téléphone, puis ce que le responsable suit côté administration.</p></div>
+      <div class="employee-modal-layout">
+        <div class="employee-phone">
+          <header><span class="phone-logo">RKC</span><small>Mon planning</small></header>
+          <div class="employee-date"><span>SAMEDI 7 JUIN · EXEMPLE</span><b>10:00 à 19:00</b><small>1 poste · pause relayée</small></div>
+          <div class="change-banner"><i>✓</i><p><b>Poste stable confirmé</b><small>Location piste enfants sur toute la journée</small></p></div>
+          <div class="employee-segments">
+            <article><time>10:00<small>13:00</small></time><i class="segment-line teal"></i><p><b>Pisteur · location piste enfants</b><small>Poste conservé · couverture continue</small></p></article>
+            <article class="transition-segment"><time>13:00<small>13:30</small></time><i class="segment-line break"></i><p><b>Pause relayée</b><small>Le poste reste couvert par le remplaçant prévu</small></p></article>
+            <article><time>13:30<small>19:00</small></time><i class="segment-line teal"></i><p><b>Pisteur · location piste enfants</b><small>Même poste · relève à 19:00</small></p></article>
+          </div>
+          <button class="employee-confirm" data-action="confirm-employee-plan">Confirmer ma présence</button>
+          <button class="employee-issue" data-action="employee-issue">Signaler un problème</button>
+        </div>
+        <aside class="confirmation-tracker">
+          <p class="screen-kicker">Suivi administrateur</p><h4>Confirmations en temps réel</h4>
+          <div class="tracker-progress"><span><b>12</b> / 14 confirmées</span><i><em style="width:86%"></em></i></div>
+          <ul>
+            <li><span class="person-avatar person-camille">CM</span><p><b>Camille M.</b><small>Planning reçu à 09:42</small></p><em class="tracker-ok">Confirmé</em></li>
+            <li><span class="person-avatar person-noa">NB</span><p><b>Noa B.</b><small>Poste stable à confirmer</small></p><em class="tracker-wait" id="noa-confirmation">À confirmer</em></li>
+            <li><span class="person-avatar person-ines">IM</span><p><b>Inès M.</b><small>Planning reçu à 09:43</small></p><em class="tracker-ok">Confirmé</em></li>
+            <li><span class="person-avatar avatar-lucas">SC</span><p><b>Sarah C.</b><small>SMS reçu · aucune action</small></p><em class="tracker-late">Relancer</em></li>
+          </ul>
+          <div class="tracker-note"><i>i</i><p><b>CDI et extras peuvent voir le même format.</b><small>Le sens de la confirmation dépend ensuite du contrat et du processus RH retenu.</small></p></div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <div class="emergency-drawer" id="emergency-drawer" aria-hidden="true">
+    <button class="drawer-scrim" data-action="close-emergency" aria-label="Fermer"></button>
+    <section class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="emergency-title">
+      <header><div><span class="emergency-pulse">!</span><p><small>URGENCE TERRAIN</small><b id="emergency-title">Trouver un remplaçant maintenant</b></p></div><button data-action="close-emergency">×</button></header>
+      <div class="emergency-steps"><span class="is-active"><i>1</i> Incident</span><span><i>2</i> Impact</span><span><i>3</i> Remplacement</span></div>
+      <div class="drawer-content" id="emergency-form">
+        <p class="screen-kicker">Que se passe-t-il ?</p><div class="incident-types"><button class="is-active">Maladie / accident</button><button>Départ anticipé</button><button>Absence</button><button>Renfort urgent</button></div>
+        <label>Personne concernée<select id="incident-person"><option>Inès M. : commissaire 1200 m</option><option>Noa B. : commissaire 1000 m</option><option>Malik B. : mécanique</option><option>Léa D. : accueil</option></select></label>
+        <div class="time-fields"><label>Indisponible à partir de<input type="time" value="16:00"></label><label>Jusqu’à<input type="time" value="20:00"></label></div>
+        <label>Commentaire facultatif<textarea rows="3" placeholder="Information utile pour le responsable…"></textarea></label>
+        <button class="button button-primary button-full" data-action="analyze-emergency">Analyser l’impact</button>
+      </div>
+      <div class="drawer-content emergency-results" id="emergency-results" hidden>
+        <div class="impact-banner"><span>!</span><p><b>Une mission devient non couverte à 16:00</b><small>Poste pointage sur la piste. Le reste du planning est conservé.</small></p></div>
+        <p class="screen-kicker">Remplaçants compatibles maintenant</p>
+        <div class="candidate is-best"><span class="candidate-rank">01</span><span class="person-avatar avatar-lucas">SC</span><p><b>Sarah C.</b><small>Disponible à 16:00 · arrivée estimée à l’heure</small><em>Piste location · Expert</em></p><strong>96 %<small>compatibilité</small></strong><button data-action="contact-candidate">Contacter</button></div>
+        <div class="candidate"><span class="candidate-rank">02</span><span class="person-avatar avatar-noa">NB</span><p><b>Noa B.</b><small>Disponible à 15:45 · sur site</small><em>Piste location · Confirmé</em></p><strong>88 %<small>compatibilité</small></strong><button data-action="contact-candidate">Contacter</button></div>
+        <div class="candidate"><span class="candidate-rank">03</span><span class="person-avatar avatar-ines">YK</span><p><b>Yassine K.</b><small>Disponible immédiatement · sur site</small><em>Piste location · Débutant · encadrement requis</em></p><strong>64 %<small>compatibilité</small></strong><button data-action="contact-candidate">Contacter</button></div>
+        <div class="emergency-options"><button>Élargir la recherche</button><button>Répartir la mission</button></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><span>✓</span><p><b id="toast-title">Mise à jour enregistrée</b><small id="toast-copy">La maquette a été actualisée.</small></p></div>
+
+  <footer class="site-footer"><span class="brand-mark">RKC</span><p>Concept interactif de planification · Identités, horaires et données fictifs.</p><a href="#top">Retour en haut ↑</a></footer>
+  <script src="./app.js"></script>
+</body>
+</html>
