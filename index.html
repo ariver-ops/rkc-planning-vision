@@ -1543,7 +1543,7 @@ span.bouton.orange:hover { background: var(--orange); }
         if (debutants.length && !expert) e.push(ctx.jour[j].nom + ' : débutant sans expert sur ' + libellePoste(ctx, poste));
       }
     }
-    regle('rkc', 'Au plus un débutant par poste, toujours aux côtés d’un expert', e);
+    regle('rkc', 'Au plus un débutant par poste, toujours aux côtés d’un expert (pour les pistards : un commissaire de piste aux côtés d’un directeur de course)', e);
 
     e = [];
     for (const p of d.personnes.filter((x) => x.type === 'CDI')) {
@@ -1703,7 +1703,7 @@ span.bouton.orange:hover { background: var(--orange); }
   const NBSP = ' ';
   function typo(s) {
     return String(s)
-      .replace(/(\d) (h|m|min|juin|mai|jours?|journées?|postes?|personnes?|pilotes?|extras?|CDI|heures|sur|commissaires?|réponses?|règles?)(?=[\s.,:;!?)]|$)/g, '$1' + NBSP + '$2')
+      .replace(/(\d) (h|m|min|juin|mai|ans|oui|non|jours?|journées?|postes?|personnes?|pilotes?|extras?|CDI|heures|sur|commissaires?|réponses?|règles?|soirées?|directeurs?|directrices?|mécaniciens?|créneaux?|semaines?|équipes?|groupes?)(?=[\s.,:;!?)]|$)/g, '$1' + NBSP + '$2')
       .replace(/ · /g, NBSP + '· ')
       .replace(/([A-Za-zÀ-ÿ]) ([A-Z]\.)(?=[\s,:;!?)]|$)/g, '$1' + NBSP + '$2')
       .replace(/ h (\d)/g, ' h' + NBSP + '$1')
@@ -1793,7 +1793,7 @@ span.bouton.orange:hover { background: var(--orange); }
   }
   function rendreTexteProgramme(cible) {
     cible.append(
-      h('p', null, 'Location sur la Piste 1000 m et la Piste Découverte tous les jours, licenciés sur la Piste 1200 m en journée, ' + groupes.length + ' soirées (' + soirees() + ') et les ' + course.libelle + ' le dimanche.'),
+      h('p', null, 'Location sur la Piste 1000 m et la Piste Découverte (la piste enfants) tous les jours, licenciés sur la Piste 1200 m en journée, ' + groupes.length + ' soirées (' + soirees() + ') et les ' + course.libelle + ' le dimanche.'),
       h('p', null, 'Chaque type d’activité appelle ses rôles et son effectif. Pour un groupe, l’effectif suit aussi le nombre de pilotes, écrit au programme.'),
       h('p', { class: 'note' }, 'Quand la Piste 1200 m est réservée aux licenciés, personne en piste : ils roulent avec leurs karts. Le magasin compétition, lui, est tenu tous les jours.'));
   }
@@ -1808,7 +1808,7 @@ span.bouton.orange:hover { background: var(--orange); }
       else if (a.type === 'enfants') { titre = 'Location'; classe = 'enfants'; }
       else if (a.type === 'licencies') { titre = j.cle === 'sam' ? 'Réservée aux licenciés' : 'Licenciés'; classe = 'p1200'; }
       else if (a.type === 'course') { titre = a.libelle; classe = 'course'; detail = a.piste + ' · endurance par équipes'; }
-      else { titre = a.libelle; classe = 'soir'; detail = a.piste + ' · ' + a.pilotes + ' pilotes'; }
+      else { titre = a.libelle; classe = 'soir'; detail = a.piste + ' · ' + (a.format ? a.format.charAt(0).toLowerCase() + a.format.slice(1) + ' · ' : '') + a.pilotes + ' pilotes'; }
       return { debut: x.debut, fin: x.fin, titre, classe, detail };
     }).sort((x, y) => x.debut - y.debut || x.fin - y.fin);
   }
@@ -1974,7 +1974,7 @@ span.bouton.orange:hover { background: var(--orange); }
   function rendreDisponibilites(cible) {
     const sol = d.sollicites.map(personne);
     const recues = sol.filter((p) => d.reponses[p.id]).length;
-    const tete = h('div', { class: 'dispos-ligne tete', 'aria-hidden': 'true' }, h('span', null, 'Extra'), d.jours.map((j) => h('span', null, j.court.replace('.', '') + ' ' + j.date)));
+    const tete = h('div', { class: 'dispos-ligne tete', 'aria-hidden': 'true' }, h('span', null, 'Extra'), d.jours.map((j) => h('span', null, j.court + ' ' + j.date)));
     const lignes = sol.map((p) => {
       const attente = !d.reponses[p.id];
       return h('div', { class: 'dispos-ligne' + (attente ? ' attente' : '') },
@@ -2102,7 +2102,7 @@ span.bouton.orange:hover { background: var(--orange); }
     const vides = (plan.manques || []).length;
     cible.append(h('div', { class: 'ecran' },
       h('div', { class: 'ecran-barre' },
-        h('h4', null, 'Proposition de planning · semaine du 2 au 8 juin'),
+        h('h4', null, 'Proposition de planning · semaine 23, du 2 au 8 juin'),
         vides
           ? h('span', { class: 'pastille rouge' }, h('span', { class: 'point' }), pluriel(vides, 'poste à pourvoir', 'postes à pourvoir'))
           : h('span', { class: 'pastille vert' }, h('span', { class: 'point' }), 'Tous les postes sont tenus')),
@@ -2157,6 +2157,16 @@ span.bouton.orange:hover { background: var(--orange); }
     return null;
   }
 
+  // « , aux côtés de [nom], directrice de course » : l'expert de son poste, ce jour-là
+  function aCotes(p) {
+    for (const j of d.jours) {
+      const a = (PLAN.affectations[j.cle] || []).find((x) => x.personne === p.id);
+      if (!a) continue;
+      const exp = (PLAN.affectations[j.cle] || []).find((x) => x.place.poste === a.place.poste && x.place.expert);
+      if (exp) { const e = personne(exp.personne); return ', aux côtés de ' + e.nom + ', ' + roleAffiche(e, exp.place.role).toLowerCase(); }
+    }
+    return '';
+  }
   function rendreNotesPlanning(cible, plan) {
     const jours = (id) => joursTravailles(plan, id).length;
     const fortes = d.personnes.filter((p) => p.type === 'Extra' && p.ponderation === 'forte' && jours(p.id));
@@ -2172,7 +2182,7 @@ span.bouton.orange:hover { background: var(--orange); }
       }).join(' ; ');
       const maxNormale = Math.max(...normales.map((p) => jours(p.id)));
       ecran.append(h('p', { class: 'ponderation-resultat', style: 'margin-top:18px' }, h('strong', null, 'La pondération se lit dans le résultat. '),
-        'Forte : ' + fortesTxt + '. Normale : ' + maxNormale + ' jours au plus, même pour qui en avait donné davantage. Faible, pour qui débute : ' + faibles.map((p) => prenom(p) + ' ' + pluriel(jours(p.id), 'jour', 'jours')).join(', ') + ', toujours aux côtés d’un directeur de course.'));
+        'Forte : ' + fortesTxt + '. Normale : ' + maxNormale + ' jours au plus, même pour qui en avait donné davantage. Faible, pour qui débute : ' + faibles.map((p) => prenom(p) + ' ' + pluriel(jours(p.id), 'jour', 'jours') + aCotes(p)).join(', ') + '.'));
     }
     const ex = exRepos;
     if (ex) {
@@ -2213,7 +2223,7 @@ span.bouton.orange:hover { background: var(--orange); }
             h('div', null, h('dt', null, 'Postes à pourvoir'), h('dd', null, String((PLAN.manques || []).length)))),
           h('div', { class: 'actions-validation' },
             h('span', { class: 'bouton', 'aria-hidden': 'true' }, 'Valider et envoyer')))),
-      bulleSMS('Jeudi 29 mai, 19 h', ['Bonjour ' + prenom(exemple) + ', votre planning de la semaine du 2 au 8 juin :', lignesSms, 'L’heure indiquée est celle de la prise de poste. Répondez OK pour valider.'])));
+      bulleSMS('Jeudi 29 mai, 19 h', ['Bonjour ' + prenom(exemple) + ', votre planning de la semaine du 2 au 8 juin :', lignesSms, 'L’heure de début est celle de la prise de poste, pas de l’arrivée sur le site. Répondez OK pour valider.'])));
   }
 
   // ---------- 7. Les modifications et urgences ----------
@@ -2303,7 +2313,8 @@ span.bouton.orange:hover { background: var(--orange); }
       h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 1)), h('p', null, 'L’outil calcule l’équipe comme pour tout groupe : ' + a.pilotes + ' pilotes, donc ' + equipe + '. ' + (tout ? pluriel(tout, 'extra encore libre avait', 'extras encore libres avaient') + ' déjà donné ce créneau.' : 'Aucun extra encore libre ce soir-là n’avait donné ce créneau.'))),
       h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 2)), h('p', null, 'Le responsable envoie en un geste le SMS « Besoin de monde ' + j.nom.toLowerCase() + ' soir » aux ' + cibles.size + ' extras que l’outil a retenus : bon rôle, bon niveau, reposés, pas déjà en poste, sous leur plafond de pondération.')),
       h('li', { class: 'fin' }, h('span', { class: 'heure' }, derniere), h('p', null, oui.length + ' oui et ' + non.length + ' non : ' + (pourvues === nPlaces ? 'l’équipe est complète. Le responsable valide ; chacun reçoit son poste et son horaire. Le reste du planning ne bouge pas.' : (nPlaces - pourvues) + ' postes restent à pourvoir.'))));
-    const lignes = apres.places.map((x) => {
+    const ordreRole = (x) => (x.place.expert ? 0 : x.place.metier === 'piste' ? 1 : 2);
+    const lignes = apres.places.slice().sort((x, y) => ordreRole(x) - ordreRole(y)).map((x) => {
       const p = x.choisi && personne(x.choisi);
       const rep = p && s.reponsesDemande[p.id];
       return h('li', { class: 'place-ajout' + (p ? '' : ' a-pourvoir') },
@@ -2332,7 +2343,7 @@ span.bouton.orange:hover { background: var(--orange); }
     }
     for (const s of d.imprevus) onglets.append(h('button', { type: 'button', role: 'tab', 'data-id': s.id, onclick: () => montrer(s.id) }, h('strong', null, s.titre), h('span', null, s.quand)));
     cible.append(onglets, zone,
-      h('p', { class: 'autres-cas' }, h('strong', null, 'L’ordre de recherche : '), 'd’abord un extra disponible à ces heures-là selon sa réponse, puis un CDI en repos, avec son accord, enfin un extra non sollicité, à appeler directement. De la même façon : un retard, un désistement la veille, une soirée qui finit plus tard (l’outil revérifie le repos du lendemain), une piste fermée. Chaque changement repasse par les mêmes règles.'));
+      h('p', { class: 'autres-cas' }, h('strong', null, 'L’ordre de recherche : '), 'd’abord un extra disponible à ces heures-là selon sa réponse, puis un CDI en repos, avec son accord, enfin un extra non sollicité, à appeler directement. De la même façon : un retard, un désistement la veille, une piste fermée. Chaque changement repasse par les mêmes règles.'));
     montrer(d.imprevus[0].id);
   }
 
