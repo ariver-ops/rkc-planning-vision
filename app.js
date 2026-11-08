@@ -35,7 +35,7 @@
       number: "02",
       kicker: "Connaître les équipes",
       title: "Le système sait qui peut faire quoi.",
-      text: "Chaque profil réunit son contrat, ses métiers, ses rôles, son niveau débutant, confirmé ou expert, son temps de travail, ses indisponibilités et ses repos.",
+      text: "Chaque profil réunit son contrat, ses métiers, son niveau débutant, confirmé ou expert dans chacun d’eux, son temps de travail, ses indisponibilités et ses repos.",
       bullets: ["CDI disponibles intégrés automatiquement", "Extras connus et pondérés", "Congés, arrêts et déplacements visibles"]
     },
     selection: {
@@ -56,7 +56,7 @@
       number: "05",
       kicker: "Composer la semaine",
       title: "Une proposition cohérente est préparée.",
-      text: "Les CDI disponibles, les extras ayant répondu, les besoins, les niveaux, les rôles, les repos et les pondérations entre extras sont croisés pour préparer le planning.",
+      text: "Les CDI disponibles, les extras ayant répondu, les besoins, les métiers, les niveaux, les repos et les pondérations entre extras sont croisés pour préparer le planning.",
       bullets: ["CDI intégrés selon leur contrat", "Extras répartis selon leur pondération", "Chaque affectation reste expliquée"]
     },
     decision: {
@@ -70,7 +70,7 @@
 
   const tourSteps = [
     { screen: "programme", title: "1 · L’activité de la semaine est déjà connue.", copy: "Locations, privatisations, trophées licenciés et réservations de roulage deviennent des besoins ajustables." },
-    { screen: "team", title: "2 · Le RKC connaît réellement son équipe.", copy: "Contrats, métiers, niveaux débutant, confirmé ou expert, rôles, congés, arrêts, déplacements, heures et repos forment un référentiel humain exploitable." },
+    { screen: "team", title: "2 · Le RKC connaît réellement son équipe.", copy: "Contrats, métiers, niveaux débutant, confirmé ou expert dans chaque métier, congés, arrêts, jours off et repos entre missions forment un référentiel humain exploitable." },
     { screen: "availability", target: ".solicitation-map", title: "3 · Le responsable choisit les extras à solliciter.", copy: "La liste reste entièrement pilotée par le RKC et peut évoluer au fil de la semaine." },
     { screen: "availability", target: "#phone-demo", title: "4 · Chaque extra renseigne ses disponibilités.", copy: "Le lien personnel reste accessible ; une nouvelle demande invite à mettre la semaine à jour avant le calcul." },
     { screen: "planning", title: "5 · Une proposition cohérente est préparée.", copy: "Les CDI disponibles sont intégrés automatiquement. Les extras répondants complètent le besoin selon leur niveau et leur pondération." },
@@ -87,7 +87,7 @@
     location: {
       tag: "1000 M", kicker: "Location 1000 m", title: "62 réservations · 7 vagues",
       facts: [["Activité", "Location"], ["Horaire", "09:00 à 20:00"], ["Piste", "1000 m"]], total: "4 à 5",
-      roles: [["RP", "Responsable piste location", "Rôle attribué · briefing requis", "1"], ["CP", "Pisteurs location", "Effectif modulé selon les vagues", "3 à 4"]],
+      roles: [["RP", "Responsable piste location", "Niveau expert · briefing inclus", "1"], ["CP", "Pisteurs location", "Effectif modulé selon les vagues", "3 à 4"]],
       note: "Le renfort est conseillé sur les pics de réservations, pas sur toute la journée."
     },
     atlas: {
@@ -98,7 +98,7 @@
     discovery: {
       tag: "PISTE ENFANTS", kicker: "Location piste enfants", title: "18 réservations · 4 vagues",
       facts: [["Activité", "Location"], ["Horaire", "10:00 à 19:00"], ["Piste", "Piste enfants"]], total: "2",
-      roles: [["RP", "Responsable piste location", "Niveau expert · briefing attribué", "1"], ["PL", "Pisteur location", "Niveau confirmé ou débutant encadré", "1"]],
+      roles: [["RP", "Responsable piste location", "Niveau expert · briefing inclus", "1"], ["PL", "Pisteur location", "Niveau confirmé ou débutant encadré", "1"]],
       note: "Le besoin est propre à la piste enfants et indépendant de la 1000 m."
     },
     tg: {
@@ -114,7 +114,7 @@
       initials: "CM", avatarClass: "person-camille", contract: "CDI", name: "Camille M.", role: "Responsable exploitation piste",
       status: "Contrat actif", hours: "35 h / semaine", leave: "Jeudi",
       pattern: "Haute saison : mercredi à dimanche. Jours de repos proposés : lundi et mardi.",
-      skills: [["Piste location", "Expert"], ["Responsable piste", "Attribué"], ["Briefing", "Attribué"], ["Direction de course", "Attribué"]]
+      skills: [["Piste location", "Expert"]]
     },
     malik: {
       initials: "MB", avatarClass: "person-malik", contract: "CDI", name: "Malik B.", role: "Mécanique · renfort piste",
@@ -125,26 +125,26 @@
     lea: {
       initials: "LD", avatarClass: "person-lea", contract: "CDI", name: "Léa D.", role: "Accueil · magasin",
       status: "Contrat actif", hours: "35 h / semaine", leave: "Mardi",
-      pattern: "Accueil principal, avec magasin compétition, briefing et renfort piste enfants selon l’affluence.",
+      pattern: "Accueil principal et magasin compétition. Une affectation reste stable sur toute sa plage d’ouverture.",
       skills: [["Accueil", "Expert"], ["Magasin compétition", "Confirmé"], ["Piste location", "Débutant"]]
     },
     noa: {
       initials: "NB", avatarClass: "person-noa", contract: "EXTRA", name: "Noa B.", role: "Commissaire de piste",
       status: "Profil actif", hours: "Selon affectations", leave: "Disponible samedi",
       pattern: "Pondération normale. Ses disponibilités de nuit sont déclarées dans sa réponse hebdomadaire.",
-      skills: [["Piste location", "Confirmé"], ["Accueil", "Confirmé"], ["Pondération extra", "Normale"]]
+      skills: [["Piste location", "Confirmé"], ["Accueil", "Confirmé"]]
     },
     ines: {
       initials: "IM", avatarClass: "person-ines", contract: "EXTRA", name: "Inès M.", role: "Commissaire de piste · spécialisation événements",
       status: "Profil actif", hours: "Selon affectations", leave: "Disponible ven. à dim.",
       pattern: "Pondération forte. Profil expérimenté sur les événements 1200 m.",
-      skills: [["Piste location", "Expert"], ["Briefing", "Attribué"], ["Pondération extra", "Forte"]]
+      skills: [["Piste location", "Expert"]]
     },
     yassine: {
       initials: "YK", avatarClass: "person-yassine", contract: "EXTRA", name: "Yassine K.", role: "Accueil · commissaire",
       status: "Profil actif", hours: "Selon affectations", leave: "Réponse attendue",
       pattern: "Pondération faible pendant sa montée en expérience sur la piste location.",
-      skills: [["Accueil", "Confirmé"], ["Piste location", "Débutant"], ["Pondération extra", "Faible"]]
+      skills: [["Accueil", "Confirmé"], ["Piste location", "Débutant"]]
     }
   };
 
@@ -152,51 +152,49 @@
     person: [
       { label: "Camille M.", sub: "CDI · Resp. piste · 35 h / 35 h", avatar: "CM", avatarClass: "person-camille", shifts: [
         [4, 29, "orange", "Resp. location", "08:30 à 12:00", "Camille maîtrise la 1000 m et conserve la responsabilité de l’ouverture."],
-        [30, 6, "break", "", "", "Pause planifiée avant la privatisation Atlas."],
-        [37, 11, "black", "Briefing Atlas", "13:15 à 14:00", "Camille possède le rôle briefing et peut enchaîner sans changement d’équipe."],
-        [48, 31, "black", "Resp. privatisation Atlas", "14:00 à 18:00", "Camille possède le rôle responsable piste requis pour la privatisation."],
-        [80, 12, "orange", "Renfort location", "18:00 à 19:30", "Ce segment complète la journée de Camille sans mobiliser un extra supplémentaire."]
+        [30, 6, "break", "", "", "Pause relayée : la responsabilité de la piste reste couverte."],
+        [37, 55, "orange", "Resp. location", "13:15 à 20:00", "Camille reprend le même poste jusqu’à la fermeture de la location 1000 m."]
       ]},
       { label: "Malik B.", sub: "CDI · Mécanique · 32 h / 35 h", avatar: "MB", avatarClass: "person-malik", shifts: [
-        [0, 38, "gray", "Préparation endurance", "08:00 à 13:00", "Malik possède la catégorie mécanique compétition et connaît la flotte préparée."],
-        [45, 37, "orange", "Support technique", "13:30 à 18:30", "Disponible en renfort technique à proximité des pistes."]
+        [0, 38, "gray", "Atelier / mécanique", "08:00 à 13:00", "Malik reste affecté à la mécanique et prépare la flotte."],
+        [38, 6, "break", "", "", "Pause relayée : l’atelier reste couvert."],
+        [44, 39, "gray", "Atelier / mécanique", "13:30 à 18:30", "Malik reprend le même poste pour le support de l’après-midi."]
       ]},
       { label: "Léa D.", sub: "CDI · Accueil · 35 h / 35 h", avatar: "LD", avatarClass: "person-lea", shifts: [
         [8, 26, "gray", "Accueil / magasin", "09:00 à 12:30", "Léa est référente accueil et encaissement."],
-        [38, 6, "break", "", "", "Pause planifiée."],
-        [46, 31, "teal", "Location piste enfants", "13:45 à 17:45", "Léa couvre la piste enfants sous la supervision prévue."],
-        [78, 15, "gray", "Accueil", "18:00 à 20:00", "Retour à l’accueil pour la fin de journée."]
+        [34, 6, "break", "", "", "Pause relayée : l’accueil et le magasin restent ouverts."],
+        [40, 53, "gray", "Accueil / magasin", "13:15 à 20:00", "Léa reprend le même poste jusqu’à la fermeture."]
       ]},
-      { label: "Noa B.", sub: "Extra · Piste location confirmé · 12 h", avatar: "NB", avatarClass: "person-noa", shifts: [
-        [8, 12, "gray", "Accueil", "09:00 à 10:30", "Noa est transverse. Cette préférence souple peut être arbitrée."],
-        [21, 34, "orange", "Pisteur location", "10:30 à 15:00", "Noa est confirmé en piste location et disponible sur ce créneau."],
-        [55, 3, "break", "", "", "Pause et déplacement vers la piste enfants."],
-        [58, 29, "teal", "Location piste enfants", "15:30 à 19:00", "Continuité sur une activité compatible avec ses rôles."]
+      { label: "Noa B.", sub: "Extra · Piste location confirmé · 9 h", avatar: "NB", avatarClass: "person-noa", shifts: [
+        [16, 24, "teal", "Piste enfants", "10:00 à 13:00", "Noa couvre la piste enfants sur toute sa plage d’ouverture."],
+        [40, 4, "break", "", "", "Pause relayée : la piste enfants reste couverte."],
+        [44, 43, "teal", "Piste enfants", "13:30 à 19:00", "Noa reprend le même poste jusqu’à la relève."]
       ]},
       { label: "Inès M.", sub: "Extra · Piste location expert · 10 h", avatar: "IM", avatarClass: "person-ines", shifts: [
         [44, 39, "black", "Commissaire · poste pointage", "13:30 à 18:30", "Inès est experte en piste location et disponible sur toute la durée."]
       ]}
     ],
     track: [
-      { label: "Piste 1000 m", sub: "Location", avatar: "10", avatarClass: "avatar-noa", shifts: [[7, 85, "orange", "Camille · Noa · 2 renforts", "09:00 à 20:00", "La couverture évolue de 4 à 5 personnes selon les réservations."]]},
-      { label: "Piste 1200 m", sub: "Privatisation Atlas", avatar: "12", avatarClass: "avatar-ines", shifts: [[37, 11, "black", "Briefing · Camille", "13:15 à 14:00", "Le rôle briefing est porté par Camille."], [48, 31, "black", "Camille · Inès · équipe", "14:00 à 18:00", "Un responsable piste, quatre commissaires et tous les postes sont couverts."]]},
-      { label: "Piste enfants", sub: "Location", avatar: "PE", avatarClass: "person-lea", shifts: [[16, 68, "teal", "Léa · Noa", "10:00 à 19:00", "Deux personnes couvrent les quatre vagues réservées."]]},
-      { label: "Accueil", sub: "Accueil et magasin", avatar: "A", avatarClass: "person-yassine", shifts: [[7, 87, "gray", "Léa · Yassine · Noa", "09:00 à 20:00", "La composition varie selon les pics d’arrivée."]]},
+      { label: "Piste 1000 m", sub: "Location", avatar: "10", avatarClass: "avatar-noa", shifts: [[7, 85, "orange", "Camille · équipe dédiée", "09:00 à 20:00", "Quatre à cinq personnes restent affectées à la location selon les réservations."]]},
+      { label: "Piste 1200 m", sub: "Privatisation Atlas", avatar: "12", avatarClass: "avatar-ines", shifts: [[37, 11, "black", "Briefing · Sarah", "13:15 à 14:00", "Le briefing est assuré par un profil expert prévu sur l’événement."], [48, 31, "black", "Sarah · Inès · équipe", "14:00 à 18:00", "L’équipe dédiée reste sur la privatisation jusqu’à la fin."]]},
+      { label: "Piste enfants", sub: "Location", avatar: "PE", avatarClass: "person-lea", shifts: [[16, 68, "teal", "Noa · équipe dédiée", "10:00 à 19:00", "La piste enfants reste couverte sur toute son ouverture."]]},
+      { label: "Accueil", sub: "Accueil et magasin", avatar: "A", avatarClass: "person-yassine", shifts: [[7, 87, "gray", "Léa · Yassine", "09:00 à 20:00", "L’accueil et le magasin restent couverts sans interruption."]]},
       { label: "Atelier", sub: "Mécanique", avatar: "M", avatarClass: "person-malik", shifts: [[0, 38, "gray", "Malik · 2 mécaniciens", "08:00 à 13:00", "Préparation puis support disponible l’après-midi."]]}
     ],
     role: [
-      { label: "Responsables piste", sub: "Rôle attribué", avatar: "RP", avatarClass: "person-camille", shifts: [[4, 29, "orange", "Camille · 1000 m", "08:30 à 12:00", "Responsabilité piste location 1000 m."], [48, 31, "black", "Camille · 1200 m", "14:00 à 18:00", "Responsabilité de la privatisation 1200 m."]]},
+      { label: "Responsables piste", sub: "Niveau requis", avatar: "RP", avatarClass: "person-camille", shifts: [[4, 29, "orange", "Camille · 1000 m", "08:30 à 12:00", "Camille conserve la responsabilité de la location 1000 m."], [37, 55, "orange", "Camille · 1000 m", "13:15 à 20:00", "Même affectation après une pause relayée."]]},
       { label: "Commissaires", sub: "7 personnes", avatar: "CP", avatarClass: "person-noa", shifts: [[7, 85, "orange", "Équipe location", "09:00 à 20:00", "Effectif modulé selon le flux."], [44, 39, "black", "Équipe Atlas", "13:30 à 18:30", "Équipe événementielle dédiée."]]},
-      { label: "Briefing", sub: "Rôle attribué", avatar: "BR", avatarClass: "person-lea", shifts: [[6, 12, "orange", "Briefings location", "08:45 à 10:15", "Briefings en série sur la 1000 m."], [37, 11, "black", "Camille · Atlas", "13:15 à 14:00", "Briefing de la privatisation Atlas."]]},
+      { label: "Briefing", sub: "Capacité liée au niveau", avatar: "BR", avatarClass: "person-lea", shifts: [[6, 12, "orange", "Briefings location", "08:45 à 10:15", "Briefings en série sur la 1000 m."], [37, 11, "black", "Sarah · Atlas", "13:15 à 14:00", "Briefing de la privatisation Atlas par un profil expert."]]},
       { label: "Mécanique", sub: "3 personnes", avatar: "ME", avatarClass: "person-malik", shifts: [[0, 38, "gray", "Préparation endurance", "08:00 à 13:00", "La catégorie mécanique compétition est requise."], [40, 42, "gray", "Support terrain", "13:15 à 18:30", "Deux personnes restent mobilisables."]]},
       { label: "Accueil / magasin", sub: "3 personnes", avatar: "AC", avatarClass: "person-yassine", shifts: [[7, 87, "gray", "Léa · Yassine · renfort", "09:00 à 20:00", "Couverture continue et pics d’arrivée."]]}
     ]
   };
 
   const mobilePlanCards = [
-    { avatar: "CM", avatarClass: "person-camille", name: "Camille M.", role: "CDI · responsable piste", hours: "35 h", target: "/ 35 h cible", segments: [["VEN. 06", "Location 1000 m", "08:30 à 17:00 · pause incluse"], ["SAM. 07", "Briefing + privatisation Atlas", "13:15 à 18:00"], ["DIM. 08", "Direction trophée licenciés", "08:00 à 15:00"]], footer: "✓ Heures et repos conformes" },
+    { avatar: "CM", avatarClass: "person-camille", name: "Camille M.", role: "CDI · responsable piste", hours: "35 h", target: "/ 35 h cible", segments: [["VEN. 06", "Location 1000 m", "08:30 à 17:00 · poste conservé"], ["SAM. 07", "Responsable location 1000 m", "08:30 à 20:00 · pause relayée"], ["DIM. 08", "Direction trophée licenciés", "08:00 à 15:00 · poste conservé"]], footer: "✓ Affectations stables et repos conformes" },
     { avatar: "MB", avatarClass: "person-malik", name: "Malik B.", role: "CDI · mécanique", hours: "32 h", target: "/ 35 h cible", segments: [["VEN. 06", "Préparation endurance", "08:00 à 13:00"], ["SAM. 07", "Mécanique + support terrain", "08:00 à 18:30 · pause incluse"], ["DIM. 08", "Atelier", "09:00 à 16:00"]], footer: "✓ Compétence mécanique couverte" },
-    { avatar: "NB", avatarClass: "person-noa", name: "Noa B.", role: "Extra · piste location · Confirmé", hours: "12 h", target: "3 missions", segments: [["SAM. 07", "Accueil → location 1000 m", "09:00 à 15:00 · transition prévue"], ["SAM. 07", "Location piste enfants", "15:30 à 19:00"]], footer: "! Préférence accueil ou piste à arbitrer", warning: true },
+    { avatar: "LD", avatarClass: "person-lea", name: "Léa D.", role: "CDI · accueil et magasin", hours: "35 h", target: "/ 35 h cible", segments: [["VEN. 06", "Accueil et magasin", "09:00 à 18:00 · poste conservé"], ["SAM. 07", "Accueil et magasin", "09:00 à 20:00 · pause relayée"], ["DIM. 08", "Accueil et magasin", "09:00 à 18:00 · poste conservé"]], footer: "✓ Accueil couvert sur toute l’ouverture" },
+    { avatar: "NB", avatarClass: "person-noa", name: "Noa B.", role: "Extra · piste location · Confirmé", hours: "21 h", target: "3 journées", segments: [["VEN. 06", "Location 1000 m", "17:00 à 22:00 · poste conservé"], ["SAM. 07", "Location piste enfants", "10:00 à 19:00 · pause relayée"], ["DIM. 08", "Location 1000 m", "10:00 à 18:00 · poste conservé"]], footer: "✓ Repos entre journées vérifié" },
     { avatar: "IM", avatarClass: "person-ines", name: "Inès M.", role: "Extra · piste location · Expert", hours: "10 h", target: "2 missions", segments: [["SAM. 07", "Privatisation Atlas · poste pointage", "13:30 à 18:30"], ["DIM. 08", "Trophée licenciés · poste pointage", "09:00 à 14:00"]], footer: "✓ Repos et niveau vérifiés" }
   ];
 
@@ -284,9 +282,9 @@
       if (eventTotal) eventTotal.textContent = data.total;
     }
     const roles = data.adjustable
-      ? `<div class="need-role"><span class="role-symbol">RP</span><p><b>Responsable piste</b><small>Rôle attribué · niveau expert</small></p><div class="stepper"><button aria-label="Diminuer le nombre de responsables" data-need="manager" data-delta="-1">-</button><b id="need-manager">1</b><button aria-label="Augmenter le nombre de responsables" data-need="manager" data-delta="1">+</button></div></div>
+      ? `<div class="need-role"><span class="role-symbol">RP</span><p><b>Responsable piste</b><small>Niveau expert en piste location</small></p><div class="stepper"><button aria-label="Diminuer le nombre de responsables" data-need="manager" data-delta="-1">-</button><b id="need-manager">1</b><button aria-label="Augmenter le nombre de responsables" data-need="manager" data-delta="1">+</button></div></div>
          <div class="need-role"><span class="role-symbol">PL</span><p><b>Pisteurs location</b><small>Un débutant reste encadré par un confirmé ou un expert</small></p><div class="stepper"><button aria-label="Diminuer le nombre de pisteurs" data-need="marshal" data-delta="-1">-</button><b id="need-marshal">4</b><button aria-label="Augmenter le nombre de pisteurs" data-need="marshal" data-delta="1">+</button></div></div>
-         <div class="need-role"><span class="role-symbol">BR</span><p><b>Rôle briefing</b><small>Attribué à au moins 1 des 5 personnes</small></p><span class="skill-required">Requis ✓</span></div>`
+         <div class="need-role"><span class="role-symbol">BR</span><p><b>Capacité briefing</b><small>Incluse dans le niveau expert en piste location</small></p><span class="skill-required">Requis ✓</span></div>`
       : data.roles.map(([symbol, title, detail, count]) => `<div class="need-role"><span class="role-symbol">${symbol}</span><p><b>${title}</b><small>${detail}</small></p><span class="skill-required">${count}</span></div>`).join("");
     panel.innerHTML = `
       <div class="needs-head"><span class="event-tag">${data.tag}</span><button aria-label="Fermer" data-action="close-needs">×</button></div>
@@ -423,7 +421,7 @@
     const title = shift[2] === "break" ? `Pause de ${row.label}` : `${row.label} · ${shift[3]}`;
     const checks = shift[2] === "break"
       ? ["Amplitude de la journée contrôlée", "Temps de pause réservé", "Aucune mission en chevauchement"]
-      : ["Métier, niveau et rôles vérifiés", "Disponibilité renseignée", "Aucun chevauchement", "Impact sur les heures calculé"];
+      : ["Métier et niveau vérifiés", "Disponibilité renseignée", "Aucun chevauchement", "Impact sur les heures calculé"];
     card.innerHTML = `
       <span class="explanation-icon">✦</span>
       <p class="screen-kicker">Pourquoi cette proposition ?</p>
@@ -607,7 +605,7 @@
         showToast("Mode libre activé", "Explorez les écrans dans l’ordre qui vous convient.");
         break;
       case "relay-info":
-        showToast("Contrôles d’un événement 24 h", "Relèves, repos, nuit, pauses, catégories et rôles sont vérifiés avant toute proposition.");
+        showToast("Contrôles d’un événement 24 h", "Relèves, repos, nuit, pauses, métiers et niveaux sont vérifiés avant toute proposition.");
         break;
       case "open-publish": openPublish(); break;
       case "confirm-publish": confirmPublish(); break;
