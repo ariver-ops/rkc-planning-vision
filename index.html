@@ -519,6 +519,9 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
 .validation h3 { font-size: 20px; margin-bottom: 4px; }
 .validation p { color: var(--encre-2); max-width: 720px; }
 
+.famille-regles { margin: 6px 18px 0; padding-top: 12px; font-size: 14px; font-weight: 750; color: var(--encre); }
+.famille-regles + .regles { padding-top: 8px; }
+
 </style>
 </head>
 <body>
@@ -1028,6 +1031,7 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
     // Coût de chaque personne sur chaque place : CDI d'abord et à leur métier principal, extras selon leur pondération
     const prix = (pl, p) => {
       if (!apte(p, pl) || !reposOk(etat, p.id, iJour, pl)) return INTERDIT;
+      if (etat.interdits && etat.interdits.has(p.id + '|' + jour)) return INTERDIT;
       const niv = RANG[p.metiers[pl.metier]];
       // Garder les experts pour les places d'expert, et d'abord les experts CDI
       const gaspille = !pl.expert && niv === 3 ? (p.type === 'CDI' ? 8 : 5) : 0;
@@ -1065,8 +1069,8 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
     return { affectations, vides, cout: total };
   }
 
-  function affecterSemaine(ctx, joursCDI, extras, reponses, ajouts) {
-    const etat = { joursExtra: {}, fin: {} };
+  function affecterSemaine(ctx, joursCDI, extras, reponses, ajouts, interdits) {
+    const etat = { joursExtra: {}, fin: {}, interdits: interdits || new Set() };
     const affectations = {};
     const manques = [];
     let cout = 0;
@@ -1092,6 +1096,48 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
     return { joursCDI, affectations, manques, cout };
   }
 
+  // ---------- 2 bis. Le repos hebdomadaire : au moins 35 heures d'affilée dans la semaine ----------
+  const REPOS_HEBDO = 35 * 60;
+  function plusLongRepos(missions, finSemaine) {
+    if (!missions.length) return finSemaine;
+    const m = missions.slice().sort((x, y) => x[0] - y[0]);
+    let plus = m[0][0];
+    for (let k = 1; k < m.length; k++) plus = Math.max(plus, m[k][0] - m[k - 1][1]);
+    return Math.max(plus, finSemaine - m[m.length - 1][1]);
+  }
+  function missionsDe(ctx, plan, id) {
+    const res = [];
+    ctx.jours.forEach((j, i) => { for (const a of plan.affectations[j] || []) if (a.personne === id) res.push([i * 1440 + a.place.debut, i * 1440 + a.place.fin]); });
+    return res;
+  }
+  function reposHebdoKo(ctx, plan) {
+    const fin = ctx.jours.length * 1440;
+    return ctx.d.personnes.filter((p) => p.type === 'Extra').map((p) => p.id)
+      .filter((id) => { const m = missionsDe(ctx, plan, id); return m.length && plusLongRepos(m, fin) < REPOS_HEBDO; });
+  }
+  // Si un extra n'a pas 35 heures d'affilée, on lui retire un jour et l'on recalcule, en gardant la meilleure solution
+  function reparerReposHebdo(ctx, plan, recalcul) {
+    let courant = plan, interdits = new Set();
+    for (let tour = 0; tour < 12; tour++) {
+      const ko = reposHebdoKo(ctx, courant);
+      if (!ko.length) return courant;
+      let mieux = null;
+      for (const id of ko) {
+        for (const j of ctx.jours.filter((x) => (courant.affectations[x] || []).some((a) => a.personne === id))) {
+          const essai = new Set(interdits); essai.add(id + '|' + j);
+          const res = recalcul(essai);
+          if (res.manques.length > courant.manques.length) continue;
+          const note = [reposHebdoKo(ctx, res).length, res.manques.length, res.cout];
+          const meilleur = !mieux || note[0] < mieux.note[0] || (note[0] === mieux.note[0] && (note[1] < mieux.note[1] || (note[1] === mieux.note[1] && note[2] < mieux.note[2])));
+          if (meilleur) mieux = { res, essai, note };
+        }
+      }
+      if (!mieux || mieux.note[0] >= ko.length) return courant;
+      courant = mieux.res; interdits = mieux.essai;
+    }
+    return courant;
+  }
+
   // ---------- 3. La proposition complète ----------
 
   function proposer(d, opts) {
@@ -1101,7 +1147,10 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
     const sollicites = new Set(opts.sollicites || d.sollicites);
     const cdis = d.personnes.filter((p) => p.type === 'CDI');
     const extras = d.personnes.filter((p) => p.type === 'Extra' && sollicites.has(p.id) && reponses[p.id]);
-    if (opts.joursCDI) return affecterSemaine(ctx, opts.joursCDI, extras, reponses, opts.ajouts);
+    if (opts.joursCDI) {
+      const base = affecterSemaine(ctx, opts.joursCDI, extras, reponses, opts.ajouts);
+      return reparerReposHebdo(ctx, base, (interdits) => affecterSemaine(ctx, opts.joursCDI, extras, reponses, opts.ajouts, interdits));
+    }
     const besoins = besoinsParJour(ctx);
     const combos = combinaisonsCDI(ctx, cdis)
       .map((c) => ({ c, note: noteCDI(ctx, c, cdis, extras, reponses, besoins) }))
@@ -1116,7 +1165,7 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
       if (!meilleur || r.manques.length < meilleur.manques.length ||
         (r.manques.length === meilleur.manques.length && r.cout < meilleur.cout)) meilleur = r;
     }
-    return meilleur;
+    return reparerReposHebdo(ctx, meilleur, (interdits) => affecterSemaine(ctx, meilleur.joursCDI, extras, reponses, opts.ajouts, interdits));
   }
 
   // ---------- 4. Le contrôle, règle par règle, sans faire confiance au moteur ----------
@@ -1128,19 +1177,111 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
     return (l ? l.libelle : posteId) + (role && l && l.libelle.toLowerCase() !== role ? ' (' + role + ')' : '');
   }
 
+  // Quatre familles de règles, à ne pas confondre :
+  //  - legal : minimums généraux du Code du travail (des dérogations encadrées existent par accord) ;
+  //  - contrat : ce que disent le contrat et les données de chaque personne (congés, arrêt, réponses des extras) ;
+  //  - rkc : règles d'organisation du RKC, paramétrables (hypothèses de la maquette) ;
+  //  - ponderation : préférences et réglages d'optimisation.
+  const FAMILLES = {
+    legal: 'Règles légales générales',
+    contrat: 'Contrats et données de chaque personne',
+    rkc: 'Règles d’organisation du RKC, paramétrables',
+    ponderation: 'Préférences et pondérations',
+  };
+
   function controler(d, plan, opts) {
     opts = opts || {};
     const ctx = contexte(d);
     const reponses = opts.reponses || d.reponses;
     const sollicites = new Set(opts.sollicites || d.sollicites);
     const regles = [];
-    const regle = (nom, erreurs) => regles.push({ regle: nom, ok: erreurs.length === 0, erreurs });
+    const regle = (type, nom, erreurs, ref) => regles.push({ type, famille: FAMILLES[type], regle: nom, ref: ref || null, ok: erreurs.length === 0, erreurs });
     const toutes = [];
     for (let i = 0; i < ctx.jours.length; i++) {
       for (const a of plan.affectations[ctx.jours[i]] || []) toutes.push(Object.assign({ i }, a));
     }
+    const travail = (deb, fin) => fin - deb - (fin - deb > 6 * 60 ? 60 : 0);   // pause d'une heure au-delà de 6 heures
+    const parPersonne = {};
+    for (const a of toutes) (parPersonne[a.personne] = parPersonne[a.personne] || []).push([a.i * 1440 + a.place.debut, a.i * 1440 + a.place.fin]);
+    for (const m of Object.values(parPersonne)) m.sort((x, y) => x[0] - y[0]);
+    let e;
 
-    let e = [];
+    // ----- Règles légales générales -----
+    e = [];
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      for (let k = 1; k < missions.length; k++) {
+        const ecart = missions[k][0] - missions[k - 1][1];
+        if (ecart < 0) e.push(ctx.personne[id].nom + ' : deux postes qui se chevauchent');
+        else if (ecart < REPOS_MIN) e.push(ctx.personne[id].nom + ' : ' + duree(ecart) + ' de repos seulement');
+      }
+    }
+    regle('legal', 'Repos quotidien : au moins 11 heures entre la fin d’un poste et le début du suivant', e, 'Code du travail, art. L3131-1');
+
+    e = [];
+    const finSemaine = ctx.jours.length * 1440;
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      let plusLong = missions[0][0];
+      for (let k = 1; k < missions.length; k++) plusLong = Math.max(plusLong, missions[k][0] - missions[k - 1][1]);
+      plusLong = Math.max(plusLong, finSemaine - missions[missions.length - 1][1]);
+      if (plusLong < 35 * 60) e.push(ctx.personne[id].nom + ' : ' + duree(Math.max(0, plusLong)) + ' de repos d’affilée au plus dans la semaine');
+    }
+    regle('legal', 'Repos hebdomadaire : au moins 35 heures d’affilée dans la semaine (24 heures plus les 11 heures quotidiennes)', e, 'Code du travail, art. L3132-2');
+
+    e = [];
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      const parJour = {};
+      for (const [deb, fin] of missions) { const j = Math.floor(deb / 1440); parJour[j] = (parJour[j] || 0) + travail(deb, fin); }
+      for (const [j, m] of Object.entries(parJour)) if (m > JOURNEE_MAX) e.push(ctx.personne[id].nom + ' : ' + duree(m) + ' de travail le ' + ctx.jour[ctx.jours[j]].nom.toLowerCase());
+    }
+    regle('legal', 'Durée quotidienne : pas plus de 10 heures de travail', e, 'Code du travail, art. L3121-18');
+
+    e = [];
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      const total = missions.reduce((n, [deb, fin]) => n + travail(deb, fin), 0);
+      if (total > 48 * 60) e.push(ctx.personne[id].nom + ' : ' + duree(total) + ' de travail dans la semaine');
+    }
+    regle('legal', 'Durée hebdomadaire : pas plus de 48 heures de travail', e, 'Code du travail, art. L3121-20');
+
+    e = [];
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      const n = new Set(missions.map(([deb]) => Math.floor(deb / 1440))).size;
+      if (n > 6) e.push(ctx.personne[id].nom + ' : ' + n + ' jours de travail dans la semaine');
+    }
+    regle('legal', 'Pas plus de 6 jours de travail dans la semaine', e, 'Code du travail, art. L3132-1');
+
+    // ----- Contrats et données de chaque personne -----
+    e = [];
+    for (const a of toutes) {
+      const p = ctx.personne[a.personne];
+      const abs = absence(p, ctx.jours[a.i]);
+      if (abs) e.push(p.nom + ' planifié pendant : ' + abs.motif);
+    }
+    regle('contrat', 'Personne n’est planifié en congés, en arrêt maladie ou en déplacement', e);
+
+    e = [];
+    for (const a of toutes) {
+      const p = ctx.personne[a.personne];
+      if (p.type !== 'Extra') continue;
+      if (!sollicites.has(p.id)) e.push(p.nom + ' planifié sans avoir été sollicité');
+      else if (!reponses[p.id]) e.push(p.nom + ' planifié sans avoir répondu');
+      else if (!couvre(reponses[p.id][ctx.jours[a.i]], a.place)) e.push(p.nom + ' planifié hors de ses disponibilités (' + ctx.jour[ctx.jours[a.i]].nom.toLowerCase() + ')');
+    }
+    regle('contrat', 'Un extra ne travaille que les jours et soirées où il s’est dit disponible', e);
+
+    e = [];
+    const travaillesCDI = {};
+    for (const p of d.personnes.filter((x) => x.type === 'CDI')) {
+      const presents = ctx.jours.filter((j) => !absence(p, j));
+      const imprevus = ((opts.imprevus || {})[p.id] || []).length;   // absence survenue après la proposition
+      const attendu = Math.min(p.contrat.jours, presents.length + imprevus) - imprevus;
+      const travailles = ctx.jours.filter((j) => (plan.affectations[j] || []).some((a) => a.personne === p.id));
+      travaillesCDI[p.id] = { presents, travailles };
+      if (travailles.length !== attendu) e.push(p.nom + ' : ' + travailles.length + (travailles.length > 1 ? ' jours' : ' jour') + ' de travail au lieu des ' + attendu + ' prévus par son contrat');
+    }
+    regle('contrat', 'Chaque CDI travaille les jours prévus par son contrat (5 par semaine l’été dans cette maquette)', e);
+
+    // ----- Règles d'organisation du RKC, paramétrables -----
+    e = [];
     for (const j of ctx.jours) {
       const attendues = placesDuJour(ctx, j, opts.ajouts);
       const tenues = (plan.affectations[j] || []).map((a) => a.place.id);
@@ -1150,7 +1291,7 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
         if (n > 1) e.push(ctx.jour[j].nom + ' : ' + libellePoste(ctx, pl.poste) + ' tenue deux fois');
       }
     }
-    regle('Tous les postes sont tenus, sans trou', e);
+    regle('rkc', 'Tous les postes sont tenus, sans trou', e);
 
     e = [];
     for (const j of ctx.jours) {
@@ -1160,14 +1301,14 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
         vu[a.personne] = true;
       }
     }
-    regle('Une personne tient un seul poste dans la journée', e);
+    regle('rkc', 'Une personne tient un seul poste dans la journée', e);
 
     e = [];
     for (const a of toutes) {
       const p = ctx.personne[a.personne];
       if (!apte(p, a.place)) e.push(ctx.jour[ctx.jours[a.i]].nom + ' : ' + p.nom + ' sans le métier ou le niveau pour ' + libellePoste(ctx, a.place.poste));
     }
-    regle('Bon métier, bon niveau sur chaque poste', e);
+    regle('rkc', 'Bon métier, bon niveau sur chaque poste', e);
 
     e = [];
     for (const j of ctx.jours) {
@@ -1180,43 +1321,21 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
         if (debutants.length && !expert) e.push(ctx.jour[j].nom + ' : débutant sans expert sur ' + libellePoste(ctx, poste));
       }
     }
-    regle('Au plus un débutant par poste, toujours aux côtés d’un expert', e);
+    regle('rkc', 'Au plus un débutant par poste, toujours aux côtés d’un expert', e);
 
     e = [];
     for (const p of d.personnes.filter((x) => x.type === 'CDI')) {
-      const presents = ctx.jours.filter((j) => !absence(p, j));
-      const imprevus = ((opts.imprevus || {})[p.id] || []).length;   // absence survenue après la proposition
-      const attendu = Math.min(p.contrat.jours, presents.length + imprevus) - imprevus;
-      const travailles = ctx.jours.filter((j) => (plan.affectations[j] || []).some((a) => a.personne === p.id));
-      if (travailles.length !== attendu) e.push(p.nom + ' : ' + travailles.length + (travailles.length > 1 ? ' jours' : ' jour') + ' de travail au lieu de ' + attendu);
+      const { presents, travailles } = travaillesCDI[p.id];
       const malade = (opts.imprevus || {})[p.id] || [];
       const repos = presents.filter((j) => !travailles.includes(j) && !malade.includes(j));
       if (repos.length >= 2) {
         const idx = repos.map((j) => ctx.jours.indexOf(j));
-        const suite = idx.every((x, k) => k === 0 || x === idx[k - 1] + 1);
-        if (!suite) e.push(p.nom + ' : jours de repos non consécutifs');
+        if (!idx.every((x, k) => k === 0 || x === idx[k - 1] + 1)) e.push(p.nom + ' : jours de repos non consécutifs');
       }
     }
-    regle('Chaque CDI travaille selon son contrat, repos pris d’affilée', e);
+    regle('rkc', 'Jours de repos des CDI pris d’affilée', e);
 
-    e = [];
-    for (const a of toutes) {
-      const p = ctx.personne[a.personne];
-      const abs = absence(p, ctx.jours[a.i]);
-      if (abs) e.push(p.nom + ' planifié pendant : ' + abs.motif);
-    }
-    regle('Personne n’est planifié en congés, en arrêt ou en déplacement', e);
-
-    e = [];
-    for (const a of toutes) {
-      const p = ctx.personne[a.personne];
-      if (p.type !== 'Extra') continue;
-      if (!sollicites.has(p.id)) e.push(p.nom + ' planifié sans avoir été sollicité');
-      else if (!reponses[p.id]) e.push(p.nom + ' planifié sans avoir répondu');
-      else if (!couvre(reponses[p.id][ctx.jours[a.i]], a.place)) e.push(p.nom + ' planifié hors de ses disponibilités (' + ctx.jour[ctx.jours[a.i]].nom.toLowerCase() + ')');
-    }
-    regle('Un extra ne travaille que les jours et soirées où il s’est dit disponible', e);
-
+    // ----- Préférences et pondérations -----
     e = [];
     const joursExtra = {};
     for (const a of toutes) if (ctx.personne[a.personne].type === 'Extra') joursExtra[a.personne] = (joursExtra[a.personne] || 0) + 1;
@@ -1224,28 +1343,7 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
       const p = ctx.personne[id];
       if (n > PLAFOND[p.ponderation]) e.push(p.nom + ' : ' + n + ' jours de travail pour une pondération ' + p.ponderation + ' (' + PLAFOND[p.ponderation] + ' au plus)');
     }
-    regle('La pondération des extras est respectée', e);
-
-    e = [];
-    const parPersonne = {};
-    for (const a of toutes) (parPersonne[a.personne] = parPersonne[a.personne] || []).push([a.i * 1440 + a.place.debut, a.i * 1440 + a.place.fin]);
-    for (const [id, missions] of Object.entries(parPersonne)) {
-      missions.sort((x, y) => x[0] - y[0]);
-      for (let k = 1; k < missions.length; k++) {
-        const ecart = missions[k][0] - missions[k - 1][1];
-        if (ecart < 0) e.push(ctx.personne[id].nom + ' : deux postes qui se chevauchent');
-        else if (ecart < REPOS_MIN) e.push(ctx.personne[id].nom + ' : ' + duree(ecart) + ' de repos seulement');
-      }
-    }
-    regle('Au moins 11 heures de repos entre la fin d’un poste et le début du suivant', e);
-
-    e = [];
-    for (const [id, missions] of Object.entries(parPersonne)) {
-      const parJour = {};
-      for (const [deb, fin] of missions) { const j = Math.floor(deb / 1440); parJour[j] = (parJour[j] || 0) + (fin - deb - (fin - deb > 6 * 60 ? 60 : 0)); }
-      for (const [j, m] of Object.entries(parJour)) if (m > JOURNEE_MAX) e.push(ctx.personne[id].nom + ' : ' + duree(m) + ' de travail le ' + ctx.jour[ctx.jours[j]].nom.toLowerCase());
-    }
-    regle('Pas plus de 10 heures de travail dans une journée', e);
+    regle('ponderation', 'Pondération des extras : plafond de jours respecté (forte 5, normale 4, faible 1)', e);
 
     return { ok: regles.every((r) => r.ok), regles, places: toutes.length, manques: (plan.manques || []).length };
   }
@@ -1278,6 +1376,7 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
       if (aRepondu && !couvre(r[jour], place)) { ecartes.push({ id: p.id, nom: p.nom, raison: 'indisponible ce jour-là' }); continue; }
       if (finVeille[p.id] != null && deb - finVeille[p.id] < REPOS_MIN) { ecartes.push({ id: p.id, nom: p.nom, raison: 'repos trop court : a fini à ' + texteHeure(finVeille[p.id]) + ' la veille' }); continue; }
       if (debutLendemain[p.id] != null && debutLendemain[p.id] - fin < REPOS_MIN) { ecartes.push({ id: p.id, nom: p.nom, raison: 'reprend trop tôt le lendemain' }); continue; }
+      if (plusLongRepos(missionsDe(ctx, plan, p.id).concat([[deb, fin]]), ctx.jours.length * 1440) < REPOS_HEBDO) { ecartes.push({ id: p.id, nom: p.nom, raison: 'n’aurait plus 35 heures de repos d’affilée dans la semaine' }); continue; }
       if (p.type === 'CDI') {
         candidats.push({ id: p.id, nom: p.nom, type: 'CDI', rang: 2, statut: 'En repos ce jour-là', detail: 'seulement avec son accord' });
         continue;
@@ -1336,7 +1435,7 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
     proposer, controler, remplacants, remplacer, grille, texteHeure,
     libellePoste: (d, id) => libellePoste(contexte(d), id),
     placesDuJour: (d, jour, ajouts) => placesDuJour(contexte(d), jour, ajouts),
-    RANG, POIDS, PLAFOND, REPOS_MIN, JOURNEE_MAX,
+    RANG, POIDS, PLAFOND, REPOS_MIN, JOURNEE_MAX, FAMILLES,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -1716,14 +1815,19 @@ button.nom.extra:hover { box-shadow: inset 0 0 0 2px var(--orange-fonce); }
     const texteKo = (r) => (r.regle.startsWith('Tous les postes')
       ? 'Postes sans personne : ' + r.erreurs.map((e) => e.replace(' sans personne', '').replace(/^(\S+) : (.)/, (m, j, c) => j.toLowerCase() + ', ' + c.toLowerCase())).join(' ; ')
       : 'Règle non respectée, « ' + r.regle + ' » : ' + r.erreurs.join(' ; '));
-    const liste = h('ul', { class: 'regles' }, c.regles.map((r) => h('li', { class: r.ok ? '' : 'ko' }, r.ok ? r.regle : texteKo(r))));
+    const familles = [...new Set(c.regles.map((r) => r.type))];
+    const liste = h('div', null, familles.map((f) => {
+      const rs = c.regles.filter((r) => r.type === f);
+      return [h('p', { class: 'famille-regles' }, rs[0].famille + (f === 'legal' ? ' (minimums du Code du travail ; des dérogations encadrées existent par accord)' : f === 'rkc' ? ' (hypothèses de la maquette)' : '')),
+        h('ul', { class: 'regles' }, rs.map((r) => h('li', { class: r.ok ? '' : 'ko' }, r.ok ? r.regle + (r.ref ? ' (' + r.ref + ')' : '') : texteKo(r))))];
+    }));
     const ko = c.regles.length - ok;
     cible.replaceChildren(h('details', { class: 'controle', open: c.ok ? null : true },
       h('summary', null, h('span', null, h('span', { class: c.ok ? 'ok' : 'ok ko' }, c.ok ? '✓' : '!'),
         c.ok ? ok + ' règles vérifiées automatiquement sur cette proposition' : ko + (ko > 1 ? ' règles non respectées' : ' règle non respectée')),
         h('span', { class: 'ouvrir' }, 'Voir le détail')),
       liste,
-      h('p', { class: 'tres-petit texte-2', style: 'padding:0 18px 16px' }, 'Seuils de la maquette : 11 heures de repos et 10 heures de travail par jour au plus sont les minimums légaux. Ils se règlent selon les contrats et la convention du RKC.')));
+      h('p', { class: 'tres-petit texte-2', style: 'padding:0 18px 16px' }, 'Les règles légales sont les minimums généraux ; la convention et les accords du RKC peuvent prévoir des dérogations encadrées. Les règles du RKC et les pondérations sont des hypothèses de maquette, à paramétrer avec le RKC.')));
     return c;
   }
 
