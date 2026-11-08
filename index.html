@@ -652,6 +652,50 @@ span.bouton.orange:hover { background: var(--orange); }
 .cellule-dispo .heures { white-space: normal; overflow: visible; text-overflow: clip; }
 .autres-cas strong { color: #fff; }
 
+/* ---------- Retouches de rendu (relecture du 8 novembre au soir) ---------- */
+/* Les sept onglets des jours tiennent sur un petit téléphone */
+@media (max-width: 1023px) {
+  .onglets-jours { gap: 4px; padding: 12px 8px 4px; }
+  .onglets-jours button { flex: 1 1 0; min-width: 0; padding: 6px 0; }
+}
+/* La pastille « Recommandée » passe sous le nom sur téléphone */
+@media (max-width: 480px) {
+  .candidat { grid-template-columns: 38px minmax(0, 1fr); }
+  .candidat .pastille { grid-column: 2; justify-self: start; }
+}
+/* Les dispos en clair sur téléphone */
+.dispos-texte { display: none; }
+@media (max-width: 640px) {
+  .dispos-ligne .cellule-dispo, .dispos-ligne.tete { display: none; }
+  .dispos-texte { display: block; grid-column: 1 / -1; margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--encre-2); }
+  .dispos-corps > p.tres-petit { display: none; }
+}
+/* Le programme plus compact sur téléphone : une ligne par activité */
+@media (max-width: 760px) {
+  .agenda-evt { padding: 6px 8px; grid-template-columns: 104px minmax(0, 1fr); }
+  .agenda-quoi b, .agenda-quoi span { display: inline; }
+  .agenda-quoi b::after { content: " · "; font-weight: 400; }
+  .agenda-quoi span { font-size: 13px; }
+}
+/* Les personnes indisponibles : grisées par la couleur, pas par l'opacité */
+.personne.indispo, .case.desactivee { opacity: 1; }
+.personne.indispo .personne-nom, .personne.indispo .personne-metiers, .case.desactivee .qui, .case.desactivee .qui small { color: #666666; }
+/* Les deux viviers gardent leur hauteur propre */
+.viviers { align-items: start; }
+@media (min-width: 701px) and (max-width: 999px) { .vivier.extras .personnes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- L'appli RKC Planning : notification et onglets ---------- */
+.notif { background: rgba(255, 255, 255, .96); border-radius: 18px; padding: 12px 14px 14px; box-shadow: 0 10px 30px rgba(20, 22, 28, .14); border: 1px solid var(--ligne); max-width: 340px; width: 100%; display: grid; gap: 8px; }
+.notif-tete { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--encre-3); }
+.notif-appli { font-weight: 700; color: var(--encre-2); letter-spacing: .02em; text-transform: uppercase; }
+.notif-heure { margin-left: auto; }
+.notif-corps { display: grid; gap: 4px; font-size: 14.5px; line-height: 1.4; color: var(--encre); }
+.notif-corps strong { font-size: 15px; }
+.tel-onglets { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--fond-2); border-radius: 10px; padding: 3px; font-size: 13px; font-weight: 700; text-align: center; }
+.tel-onglets span { padding: 6px 4px; border-radius: 8px; color: var(--encre-3); }
+.tel-onglets span.actif { background: #fff; color: var(--encre); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.tel-etat { color: var(--vert) !important; font-weight: 600; }
+
 </style>
 </head>
 <body>
@@ -693,7 +737,7 @@ span.bouton.orange:hover { background: var(--orange); }
             </div>
             <div class="entree">
               <span class="pictogramme" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 18.5h4M9.5 9.5l2 2 3.5-4"/></svg></span>
-              <div><strong>Les disponibilités des extras</strong><span>Données chaque semaine par SMS, heure par heure</span></div>
+              <div><strong>Les disponibilités des extras</strong><span>Données chaque semaine dans l’appli, heure par heure</span></div>
             </div>
           </div>
           <div class="fleche-equation" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>
@@ -759,8 +803,8 @@ span.bouton.orange:hover { background: var(--orange); }
             <span class="temps-numero" aria-hidden="true">4</span>
             <h3 id="t4">Les disponibilités reçues, heure par heure.</h3>
             <div class="explication">
-              <p>Sur son téléphone, l’extra voit les événements déjà connus de la semaine. Il dit précisément quand il est disponible : pour un événement, sur un créneau, ou toute la journée.</p>
-              <p class="note">Les réponses arrivent en direct chez le responsable. Celui qui ne répond pas n’entre pas dans la proposition.</p>
+              <p>Dans l’appli, l’extra voit les événements déjà connus de la semaine et dit précisément quand il est disponible : pour un événement, sur un créneau, ou toute la journée. Il retrouve à tout moment ce qu’il a envoyé et peut le modifier jusqu’à l’échéance.</p>
+              <p class="note">Les réponses arrivent en direct chez le responsable. Après l’échéance, une modification passe par lui. Celui qui ne répond pas n’entre pas dans la proposition.</p>
             </div>
           </div>
           <div class="temps-visuel" data-disponibilites></div>
@@ -783,7 +827,7 @@ span.bouton.orange:hover { background: var(--orange); }
             <span class="temps-numero" aria-hidden="true">6</span>
             <h3 id="t6">La validation du responsable.</h3>
             <div class="explication">
-              <p>Il relit la proposition, change une case s’il le faut, puis valide. Chacun reçoit son planning par SMS, avec ses horaires et son poste.</p>
+              <p>Il relit la proposition, change une case s’il le faut, puis valide. Chacun reçoit son planning dans l’appli, avec une notification, et le retrouve à tout moment : ses horaires et son poste.</p>
               <p class="note">On peut toujours revenir à la main : chaque case du planning et le besoin de chaque activité se changent à tout moment.</p>
             </div>
           </div>
@@ -798,7 +842,7 @@ span.bouton.orange:hover { background: var(--orange); }
         <div class="tete-section">
           <p class="surtitre"><span class="numero-clair">7</span>Les modifications et urgences</p>
           <h2 id="titre-urgences">« Il me manque quelqu’un, puis-je appeler maintenant ? »</h2>
-          <p class="chapo">Une fois le planning validé, tout peut arriver : un arrêt maladie, un extra qui ne vient pas, une course ajoutée, une soirée qui finit plus tard. L’outil montre ce qui est touché, propose qui peut le tenir et prévient chacun par SMS. Le reste du planning ne bouge pas.</p>
+          <p class="chapo">Une fois le planning validé, tout peut arriver : un arrêt maladie, un extra qui ne vient pas, une course ajoutée, une soirée qui finit plus tard. L’outil montre ce qui est touché, propose qui peut le tenir et prévient chacun dans l’appli et par SMS. Le reste du planning ne bouge pas.</p>
         </div>
         <div data-urgences></div>
       </div>
@@ -1703,10 +1747,13 @@ span.bouton.orange:hover { background: var(--orange); }
   const NBSP = ' ';
   function typo(s) {
     return String(s)
+      .replace(/(\d) (?=\p{L})/gu, '$1' + NBSP)
       .replace(/(\d) (h|m|min|juin|mai|ans|oui|non|jours?|journées?|postes?|personnes?|pilotes?|extras?|CDI|heures|sur|commissaires?|réponses?|règles?|soirées?|directeurs?|directrices?|mécaniciens?|créneaux?|semaines?|équipes?|groupes?)(?=[\s.,:;!?)]|$)/g, '$1' + NBSP + '$2')
       .replace(/ · /g, NBSP + '· ')
       .replace(/([A-Za-zÀ-ÿ]) ([A-Z]\.)(?=[\s,:;!?)]|$)/g, '$1' + NBSP + '$2')
       .replace(/ h (\d)/g, ' h' + NBSP + '$1')
+      .replace(/(\d\u00a0h) (\d)/g, '$1' + NBSP + '$2')
+      .replace(/([\s\u00a0])et (\d)/g, '$1et' + NBSP + '$2')
       .replace(/ ([:;?!»])/g, NBSP + '$1')
       .replace(/« /g, '«' + NBSP);
   }
@@ -1886,17 +1933,18 @@ span.bouton.orange:hover { background: var(--orange); }
   }
 
   // ---------- 3. Les extras sollicités ----------
-  function bulleSMS(entete, corps, lien) {
-    return h('div', { class: 'sms', role: 'group', 'aria-label': 'Exemple de SMS reçu' },
-      h('div', { class: 'sms-tete' }, h('span', { class: 'sms-exp' }, 'RKC Karting'), h('span', null, entete)),
-      h('div', { class: 'sms-bulle' }, corps, lien ? h('span', { class: 'sms-lien' }, lien) : null));
+  // Une notification de l'appli RKC Planning (doublée d'un SMS en secours)
+  function bulleAppli(entete, titre, corps) {
+    return h('div', { class: 'notif', role: 'group', 'aria-label': 'Exemple de notification de l’appli RKC Planning' },
+      h('div', { class: 'notif-tete' }, h('span', { class: 'marque-logo petit', 'aria-hidden': 'true' }, 'RKC'), h('span', { class: 'notif-appli' }, 'RKC Planning'), h('span', { class: 'notif-heure' }, entete)),
+      h('div', { class: 'notif-corps' }, h('strong', null, titre), corps));
   }
   function rendreSollicitation(cible, cibleTexte) {
     const extras = d.personnes.filter((p) => p.type === 'Extra');
     const sol = new Set(d.sollicites);
     const cdis = d.personnes.filter((p) => p.type === 'CDI');
     const cdiDispo = cdis.filter((p) => !(statutSemaine(p) || {}).semaine).length;
-    cibleTexte.append('Le responsable coche, l’outil envoie : chaque semaine, environ sept jours avant, un SMS avec un lien personnel pour donner ses dispos, pour cette seule semaine, avant le ' + d.demande.echeance + '. En juin, il faut du monde : ici, tous les extras présents sont sollicités.');
+    cibleTexte.append('Le responsable coche, l’outil envoie : chaque semaine, environ sept jours avant, une notification dans l’appli RKC Planning, doublée d’un SMS. Chacun répond dans l’appli, pour cette seule semaine, avant le ' + d.demande.echeance + '. En juin, il faut du monde : ici, tous les extras présents sont sollicités.');
     const exemple = personne(d.sollicites[0]);
     cible.append(h('div', { class: 'sollicitation' },
       h('div', { class: 'ecran' },
@@ -1912,10 +1960,10 @@ span.bouton.orange:hover { background: var(--orange); }
               h('span', { class: 'visuellement-cache' }, coche ? 'coché' : 'non coché'));
           }))),
         h('div', { class: 'envoi' },
-          h('span', { class: 'bouton orange large', 'aria-hidden': 'true' }, 'Demander les disponibilités par SMS'),
+          h('span', { class: 'bouton orange large', 'aria-hidden': 'true' }, 'Demander les dispos'),
           h('span', { class: 'tres-petit' }, pluriel(sol.size, 'extra coché', 'extras cochés') + ' sur ' + extras.length + '. Envoi le ' + d.demande.envoi + ', réponses attendues avant le ' + d.demande.echeance + '.'))),
-      bulleSMS(d.demande.envoi.replace(/^./, (x) => x.toUpperCase()) + ', 10 h',
-        'Bonjour ' + prenom(exemple) + ', vos dispos pour la semaine du 2 au 8 juin ? Répondez avant le ' + d.demande.echeance + ' :', 'Donner mes dispos')));
+      bulleAppli(d.demande.envoi.replace(/^./, (x) => x.toUpperCase()) + ', 10 h', 'Vos dispos pour la semaine du 2 au 8 juin',
+        h('span', null, 'Bonjour ' + prenom(exemple) + ', à donner avant le ' + d.demande.echeance + '. Touchez pour répondre.'))));
   }
 
   // ---------- 4. Les disponibilités reçues ----------
@@ -1945,13 +1993,14 @@ span.bouton.orange:hover { background: var(--orange); }
           perso.map((x) => h('span', { class: 'puce-choix choisie' }, h('b', null, 'Mon créneau'), x.split('-').map((t) => hm(+t.split(':')[0] * 60 + +t.split(':')[1])).join(' à '))),
           h('span', { class: 'puce-choix autre' }, '+ Un autre créneau')));
     });
-    return h('figure', { class: 'telephone', 'aria-label': 'Le formulaire de disponibilités sur le téléphone de ' + p.nom },
+    return h('figure', { class: 'telephone', 'aria-label': 'Les dispos de ' + p.nom + ' dans l’appli RKC Planning' },
       h('div', { class: 'tel-ecran' },
-        h('div', { class: 'tel-barre' }, h('span', { class: 'marque-logo petit' }, 'RKC'), h('span', null, 'Mes dispos')),
-        h('div', { class: 'tel-intro' }, h('strong', null, 'Bonjour ' + prenom(p)), h('span', null, 'Semaine du 2 au 8 juin. Touchez ce qui vous convient.')),
+        h('div', { class: 'tel-barre' }, h('span', { class: 'marque-logo petit' }, 'RKC'), h('span', null, 'RKC Planning')),
+        h('div', { class: 'tel-onglets', 'aria-hidden': 'true' }, h('span', { class: 'actif' }, 'Mes dispos'), h('span', null, 'Mon planning')),
+        h('div', { class: 'tel-intro' }, h('strong', null, 'Semaine du 2 au 8 juin'), h('span', { class: 'tel-etat' }, '✓ Envoyées le lundi 26 mai à 21 h 14. Modifiables jusqu’au ' + d.demande.echeance + '.')),
         jours,
         h('div', { class: 'tel-suite' }, 'Et ainsi jusqu’au dimanche…'),
-        h('span', { class: 'bouton large', 'aria-hidden': 'true' }, 'Envoyer mes dispos')));
+        h('span', { class: 'bouton large', 'aria-hidden': 'true' }, 'Modifier mes dispos')));
   }
 
   // La barre d'une journée, de 8 h à minuit
@@ -1971,6 +2020,12 @@ span.bouton.orange:hover { background: var(--orange); }
       h('span', { class: 'heures' }, court),
       h('span', { class: 'visuellement-cache' }, j.nom + ' : ' + texte));
   }
+  // Sur téléphone : « Lun. 2 : 12 h 30 à 20 h · Sam. 7 : toute la journée », les jours disponibles seulement
+  function texteDispos(p) {
+    const r = d.reponses[p.id] || {};
+    const morceaux = d.jours.filter((j) => r[j.cle]).map((j) => j.court + ' ' + j.date + ' : ' + (r[j.cle] === 'toute' ? 'toute la journée' : P.creneaux(d, j.cle, r[j.cle]).map(([a, b]) => plage(a, b)).join(' et ')));
+    return h('p', { class: 'dispos-texte' }, morceaux.join(' · '));
+  }
   function rendreDisponibilites(cible) {
     const sol = d.sollicites.map(personne);
     const recues = sol.filter((p) => d.reponses[p.id]).length;
@@ -1978,8 +2033,8 @@ span.bouton.orange:hover { background: var(--orange); }
     const lignes = sol.map((p) => {
       const attente = !d.reponses[p.id];
       return h('div', { class: 'dispos-ligne' + (attente ? ' attente' : '') },
-        h('div', { class: 'qui' }, p.nom, h('small', null, attente ? 'En attente de réponse' : rolesDe(p).split(' · ')[0])),
-        attente ? h('div', { class: 'attente-texte' }, 'Pas encore de réponse') : d.jours.map((j) => barreDispo(p, j)));
+        h('div', { class: 'qui' }, p.nom, h('small', null, attente ? rolesDe(p).split(' · ')[0] : rolesDe(p).split(' · ')[0])),
+        attente ? h('div', { class: 'attente-texte' }, 'Pas encore de réponse') : [d.jours.map((j) => barreDispo(p, j)), texteDispos(p)]);
     });
     cible.append(h('div', { class: 'dispos' },
       rendreTelephone(personne('ines')),
@@ -2202,7 +2257,7 @@ span.bouton.orange:hover { background: var(--orange); }
     for (const affs of Object.values(PLAN.affectations)) for (const a of affs) { ids.add(a.personne); personne(a.personne).type === 'CDI' ? jCdi++ : jExtra++; }
     const nCdi = [...ids].filter((id) => personne(id).type === 'CDI').length;
     const nExtra = ids.size - nCdi;
-    // Le SMS d'un extra : ses journées, son poste, ses horaires
+    // Le planning d'un extra, dans l'appli : ses journées, son poste, ses horaires
     const exemple = d.personnes.find((p) => p.id === 'noa') || personne(d.sollicites[0]);
     const lignesSms = d.jours.map((j) => {
       const a = (PLAN.affectations[j.cle] || []).find((x) => x.personne === exemple.id);
@@ -2223,7 +2278,7 @@ span.bouton.orange:hover { background: var(--orange); }
             h('div', null, h('dt', null, 'Postes à pourvoir'), h('dd', null, String((PLAN.manques || []).length)))),
           h('div', { class: 'actions-validation' },
             h('span', { class: 'bouton', 'aria-hidden': 'true' }, 'Valider et envoyer')))),
-      bulleSMS('Jeudi 29 mai, 19 h', ['Bonjour ' + prenom(exemple) + ', votre planning de la semaine du 2 au 8 juin :', lignesSms, 'L’heure de début est celle de la prise de poste, pas de l’arrivée sur le site. Répondez OK pour valider.'])));
+      bulleAppli('Jeudi 29 mai, 19 h', 'Votre planning du 2 au 8 juin', [h('span', null, 'Bonjour ' + prenom(exemple) + ', le voici, à retrouver à tout moment dans l’appli :'), lignesSms, h('span', null, 'L’heure de début est celle de la prise de poste, pas de l’arrivée sur le site. Touchez pour valider.')])));
   }
 
   // ---------- 7. Les modifications et urgences ----------
@@ -2267,7 +2322,7 @@ span.bouton.orange:hover { background: var(--orange); }
     const fil = h('ol', { class: 'fil' },
       h('li', null, h('span', { class: 'heure' }, heure), h('p', null, s.message + ' ' + (fem(absent) ? 'Elle' : 'Il') + ' devait tenir ce poste : ' + textePoste(r.place, absent) + ', de ' + plage(r.place.debut, r.place.fin) + '.')),
       h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 1)), h('p', null, 'L’outil isole le seul poste touché et cherche qui peut le tenir : bon rôle, bon niveau, disponible à ces heures-là, reposé.')),
-      choisi ? h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 2)), h('p', null, 'Le responsable envoie un SMS à ' + choisi.nom + ', ' + (choisi.type === 'CDI' ? 'en repos ce jour-là' : 'qui s’était ' + (fem(choisi) ? 'dite' : 'dit') + ' disponible à ces heures-là') + ' : « Pouvez-vous nous dépanner ' + j.nom.toLowerCase() + ', de ' + plage(r.place.debut, r.place.fin) + ' ? »')) : null,
+      choisi ? h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 2)), h('p', null, 'Le responsable envoie une demande à ' + choisi.nom + ', dans l’appli et par SMS, ' + (choisi.type === 'CDI' ? 'en repos ce jour-là' : 'qui s’était ' + (fem(choisi) ? 'dite' : 'dit') + ' disponible à ces heures-là') + ' : « Pouvez-vous nous dépanner ' + j.nom.toLowerCase() + ', de ' + plage(r.place.debut, r.place.fin) + ' ? »')) : null,
       choisi ? h('li', { class: 'fin' }, h('span', { class: 'heure' }, ajouteMinutes(heure, 7)), h('p', null, prenom(choisi) + ' accepte. Le planning est à jour, l’équipe du jour est prévenue. Le reste de la semaine ne bouge pas.')) : null);
     const carte = h('div', { class: 'carte-appel' },
       h('div', { class: 'ecran-barre' }, h('h4', null, 'Il me manque quelqu’un'), h('span', { class: 'tres-petit' }, s.quand)),
@@ -2311,7 +2366,7 @@ span.bouton.orange:hover { background: var(--orange); }
     const fil = h('ol', { class: 'fil' },
       h('li', null, h('span', { class: 'heure' }, heure), h('p', null, s.message)),
       h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 1)), h('p', null, 'L’outil calcule l’équipe comme pour tout groupe : ' + a.pilotes + ' pilotes, donc ' + equipe + '. ' + (tout ? pluriel(tout, 'extra encore libre avait', 'extras encore libres avaient') + ' déjà donné ce créneau.' : 'Aucun extra encore libre ce soir-là n’avait donné ce créneau.'))),
-      h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 2)), h('p', null, 'Le responsable envoie en un geste le SMS « Besoin de monde ' + j.nom.toLowerCase() + ' soir » aux ' + cibles.size + ' extras que l’outil a retenus : bon rôle, bon niveau, reposés, pas déjà en poste, sous leur plafond de pondération.')),
+      h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 2)), h('p', null, 'Le responsable envoie en un geste la demande « Besoin de monde ' + j.nom.toLowerCase() + ' soir », dans l’appli et par SMS, aux ' + cibles.size + ' extras que l’outil a retenus : bon rôle, bon niveau, reposés, pas déjà en poste, sous leur plafond de pondération.')),
       h('li', { class: 'fin' }, h('span', { class: 'heure' }, derniere), h('p', null, oui.length + ' oui et ' + non.length + ' non : ' + (pourvues === nPlaces ? 'l’équipe est complète. Le responsable valide ; chacun reçoit son poste et son horaire. Le reste du planning ne bouge pas.' : (nPlaces - pourvues) + ' postes restent à pourvoir.'))));
     const ordreRole = (x) => (x.place.expert ? 0 : x.place.metier === 'piste' ? 1 : 2);
     const lignes = apres.places.slice().sort((x, y) => ordreRole(x) - ordreRole(y)).map((x) => {
