@@ -618,6 +618,40 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
 
 .chiffres-cles dd small { display: block; font-size: 13px; font-weight: 600; color: var(--encre-3); letter-spacing: 0; }
 
+/* ---------- 1. Le programme, jour par jour ---------- */
+.agenda { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.agenda-jour { display: grid; align-content: start; gap: 6px; min-width: 0; }
+.agenda-tete { margin: 0; padding: 0 2px 6px; border-bottom: 2px solid var(--encre); font-size: 13px; font-weight: 600; color: var(--encre-3); line-height: 1.25; }
+.agenda-tete strong { display: block; font-size: 15px; color: var(--encre); }
+.agenda-jour.weekend .agenda-tete { border-bottom-color: var(--orange); }
+.agenda-jour.weekend .agenda-tete strong { color: var(--orange-fonce); }
+.agenda-liste { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.agenda-evt { border-radius: 8px; padding: 7px 8px 8px; border-left: 4px solid; display: grid; gap: 2px; font-size: 13px; line-height: 1.3; min-width: 0; }
+.agenda-heure { font-weight: 700; color: var(--encre); }
+.agenda-quoi b { display: block; font-size: 14px; }
+.agenda-quoi span { display: block; color: var(--encre-2); font-size: 12.5px; }
+.agenda-evt.p1000 { background: var(--orange-pale); border-color: var(--orange); }
+.agenda-evt.enfants { background: var(--vert-pale); border-color: #3aa36b; }
+.agenda-evt.p1200 { background: var(--bleu-pale); border-color: var(--bleu); }
+.agenda-evt.course { background: var(--rouge-pale); border-color: var(--rouge); }
+.agenda-evt.soir { background: var(--nuit-2); border-color: var(--orange); color: #fff; }
+.agenda-evt.soir .agenda-heure, .agenda-evt.soir .agenda-quoi b { color: #fff; }
+.agenda-evt.soir .agenda-quoi span { color: #d4d6db; }
+@media (max-width: 1100px) { .agenda { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 16px; } }
+@media (max-width: 760px) {
+  .agenda { grid-template-columns: 1fr; row-gap: 14px; }
+  .agenda-tete { display: flex; align-items: baseline; gap: 6px; }
+  .agenda-tete strong { display: inline; }
+  .agenda-evt { grid-template-columns: 112px minmax(0, 1fr); gap: 2px 10px; align-items: baseline; }
+}
+/* Écrans d'aperçu : ce sont des images de l'outil, pas des boutons */
+.apercu { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--ligne-2); font-size: 12px; font-weight: 600; color: var(--encre-3); vertical-align: 2px; letter-spacing: 0; }
+span.bouton { cursor: default; }
+span.bouton:hover { background: var(--encre); }
+span.bouton.orange:hover { background: var(--orange); }
+.cellule-dispo .heures { white-space: normal; overflow: visible; text-overflow: clip; }
+.autres-cas strong { color: #fff; }
+
 </style>
 </head>
 <body>
@@ -702,7 +736,7 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
             <h3 id="t2">Les équipes connues : deux viviers.</h3>
             <div class="explication">
               <p>Chacun a un rôle, rarement deux : accueil, pistard, mécanique location, magasin ou mécanique compétition. Les pistards ont trois niveaux : commissaire de piste, commissaire de piste confirmé et directeur de course.</p>
-              <p class="note">Pour les CDI : le contrat, les jours de repos (deux par semaine l’été, trois l’hiver), les congés et les arrêts maladie. Pour les extras : la pondération (forte pour ceux qu’on veut faire travailler davantage, faible pour qui débute) et les indisponibilités. Pour tout le monde : au moins 11 heures de repos entre deux postes, le minimum légal.</p>
+              <p class="note">Pour les CDI : le contrat, les jours de repos (deux par semaine l’été, trois l’hiver, pour un temps plein), les congés et les arrêts maladie. Pour les extras : la pondération (forte pour ceux qu’on veut faire travailler davantage, faible pour qui débute) et les indisponibilités. Pour tout le monde : au moins 11 heures de repos entre deux postes, le minimum légal.</p>
             </div>
           </div>
           <div class="temps-visuel" data-viviers></div>
@@ -800,7 +834,7 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
     { id: 'groupe', type: 'groupe', libelle: 'Challenge inter-entreprises', format: 'Endurance', pilotes: 20, piste: 'Piste 1200 m', jours: ['jeu'], debut: '19:00', fin: '22:30' },
     { id: 'course2h', type: 'groupe', libelle: 'Course 2H RKC', format: 'Course de nuit par équipes', pilotes: 24, piste: 'Piste 1000 m', jours: ['ven'], debut: '18:30', fin: '22:00' },
     { id: 'privSam', type: 'groupe', libelle: 'Privatisation', format: 'Grand Prix', pilotes: 20, piste: 'Piste 1000 m', jours: ['sam'], debut: '20:00', fin: '23:30' },
-    { id: 'course', type: 'course', libelle: '6 Heures RKC', format: 'Endurance par équipes', piste: 'Piste 1200 m', jours: ['dim'], debut: '07:30', fin: '16:30' },
+    { id: 'course', type: 'course', libelle: '6 Heures RKC', format: 'Endurance par équipes', piste: 'Piste 1200 m', jours: ['dim'], debut: '08:00', fin: '18:00' },
     // Le magasin compétition n'est pas une activité du programme : il est ouvert tous les jours
     { id: 'boutique', type: 'magasin', libelle: 'Magasin compétition', piste: 'Paddock', jours: 'tous', horsProgramme: true, horaires: { semaine: ['10:00', '18:00'], weekend: ['09:00', '18:30'] } },
   ];
@@ -860,7 +894,7 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
       { id: 'enfants', libelle: 'Piste Découverte', postes: ['enfants'] },
       { id: 'atelier', libelle: 'Atelier location', postes: ['mecaLoc'] },
       { id: 'p1200', libelle: 'Piste 1200 m', postes: ['coursePistes', 'courseMeca'] },
-      { id: 'paddock', libelle: 'Paddock', sous: 'Magasin et mécanique compétition', postes: ['magasin', 'mecaCompSam'] },
+      { id: 'paddock', libelle: 'Magasin compétition', sous: 'Avec la mécanique compétition', postes: ['magasin', 'mecaCompSam'] },
       { id: 'soir', libelle: 'En soirée', postes: ['soireePistes', 'soireeMeca', 'groupePistes', 'groupeMeca', 'course2hPistes', 'course2hMeca', 'privSamPistes', 'privSamMeca', 'courseMerPistes', 'courseMerMeca'] },
     ],
 
@@ -938,8 +972,8 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
 
     // Les urgences, toutes tirées de cette même semaine
     imprevus: [
-      { id: 'arret', titre: 'Un arrêt maladie', quand: 'Samedi 7 juin, 8 h 05', message: 'Léa D. prévient qu’elle est en arrêt maladie.', absent: 'lea', jour: 'sam' },
-      { id: 'absence', titre: 'Un extra absent', quand: 'Samedi 7 juin, 9 h 40', message: 'Manon V. ne répond plus, à vingt minutes de sa prise de poste.', absent: 'manon', jour: 'sam' },
+      { id: 'arret', titre: 'Un arrêt maladie', quand: 'Dimanche 8 juin, 8 h 05', message: 'Léa D. prévient qu’elle est en arrêt maladie.', absent: 'lea', jour: 'dim' },
+      { id: 'absence', titre: 'Un extra absent', quand: 'Samedi 7 juin, 8 h 20', message: 'Manon V. prévient qu’elle ne pourra pas venir.', absent: 'manon', jour: 'sam' },
       // Une course réservée après la validation : l'équipe se calcule comme pour tout groupe, selon le nombre de pilotes
       { id: 'courseajoutee', titre: 'Une course ajoutée', quand: 'Mardi 3 juin, 15 h', jour: 'mer',
         message: 'Une entreprise réserve une course pour mercredi soir : 24 pilotes sur la Piste 1200 m, de 20 h à 23 h.',
@@ -1466,7 +1500,7 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
       travaillesCDI[p.id] = { presents, travailles };
       if (travailles.length !== attendu) e.push(p.nom + ' : ' + travailles.length + (travailles.length > 1 ? ' jours' : ' jour') + ' de travail au lieu des ' + attendu + ' prévus par son contrat');
     }
-    regle('contrat', 'Chaque CDI travaille les jours prévus par son contrat (5 par semaine l’été dans cette maquette)', e);
+    regle('contrat', 'Chaque CDI travaille les jours prévus par son contrat (dans cette maquette, 5 par semaine l’été, 4 pour un temps partiel)', e);
 
     // ----- Règles d'organisation du RKC, paramétrables -----
     e = [];
@@ -1764,77 +1798,30 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
       h('p', { class: 'note' }, 'Quand la Piste 1200 m est réservée aux licenciés, personne en piste : ils roulent avec leurs karts. Le magasin compétition, lui, est tenu tous les jours.'));
   }
 
-  const LIGNES_PROGRAMME = [
-    { libelle: 'Piste 1000 m', activites: ['loc1000'] },
-    { libelle: 'Piste Découverte', activites: ['enfants'] },
-    { libelle: 'Piste 1200 m', activites: ['licencies', course.id] },
-    { libelle: 'En soirée', activites: groupes.map((a) => a.id) },
-  ];
-  function bloc(a, j) {
-    const hs = plageActivite(a.id, j.cle);
-    if (a.type === 'location') return ['p1000', 'Location', hs];
-    if (a.type === 'enfants') return ['enfants', 'Location', hs];
-    if (a.type === 'licencies') return ['p1200', j.cle === 'sam' ? 'Réservée aux licenciés' : 'Licenciés', hs];
-    if (a.type === 'course') return ['course', a.libelle, hs];
-    return ['soir', a.libelle, a.pilotes + ' pilotes · ' + a.piste.replace('Piste ', '') + ' · ' + hs];
+  // Le programme, jour par jour : ce qui se passe sur chaque piste, dans l'ordre de la journée
+  function evenementsDuJour(j) {
+    const ids = ['loc1000', 'enfants', 'licencies', course.id, ...groupes.map((a) => a.id)];
+    return ids.map(activite).filter((a) => a && joursDe(a).includes(j.cle)).map((a) => {
+      const x = horaire(a.id, j.cle);
+      let titre, classe, detail = a.piste;
+      if (a.type === 'location') { titre = 'Location'; classe = 'p1000'; }
+      else if (a.type === 'enfants') { titre = 'Location'; classe = 'enfants'; }
+      else if (a.type === 'licencies') { titre = j.cle === 'sam' ? 'Réservée aux licenciés' : 'Licenciés'; classe = 'p1200'; }
+      else if (a.type === 'course') { titre = a.libelle; classe = 'course'; detail = a.piste + ' · endurance par équipes'; }
+      else { titre = a.libelle; classe = 'soir'; detail = a.piste + ' · ' + a.pilotes + ' pilotes'; }
+      return { debut: x.debut, fin: x.fin, titre, classe, detail };
+    }).sort((x, y) => x.debut - y.debut || x.fin - y.fin);
   }
-  function segments(l) {
-    const res = [];
-    d.jours.forEach((j, i) => {
-      const a = l.activites.map(activite).find((x) => joursDe(x).includes(j.cle));
-      const cle = a ? a.id + '|' + bloc(a, j).slice(1).join('|') : null;
-      const der = res[res.length - 1];
-      if (der && der.cle === cle) { der.fin = i; return; }
-      res.push({ cle, a, debut: i, fin: i, j });
-    });
-    return res;
-  }
-  function libelleSegment(sg) {
-    const [c, t, s2] = bloc(sg.a, sg.j);
-    const n = sg.fin - sg.debut + 1;
-    if (n === d.jours.length) return [c, t + ', tous les jours', s2];
-    if (n > 1) return [c, t + ', du ' + d.jours[sg.debut].nom.toLowerCase() + ' au ' + d.jours[sg.fin].nom.toLowerCase(), s2];
-    return [c, t, s2];
-  }
-  const postesDuJour = (j) => P.placesDuJour(d, j.cle).length;
 
   function rendreProgramme(cible) {
-    const total = d.jours.reduce((n, j) => n + postesDuJour(j), 0);
-    const tableau = h('table', { class: 'programme' },
-      h('caption', { class: 'visuellement-cache' }, 'Programme de la semaine, par piste et par jour'),
-      h('thead', null, h('tr', null, h('th', { class: 'piste', scope: 'col' }, h('span', { class: 'visuellement-cache' }, 'Piste')),
-        d.jours.map((j) => h('th', { scope: 'col', class: j.weekend ? 'weekend' : '' }, h('strong', null, j.court), j.date + ' juin')))),
-      h('tbody', null,
-        LIGNES_PROGRAMME.map((l) => h('tr', null,
-          h('th', { class: 'piste', scope: 'row' }, l.libelle),
-          segments(l).map((sg) => {
-            const span = sg.fin - sg.debut + 1;
-            if (!sg.a) return Array.from({ length: span }, () => h('td', null, h('div', { class: 'bloc vide' }, h('span', { class: 'visuellement-cache' }, 'Pas d’activité'))));
-            const [c, t2, s2] = libelleSegment(sg);
-            return h('td', { colspan: span > 1 ? String(span) : null }, h('div', { class: 'bloc ' + c }, h('b', null, t2), h('span', null, s2)));
-          }))),
-        h('tr', { class: 'postes' },
-          h('th', { class: 'piste', scope: 'row' }, 'Postes à tenir', h('small', null, total + ' dans la semaine')),
-          d.jours.map((j) => h('td', null, h('span', { class: 'nombre chiffres' }, String(postesDuJour(j))))))));
-
-    // Sur téléphone : ce qui revient chaque jour, puis une ligne par jour
-    const lignesMobiles = d.jours.map((j) => {
-      const autres = ['licencies', course.id, ...groupes.map((a) => a.id)].map(activite).filter((a) => joursDe(a).includes(j.cle)).map((a) => {
-        const [c, t2, s2] = bloc(a, j);
-        const titre = a.type === 'licencies' ? (j.cle === 'sam' ? 'Piste 1200 m réservée aux licenciés' : 'Licenciés sur la Piste 1200 m') : t2;
-        return h('div', { class: 'bloc ' + c }, h('b', null, titre), h('span', null, a.type === 'course' ? 'Piste 1200 m · ' + s2 : s2));
-      });
-      return h('div', { class: 'jour' + (j.weekend ? ' weekend' : '') },
-        h('div', { class: 'jour-tete' }, h('strong', null, j.court + ' ' + j.date), h('span', { class: 'postes-jour chiffres' }, pluriel(postesDuJour(j), 'poste', 'postes'))),
-        h('div', { class: 'jour-blocs' }, autres));
-    });
-    const mobile = h('div', { class: 'semaine-mobile' },
-      h('p', { class: 'quotidien' }, h('strong', null, 'Tous les jours : '), 'location sur la Piste 1000 m (' + plageActivite('loc1000', 'lun') + ', dès ' + hm(horaire('loc1000', 'sam').debut) + ' le week-end) et sur la Piste Découverte.'),
-      lignesMobiles,
-      h('p', { class: 'quotidien' }, h('strong', null, total + ' postes à tenir dans la semaine.')));
+    const agenda = h('div', { class: 'agenda' }, d.jours.map((j) => h('section', { class: 'agenda-jour' + (j.weekend ? ' weekend' : ''), 'aria-label': j.nom + ' ' + j.date + ' juin' },
+      h('h5', { class: 'agenda-tete' }, h('strong', null, j.nom), ' ' + j.date + ' juin'),
+      h('ul', { class: 'agenda-liste' }, evenementsDuJour(j).map((e) => h('li', { class: 'agenda-evt ' + e.classe },
+        h('span', { class: 'agenda-heure' }, plage(e.debut, e.fin)),
+        h('span', { class: 'agenda-quoi' }, h('b', null, e.titre), h('span', null, e.detail))))))));
     cible.append(h('div', { class: 'ecran' },
       h('div', { class: 'ecran-barre' }, h('h4', null, 'Programme de la semaine'), h('span', { class: 'tres-petit' }, 'Semaine d’exemple, du lundi 2 au dimanche 8 juin')),
-      h('div', { class: 'ecran-corps' }, tableau, mobile)),
+      h('div', { class: 'ecran-corps' }, agenda)),
       h('p', { class: 'tres-petit texte-2', style: 'margin-top:10px' }, 'Selon les semaines s’y ajoutent des stages de pilotage, le Trophée Gentleman des licenciés et des endurances de 6 à 25 heures, surtout le week-end.'));
   }
 
@@ -1884,7 +1871,7 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
         h('div', { class: 'personne-nom' }, p.nom,
           st ? h('span', { class: 'etiquette ' + st.classe }, st.texte) : null,
           p.type === 'Extra' && !st && p.ponderation !== 'normale' ? h('span', { class: 'etiquette ponderation ' + p.ponderation }, 'Pondération ' + p.ponderation) : null),
-        h('div', { class: 'personne-metiers' }, rolesDe(p) + (p.type === 'CDI' ? ' · ' + p.contrat.jours + ' jours par semaine' : ''))));
+        h('div', { class: 'personne-metiers' }, rolesDe(p) + (p.type === 'CDI' ? ' · ' + (p.contrat.jours < 5 ? 'temps partiel, ' : '') + p.contrat.jours + ' jours par semaine' : ''))));
   }
   function rendreViviers(cible) {
     const cdi = d.personnes.filter((p) => p.type === 'CDI');
@@ -1909,11 +1896,11 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
     const sol = new Set(d.sollicites);
     const cdis = d.personnes.filter((p) => p.type === 'CDI');
     const cdiDispo = cdis.filter((p) => !(statutSemaine(p) || {}).semaine).length;
-    cibleTexte.append('Chaque semaine, environ sept jours avant, l’outil leur envoie automatiquement par SMS un lien personnel pour donner leurs dispos. Ils répondent pour cette seule semaine, avant le ' + d.demande.echeance + '.');
+    cibleTexte.append('Le responsable coche, l’outil envoie : chaque semaine, environ sept jours avant, un SMS avec un lien personnel pour donner ses dispos, pour cette seule semaine, avant le ' + d.demande.echeance + '. En juin, il faut du monde : ici, tous les extras présents sont sollicités.');
     const exemple = personne(d.sollicites[0]);
     cible.append(h('div', { class: 'sollicitation' },
       h('div', { class: 'ecran' },
-        h('div', { class: 'ecran-barre' }, h('h4', null, 'Demande de disponibilités · semaine du 2 au 8 juin'),
+        h('div', { class: 'ecran-barre' }, h('h4', null, 'Demande de disponibilités · semaine du 2 au 8 juin', h('span', { class: 'apercu' }, 'Aperçu')),
           h('span', { class: 'pastille' }, cdiDispo + ' CDI sur ' + cdis.length + ' intégrés d’office')),
         h('div', { class: 'ecran-corps' },
           h('ul', { class: 'liste-cases deux visuel' }, extras.map((p) => {
@@ -1974,7 +1961,7 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
     const v = r && r[j.cle];
     const crs = v ? P.creneaux(d, j.cle, v) : [];
     const texte = !v ? 'pas disponible' : v === 'toute' ? 'toute la journée' : crs.map(([a, b]) => plage(a, b)).join(' et ');
-    const court = !v ? '' : v === 'toute' ? 'Journée' : crs.map(([a, b]) => hm(a).replace(' h', 'h').replace(' ', '') + '-' + hm(b).replace(' h', 'h').replace(' ', '')).join(', ');
+    const court = !v ? '' : v === 'toute' ? 'Toute la journée' : crs.map(([a, b]) => plage(a, b)).join(', ');
     return h('div', { class: 'cellule-dispo' + (v ? '' : ' vide'), title: j.nom + ' : ' + texte },
       h('div', { class: 'barre', 'aria-hidden': 'true' }, crs.map(([a, b]) => {
         const g = Math.max(a, DEBUT_BARRE), dr = Math.min(b, FIN_BARRE);
@@ -2015,7 +2002,8 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
     if (l.id === 'soir') return 'Groupes, ' + hm(Math.min(...groupes.map((a) => horaire(a.id, joursDe(a)[0]).debut))) + ' à ' + hm(Math.max(...groupes.map((a) => horaire(a.id, joursDe(a)[0]).fin)));
     if (l.id === 'p1200') return course.libelle + ', ' + plageActivite(course.id, joursDe(course)[0]);
     const sem = horaireLigne(l, 'lun'), we = horaireLigne(l, 'sam');
-    const base = (l.sous ? l.sous + ', ' : '') + plage(sem[0], sem[1]);
+    const ecarts = d.jours.filter((j) => !j.weekend && j.cle !== 'lun').map((j) => [j, horaireLigne(l, j.cle)]).filter(([, x]) => x && (x[0] !== sem[0] || x[1] !== sem[1]));
+    const base = (l.sous ? l.sous + ', ' : '') + plage(sem[0], sem[1]) + ecarts.map(([j, x]) => (x[0] === sem[0] ? ' (' + hm(x[1]) + ' le ' + j.nom.toLowerCase() + ')' : ' (' + plage(x[0], x[1]) + ' le ' + j.nom.toLowerCase() + ')')).join('');
     if (we && (we[0] !== sem[0] || we[1] !== sem[1])) return base + (we[1] === sem[1] ? ' ; dès ' + hm(we[0]) : ' ; ' + plage(we[0], we[1])) + ' le week-end';
     return base;
   }
@@ -2034,7 +2022,8 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
   }
   function enteteGroupe(cellule, jourCle) {
     const ids = [...new Set(cellule.personnes.map((x) => x.poste))];
-    const act = ids.map((id) => activite((d.postes.find((p) => p.id === id) || {}).activite)).find((a) => a && a.type === 'groupe');
+    const act = ids.map((id) => activite((d.postes.find((p) => p.id === id) || {}).activite)).find((a) => a && (a.type === 'groupe' || a.type === 'course'));
+    if (act && act.type === 'course') return h('div', { class: 'entete-groupe' }, act.libelle + ' · ' + plageActivite(act.id, jourCle));
     if (!act) return null;
     return h('div', { class: 'entete-groupe' }, act.libelle + ' · ' + act.pilotes + ' pilotes · ' + act.piste.replace('Piste ', '') + ' · ' + plageActivite(act.id, jourCle));
   }
@@ -2173,16 +2162,23 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
     const fortes = d.personnes.filter((p) => p.type === 'Extra' && p.ponderation === 'forte' && jours(p.id));
     const faibles = d.personnes.filter((p) => p.type === 'Extra' && p.ponderation === 'faible' && jours(p.id));
     const ecran = h('div', { class: 'ecran', style: 'margin-top:12px;box-shadow:none' });
+    const normales = d.personnes.filter((p) => p.type === 'Extra' && p.ponderation === 'normale' && jours(p.id));
+    const exRepos = exempleRepos(plan);
     if (fortes.length && faibles.length) {
-      const liste = (ps) => ps.map((p) => prenom(p) + ' (' + pluriel(jours(p.id), 'jour', 'jours') + ')').join(' et ');
+      const fortesTxt = fortes.slice().sort((x, y) => jours(y.id) - jours(x.id)).map((p) => {
+        const n = jours(p.id);
+        const raison = n < P.PLAFOND.forte && exRepos && exRepos.p.id === p.id ? ', son dernier jour tombait trop tôt après sa soirée (voir le repos ci-dessous)' : '';
+        return prenom(p) + ' ' + pluriel(n, 'jour', 'jours') + raison;
+      }).join(' ; ');
+      const maxNormale = Math.max(...normales.map((p) => jours(p.id)));
       ecran.append(h('p', { class: 'ponderation-resultat', style: 'margin-top:18px' }, h('strong', null, 'La pondération se lit dans le résultat. '),
-        'Pondération forte : ' + liste(fortes) + '. Pondération faible, pour qui débute : ' + liste(faibles) + ', toujours aux côtés d’un directeur de course.'));
+        'Forte : ' + fortesTxt + '. Normale : ' + maxNormale + ' jours au plus, même pour qui en avait donné davantage. Faible, pour qui débute : ' + faibles.map((p) => prenom(p) + ' ' + pluriel(jours(p.id), 'jour', 'jours')).join(', ') + ', toujours aux côtés d’un directeur de course.'));
     }
-    const ex = exempleRepos(plan);
+    const ex = exRepos;
     if (ex) {
       const il = fem(ex.p) ? 'Elle' : 'Il', le = fem(ex.p) ? 'la' : 'le', dit = fem(ex.p) ? 'dite' : 'dit';
       ecran.append(h('p', { class: 'exemple-repos' }, h('strong', null, 'Le repos aussi. '),
-        ex.p.nom + ' finit ' + (ex.evt ? (ex.evt.type === 'groupe' ? 'la ' + ex.evt.libelle.toLowerCase() : ex.evt.libelle) : 'sa soirée') + ' de ' + ex.veille.nom.toLowerCase() + ' à ' + ex.fin + '. ' + il + ' s’était ' + dit + ' disponible ' + ex.j.nom.toLowerCase() + ' dès ' + ex.debut + (ex.act ? ', pour les ' + ex.act.libelle : '') + ' : l’outil ne ' + le + ' rappelle pas, ' + il.toLowerCase() + ' n’aurait eu que ' + Math.floor(ex.repos / 60) + ' heures de repos.'));
+        ex.p.nom + ' finit ' + (ex.evt ? (ex.evt.type === 'groupe' ? 'la ' + ex.evt.libelle.toLowerCase() : ex.evt.libelle) : 'sa soirée') + ' de ' + ex.veille.nom.toLowerCase() + ' à ' + ex.fin + '. ' + il + ' s’était ' + dit + ' disponible ' + ex.j.nom.toLowerCase() + ' dès ' + ex.debut + (ex.act ? ', pour les ' + ex.act.libelle : '') + ' : l’outil ne ' + le + ' rappelle pas, ' + il.toLowerCase() + ' n’aurait eu que ' + hm(ex.repos) + ' de repos.'));
     }
     rendreRegles(ecran, CONTROLE);
     cible.append(ecran);
@@ -2208,7 +2204,7 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
     }).filter(Boolean);
     cible.append(h('div', { class: 'validation-visuel' },
       h('div', { class: 'ecran' },
-        h('div', { class: 'ecran-barre' }, h('h4', null, 'Proposition prête'), h('span', { class: 'pastille vert' }, h('span', { class: 'point' }), CONTROLE.regles.filter((r) => r.ok).length + ' règles vérifiées')),
+        h('div', { class: 'ecran-barre' }, h('h4', null, 'Proposition prête', h('span', { class: 'apercu' }, 'Aperçu')), h('span', { class: 'pastille vert' }, h('span', { class: 'point' }), CONTROLE.regles.filter((r) => r.ok).length + ' règles vérifiées')),
         h('div', { class: 'ecran-corps' },
           h('dl', { class: 'chiffres-cles chiffres' },
             h('div', null, h('dt', null, 'Postes tenus'), h('dd', null, String(tenues))),
@@ -2216,7 +2212,6 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
             h('div', null, h('dt', null, 'Journées extras'), h('dd', null, String(jExtra), h('small', null, pluriel(nExtra, 'personne', 'personnes')))),
             h('div', null, h('dt', null, 'Postes à pourvoir'), h('dd', null, String((PLAN.manques || []).length)))),
           h('div', { class: 'actions-validation' },
-            h('span', { class: 'bouton discret', 'aria-hidden': 'true' }, 'Changer une case'),
             h('span', { class: 'bouton', 'aria-hidden': 'true' }, 'Valider et envoyer')))),
       bulleSMS('Jeudi 29 mai, 19 h', ['Bonjour ' + prenom(exemple) + ', votre planning de la semaine du 2 au 8 juin :', lignesSms, 'L’heure indiquée est celle de la prise de poste. Répondez OK pour valider.'])));
   }
@@ -2305,9 +2300,9 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
     const equipe = (() => { const pl = apres.places; const dc = pl.filter((x) => x.place.expert).length; const com = pl.filter((x) => x.place.metier === 'piste' && !x.place.expert).length; const mec = pl.length - dc - com; return dc + ' directeur de course, ' + com + ' commissaires de piste et ' + mec + ' mécanicien'; })();
     const fil = h('ol', { class: 'fil' },
       h('li', null, h('span', { class: 'heure' }, heure), h('p', null, s.message)),
-      h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 1)), h('p', null, 'L’outil calcule l’équipe comme pour tout groupe : ' + a.pilotes + ' pilotes, donc ' + equipe + '. ' + (tout ? pluriel(tout, 'personne avait', 'personnes avaient') + ' déjà donné ce créneau.' : 'Personne n’avait donné ce créneau.'))),
-      h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 2)), h('p', null, 'Il envoie un SMS « Besoin de monde ' + j.nom.toLowerCase() + ' soir » aux ' + cibles.size + ' extras qui peuvent tenir ces postes : bon rôle, bon niveau, reposés, pas déjà en poste, sous leur plafond de pondération.')),
-      h('li', { class: 'fin' }, h('span', { class: 'heure' }, derniere), h('p', null, oui.length + ' oui et ' + non.length + ' non : ' + (pourvues === nPlaces ? 'l’équipe est complète. Chacun reçoit son poste et son horaire ; le reste du planning ne bouge pas.' : (nPlaces - pourvues) + ' postes restent à pourvoir.'))));
+      h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 1)), h('p', null, 'L’outil calcule l’équipe comme pour tout groupe : ' + a.pilotes + ' pilotes, donc ' + equipe + '. ' + (tout ? pluriel(tout, 'extra encore libre avait', 'extras encore libres avaient') + ' déjà donné ce créneau.' : 'Aucun extra encore libre ce soir-là n’avait donné ce créneau.'))),
+      h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 2)), h('p', null, 'Le responsable envoie en un geste le SMS « Besoin de monde ' + j.nom.toLowerCase() + ' soir » aux ' + cibles.size + ' extras que l’outil a retenus : bon rôle, bon niveau, reposés, pas déjà en poste, sous leur plafond de pondération.')),
+      h('li', { class: 'fin' }, h('span', { class: 'heure' }, derniere), h('p', null, oui.length + ' oui et ' + non.length + ' non : ' + (pourvues === nPlaces ? 'l’équipe est complète. Le responsable valide ; chacun reçoit son poste et son horaire. Le reste du planning ne bouge pas.' : (nPlaces - pourvues) + ' postes restent à pourvoir.'))));
     const lignes = apres.places.map((x) => {
       const p = x.choisi && personne(x.choisi);
       const rep = p && s.reponsesDemande[p.id];
@@ -2337,7 +2332,7 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
     }
     for (const s of d.imprevus) onglets.append(h('button', { type: 'button', role: 'tab', 'data-id': s.id, onclick: () => montrer(s.id) }, h('strong', null, s.titre), h('span', null, s.quand)));
     cible.append(onglets, zone,
-      h('p', { class: 'autres-cas' }, 'De la même façon : un retard, un désistement la veille, une soirée qui finit plus tard (l’outil revérifie le repos du lendemain), une piste fermée. Chaque changement repasse par les mêmes règles.'));
+      h('p', { class: 'autres-cas' }, h('strong', null, 'L’ordre de recherche : '), 'd’abord un extra disponible à ces heures-là selon sa réponse, puis un CDI en repos, avec son accord, enfin un extra non sollicité, à appeler directement. De la même façon : un retard, un désistement la veille, une soirée qui finit plus tard (l’outil revérifie le repos du lendemain), une piste fermée. Chaque changement repasse par les mêmes règles.'));
     montrer(d.imprevus[0].id);
   }
 
@@ -2355,7 +2350,7 @@ details.controle summary .ok { display: inline-grid; place-items: center; width:
     if (q('[data-validation]')) rendreValidation(q('[data-validation]'));
     if (q('[data-urgences]')) rendreUrgences(q('[data-urgences]'));
     const pied = q('[data-pied]');
-    if (pied) pied.append('Maquette réalisée pour le RKC, sur une semaine d’exemple. Les personnes sont fictives ; les effectifs et les horaires s’inspirent de vrais plannings du RKC.', h('br'), 'Prochaine étape : paramétrer les règles du RKC, puis tester la proposition sur une semaine réelle.');
+    if (pied) pied.append('Maquette réalisée pour le RKC, sur une semaine d’exemple.', h('br'), 'Prochaine étape : paramétrer les règles du RKC, puis tester la proposition sur une semaine réelle.');
     typographier(document.body);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', monter); else monter();
