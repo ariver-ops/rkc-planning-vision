@@ -1,0 +1,109 @@
+// Preuve par la mesure : la proposition de planning respecte-t-elle toutes les règles ?
+// Usage : node preuve.cjs [--json chemin]   (lit donnees.js et planning.js à côté de ce fichier)
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const ici = __dirname;
+const bac = { console };
+bac.window = bac;
+bac.globalThis = bac;
+vm.createContext(bac);
+for (const f of ['donnees.js', 'planning.js']) vm.runInContext(fs.readFileSync(path.join(ici, f), 'utf8'), bac, { filename: f });
+const d = bac.DONNEES_RKC;
+const P = bac.PlanningRKC;
+const nom = (id) => d.personnes.find((p) => p.id === id).nom;
+
+let echecs = 0;
+const verdict = (ok, texte) => { if (!ok) echecs++; console.log((ok ? '  OK   ' : '  ÉCHEC ') + texte); };
+
+// 1. La proposition, en laissant l'outil choisir les jours des CDI
+const plan = P.proposer(d, { essaisCDI: 5000 });
+console.log('\n== Jours de repos choisis pour les CDI ==');
+for (const p of d.personnes.filter((x) => x.type === 'CDI')) {
+  const travailles = plan.joursCDI[p.id] || [];
+  const repos = d.jours.filter((j) => !travailles.includes(j.cle)).map((j) => j.court);
+  const abs = (p.absences || []).map((a) => a.motif + ' (' + a.jours.length + ' j)').join(', ');
+  console.log('  ' + p.nom.padEnd(11) + ' travaille ' + travailles.length + ' j · ne travaille pas : ' + repos.join(' ') + (abs ? ' · ' + abs : ''));
+}
+
+console.log('\n== Le planning, une ligne par endroit ==');
+const g = P.grille(d, plan);
+for (const l of g) {
+  console.log('  ' + l.libelle);
+  for (const c of l.jours) {
+    if (!c.actif) continue;
+    const j = d.jours.find((x) => x.cle === c.jour);
+    const qui = c.personnes.map((x) => x.nom + (x.type === 'CDI' ? '' : '*') + (x.expert ? ' (E)' : '') + (x.role && x.role !== 'Pistard' && x.role !== 'Accueil' ? ' [' + x.role + ']' : '')).join(', ');
+    console.log('     ' + j.court.padEnd(5) + qui + (c.vides ? '  + ' + c.vides + ' place(s) vide(s)' : ''));
+  }
+}
+console.log('  (* = extra, E = place d’expert)');
+
+console.log('\n== Contrôle règle par règle ==');
+const c = P.controler(d, plan);
+for (const r of c.regles) verdict(r.ok, r.regle + (r.ok ? '' : ' : ' + r.erreurs.join(' | ')));
+console.log('  ' + c.places + ' places tenues, ' + c.manques + ' vide(s)');
+
+console.log('\n== Journées par extra ==');
+const parExtra = {};
+for (const j of d.jours) for (const a of plan.affectations[j.cle]) if (d.personnes.find((p) => p.id === a.personne).type === 'Extra') (parExtra[a.personne] = parExtra[a.personne] || []).push(j.court + (a.place.soir ? ' soir' : ''));
+for (const p of d.personnes.filter((x) => x.type === 'Extra')) {
+  const etat = !d.sollicites.includes(p.id) ? 'non sollicité' : !d.reponses[p.id] ? 'pas de réponse' : '';
+  console.log('  ' + p.nom.padEnd(11) + ' ' + ('(' + p.ponderation + ')').padEnd(10) + ' ' + (parExtra[p.id] || []).length + ' j : ' + (parExtra[p.id] || []).join(', ') + (etat ? ' · ' + etat : ''));
+}
+let cdiJours = 0, extraJours = 0;
+for (const j of d.jours) for (const a of plan.affectations[j.cle]) (d.personnes.find((p) => p.id === a.personne).type === 'CDI' ? cdiJours++ : extraJours++);
+console.log('  Journées CDI : ' + cdiJours + ' · journées extras : ' + extraJours);
+
+// 2. La même proposition, recalculée avec les jours CDI figés (ce que fera la page)
+const fige = P.proposer(d, { joursCDI: plan.joursCDI });
+verdict(JSON.stringify(fige.affectations) === JSON.stringify(plan.affectations), 'La page retrouve exactement la même proposition à jours CDI figés');
+
+// 3. Deux tailles : moins d'extras sollicités, les manques doivent se voir, jamais se cacher
+for (const retires of [['ines'], ['ines', 'sarah', 'noa']]) {
+  const sol = d.sollicites.filter((x) => !retires.includes(x));
+  const p2 = P.proposer(d, { joursCDI: plan.joursCDI, sollicites: sol });
+  const c2 = P.controler(d, p2, { sollicites: sol });
+  const couverture = c2.regles.find((r) => r.regle.startsWith('Tous les postes'));
+  const autres = c2.regles.filter((r) => r !== couverture);
+  console.log('\n== Essai sans ' + retires.map(nom).join(', ') + ' : ' + p2.manques.length + ' place(s) vide(s) ==');
+  verdict(couverture.ok === (p2.manques.length === 0), 'Le contrôle voit exactement les places vides');
+  verdict(autres.every((r) => r.ok), 'Toutes les autres règles tiennent même avec moins de monde');
+  for (const m of p2.manques) console.log('     vide : ' + m.jour + ' ' + m.poste + (m.expert ? ' (expert)' : ''));
+}
+
+// 4. Imprévus : pour chaque personne planifiée chaque jour, l'outil trouve-t-il quelqu'un ?
+console.log('\n== Imprévus : remplaçants possibles ==');
+let sansSolution = 0, total = 0;
+for (const j of d.jours) {
+  for (const a of plan.affectations[j.cle]) {
+    total++;
+    const r = P.remplacants(d, plan, a.personne, j.cle);
+    if (!r.candidats.length) { sansSolution++; console.log('     aucun remplaçant : ' + j.court + ' ' + nom(a.personne) + ' (' + a.place.poste + ')'); }
+  }
+}
+console.log('  ' + (total - sansSolution) + ' absences sur ' + total + ' ont au moins une solution proposée');
+
+const exemples = [];
+for (const j of d.jours.filter((x) => !x.weekend)) {
+  for (const a of plan.affectations[j.cle]) {
+    const p = d.personnes.find((x) => x.id === a.personne);
+    if (p.type === 'CDI' && a.place.poste === 'accueil') exemples.push([j.cle, a.personne]);
+  }
+}
+for (const [jour, id] of exemples.slice(0, 3)) {
+  const r = P.remplacants(d, plan, id, jour);
+  console.log('  Si ' + nom(id) + ' est malade ' + jour + ' (' + r.place.poste + ', ' + P.texteHeure(r.place.debut) + ' à ' + P.texteHeure(r.place.fin) + ') :');
+  for (const x of r.candidats.slice(0, 4)) console.log('     + ' + x.nom + ' · ' + x.statut + ' · ' + x.detail);
+  for (const x of r.ecartes) console.log('     - ' + x.nom + ' · ' + x.raison + (x.poste ? ' (' + x.poste + ')' : ''));
+}
+
+const sortie = process.argv.indexOf('--json');
+if (sortie > -1) {
+  fs.writeFileSync(process.argv[sortie + 1], JSON.stringify({ joursCDI: plan.joursCDI, affectations: plan.affectations, manques: plan.manques, controle: c }, null, 2));
+  console.log('\nProposition écrite dans ' + process.argv[sortie + 1]);
+}
+console.log('\n' + (echecs ? echecs + ' ÉCHEC(S)' : 'Toutes les preuves passent'));
+process.exit(echecs ? 1 : 0);

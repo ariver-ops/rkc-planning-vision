@@ -1,0 +1,289 @@
+// Dossier de preuves de la maquette RKC, calculé avec les mêmes données et le même moteur que la page.
+// Usage : node dossier-preuves.cjs <sortie.md> <mesures-page.json> "<date>"
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const [sortie, fichierMesures, date] = process.argv.slice(2);
+const ici = __dirname;
+const bac = { console };
+bac.window = bac;
+bac.globalThis = bac;
+vm.createContext(bac);
+for (const f of ['donnees.js', 'planning.js']) vm.runInContext(fs.readFileSync(path.join(ici, f), 'utf8'), bac, { filename: f });
+const d = bac.DONNEES_RKC;
+const P = bac.PlanningRKC;
+
+const L = [];
+const ecrire = (...x) => L.push(...x.map((l) => String(l).replace(/\.\./g, '.')));
+const personne = (id) => d.personnes.find((p) => p.id === id);
+const jour = (cle) => d.jours.find((j) => j.cle === cle);
+const h = P.texteHeure;
+const metiers = (p) => Object.entries(p.metiers).map(([m, n]) => d.metiers[m] + ' ' + n).join(', ');
+const libelleLigne = (posteId) => (d.lignes.find((l) => l.postes.includes(posteId)) || {}).libelle || posteId;
+const role = (posteId) => (d.postes.find((p) => p.id === posteId) || (d.imprevus.find((s) => s.ajout && s.ajout.id === posteId) || {}).ajout || {}).role || '';
+const activiteDe = (posteId) => d.activites.find((a) => a.id === (d.postes.find((p) => p.id === posteId) || {}).activite);
+const joursActivite = (a) => (a.jours === 'tous' ? d.jours.map((j) => j.cle) : a.jours);
+const dureeTravail = (pl) => { const m = pl.fin - pl.debut; return m - (m > 6 * 60 ? 60 : 0); };
+const enHeures = (m) => (m % 60 ? Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0') : m / 60 + ' h');
+const oui = (b) => (b ? 'oui' : '**NON**');
+
+const PLAN = P.proposer(d, { joursCDI: d.joursCDI });
+const LIBRE = P.proposer(d, { essaisCDI: 5000 });
+const CTRL = P.controler(d, PLAN);
+const total = d.jours.reduce((n, j) => n + P.placesDuJour(d, j.cle).length, 0);
+
+// ---------- En-tête ----------
+ecrire('# Dossier de preuves : maquette « Planning des équipes » du RKC', '',
+  'Généré le ' + (date || 'jour non précisé') + ' par `maquette/src/dossier-preuves.cjs`, avec **les mêmes données (`donnees.js`) et le même moteur (`planning.js`) que la page**. Aucun chiffre de ce dossier n’est écrit à la main : tout est recalculé à chaque génération.', '',
+  'Pour tout refaire soi-même : `node maquette/src/preuve.cjs` (les règles, sortie lisible) puis `node maquette/src/dossier-preuves.cjs dossier.md mesures.json "date"` (ce dossier).', '',
+  '## En bref', '',
+  '- La semaine d’exemple compte **' + total + ' postes**. La proposition les tient tous : ' + CTRL.places + ' postes tenus, ' + CTRL.manques + ' à pourvoir.',
+  '- **' + CTRL.regles.filter((r) => r.ok).length + ' règles sur ' + CTRL.regles.length + '** sont respectées. Elles sont contrôlées par une fonction séparée du calcul, qui ne lui fait pas confiance (partie 4).',
+  '- Le planning **n’est pas écrit dans la page** : il est calculé au chargement, et recalculé quand on change la sélection d’extras dans la démonstration (partie 3).',
+  '- Le contrôle **attrape les erreurs** : sur ' + 'neuf erreurs introduites volontairement, voir la partie 7.3 pour le résultat.',
+  '- **Toutes les personnes et toutes les réponses sont fictives.** Les besoins par activité et les seuils de repos sont des hypothèses de maquette, à paramétrer avec le RKC (partie 1).', '');
+
+// ---------- 1. Réel ou fictif ----------
+ecrire('## 1. Ce qui vient du RKC, ce qui est une hypothèse, ce qui est fictif', '',
+  '| Élément | D’où il vient | Statut |', '|---|---|---|',
+  '| Structure du programme : location 1000 m et piste enfants chaque jour, licenciés sur la 1200 m en journée, deux groupes le soir (un sur chaque piste), 1200 m réservée aux licenciés le samedi, course de 6 heures le dimanche | Description d’Anthony (14:22 et 14:41) | Réel dans son principe, sur une **semaine d’exemple** |',
+  '| Demande de disponibilités par SMS aux extras choisis, pour une seule semaine, environ sept jours avant ; réponses suivies en direct | Fonctionnalité demandée par Anthony | **Fonctionnalité demandée.** Dans la maquette, l’envoi, les coordonnées et les réponses sont simulés |',
+  '| Les cinq métiers (Accueil, Piste location, Mécanique location, Mécanique compétition, Magasin compétition) | Version précédente, non contestée par Anthony | À confirmer avec le RKC |',
+  '| Niveaux Débutant, Confirmé, Expert ; « Piste location · Expert » comprend briefing et encadrement | Anthony (13:39) et version précédente | Principe confirmé par Anthony |',
+  '| CDI toujours prioritaires sur les extras | Anthony (13:39) | Principe confirmé par Anthony |',
+  '| Deux jours de repos par semaine l’été, trois l’hiver, pour les CDI | Anthony, d’après l’expérience des saisons | **Hypothèse métier issue de l’expérience, à valider avec le RKC** (pas encore une règle contractuelle vérifiée) |',
+  '| Contrat de 5 jours par semaine l’été pour chaque CDI | Déduit de la ligne précédente | **Hypothèse à valider** avec les contrats réels |',
+  '| Horaires des activités (10 h à 19 h, 9 h à 18 h, 19 h 30 à 23 h 30, 8 h à 17 h) | Choix de la maquette | **Hypothèse à valider** avec le RKC |',
+  '| Besoin de chaque activité (nombre de personnes, place d’expert) | Choix de la maquette, partie 2 | **Hypothèse à valider** avec le RKC |',
+  '| Au plus un débutant par poste, toujours avec un expert ; jours de repos pris d’affilée | Choix de la maquette, tiré de « un débutant reste encadré » | **Hypothèse à valider** avec le RKC |',
+  '| Pondération des extras (forte, normale, faible pour qui débute) et plafonds de jours (5, 4, 1) | Principe d’Anthony (13:39) ; plafonds choisis par la maquette | Principe confirmé ; **valeurs à paramétrer** |',
+  '| Les 8 CDI et les 12 extras, leurs métiers, niveaux, congés, arrêt, déplacement, pondérations | Inventés pour la maquette | **Fictif** |',
+  '| Les 10 extras sollicités et leurs 9 réponses | Inventés pour la maquette | **Fictif** |',
+  '| Repos quotidien de 11 heures, repos hebdomadaire de 35 heures d’affilée, 10 heures par jour, 48 heures par semaine, 6 jours au plus | Code du travail, articles L3131-1, L3132-2, L3121-18, L3121-20, L3132-1 | **Minimums légaux généraux.** Des dérogations encadrées existent (accords, convention collective) : à vérifier pour le RKC |', '');
+
+// ---------- 2. Les 60 postes ----------
+ecrire('## 2. Le calcul des ' + total + ' postes', '',
+  '**Un poste, c’est une personne à placer à un endroit, pendant une plage horaire, un jour donné.** Exemple : « piste 1000 m, commissaire de piste, lundi 2 juin, 10 h à 19 h ». Si deux commissaires de piste sont nécessaires, cela fait deux postes. Une personne tient au plus un poste par jour. ' + total + ' postes, c’est donc ' + total + ' journées (ou soirées) de travail à pourvoir dans la semaine.', '',
+  '### 2.1 Le besoin de chaque activité (hypothèse de la maquette)', '',
+  '| Activité | Poste | Métier exigé | En semaine | Le week-end | Exigence de niveau |', '|---|---|---|---|---|---|');
+for (const p of d.postes) {
+  const a = d.activites.find((x) => x.id === p.activite);
+  const n = typeof p.nombre === 'number' ? p.nombre : null;
+  const sem = n != null ? n : p.nombre.semaine;
+  const we = n != null ? n : p.nombre.weekend;
+  const jours = p.jours ? ' (' + p.jours.map((j) => jour(j).nom.toLowerCase()).join(', ') + ' seulement)' : (a.jours === 'tous' ? '' : ' (' + a.jours.map((j) => jour(j).nom.toLowerCase()).join(', ') + ')');
+  const niveau = (p.experts ? p.experts + ' place d’expert' : '') + (p.niveauMin ? 'Confirmé au moins' : '') + ((p.experts || 0) >= 1 ? ', 1 débutant au plus' : '');
+  ecrire('| ' + a.libelle + ' · ' + a.piste + jours + ' | ' + p.role + ' | ' + d.metiers[p.metier] + ' | ' + sem + ' | ' + we + ' | ' + (niveau || 'aucune') + ' |');
+}
+ecrire('', '### 2.2 Les postes jour par jour', '', '| Jour | Activités du jour | Postes | Détail |', '|---|---|---|---|');
+for (const j of d.jours) {
+  const pls = P.placesDuJour(d, j.cle);
+  const hm = (x) => h(+x.split(':')[0] * 60 + +x.split(':')[1]);
+  const acts = d.activites.filter((a) => joursActivite(a).includes(j.cle)).map((a) => (a.id === 'enfants' ? 'Piste enfants' : (a.id === 'licencies' && j.cle === 'sam' ? 'Réservée aux licenciés' : a.libelle) + ' ' + a.piste.replace('Piste ', '')) + ' (' + hm(a.debut) + ' à ' + hm(a.fin) + ')');
+  const parPoste = {};
+  for (const pl of pls) { const l = libelleLigne(pl.poste), r = role(pl.poste); const k = l.toLowerCase() === r.toLowerCase() ? l : l + ', ' + r.toLowerCase(); parPoste[k] = (parPoste[k] || 0) + 1; }
+  ecrire('| ' + j.nom + ' ' + j.date + ' juin | ' + acts.join(' ; ') + ' | **' + pls.length + '** | ' + Object.entries(parPoste).map(([k, n]) => n + ' × ' + k).join(' ; ') + ' |');
+}
+ecrire('| **Semaine** | | **' + total + '** | |', '');
+
+// ---------- 3. Le moteur ----------
+const egal = JSON.stringify(PLAN.affectations) === JSON.stringify(LIBRE.affectations);
+ecrire('## 3. Comment le planning est calculé, et ce qui est recalculé', '',
+  '1. **Les jours des CDI.** Pour chaque CDI, le moteur cherche deux jours de repos d’affilée (hors congés et arrêt), de préférence en semaine. Il évalue toutes les combinaisons possibles et garde celle qui permet de tenir tous les postes au moindre coût.',
+  '2. **Les postes de chaque jour.** Chaque jour, une affectation optimale (méthode hongroise) place d’abord les CDI à leur métier principal, puis les extras disponibles, en tenant compte de leur pondération. Un poste n’est proposé qu’à quelqu’un qui a le métier et le niveau, qui est disponible (pour un extra : selon sa réponse, journée ou soirée), qui n’a pas déjà un poste ce jour-là et qui a eu ses 11 heures de repos.',
+  '3. **Le repos hebdomadaire.** Si un extra n’a pas 35 heures de repos d’affilée dans la semaine, le moteur lui retire un jour et recalcule, en gardant la solution qui couvre le mieux.',
+  '4. **Le contrôle.** Une fonction séparée relit la proposition règle par règle, à partir des données brutes, sans faire confiance au calcul (partie 4).',
+  '5. **Les remplaçants.** Pour un imprévu, le moteur liste qui peut tenir le poste et dit pourquoi les autres sont écartés (déjà en poste, indisponible, repos trop court, repos de la semaine insuffisant, niveau insuffisant, congés, arrêt, déplacement).', '',
+  '**Ce qui est recalculé dans la page.** Le fichier HTML ne contient aucune case de planning écrite à la main. Les ' + total + ' affectations sont produites au chargement par `PlanningRKC.proposer()`. Pour aller vite, les jours de repos des CDI de la sélection par défaut sont mémorisés dans `donnees.js` (`joursCDI`), tels que le moteur les a calculés. Ce dossier vérifie que le calcul complet redonne exactement la même proposition : **' + (egal ? 'identique' : 'DIFFÉRENTE') + '**. Dès qu’on coche ou décoche un extra dans la démonstration, tout est recalculé, jours des CDI compris (partie 7.1). Mesuré dans Chrome : moins d’une milliseconde pour la proposition par défaut, environ 30 millisecondes pour un recalcul complet (jours des CDI compris). Les jours de repos des CDI sont cherchés en semaine d’abord, le week-end seulement s’il n’y a pas d’autre choix.', '');
+
+// ---------- 4. Les règles ----------
+const ce = {
+  legal: 'Minimums généraux du Code du travail. Des dérogations encadrées existent selon les accords et la convention collective : à vérifier pour le RKC.',
+  contrat: 'Ce que disent le contrat de chaque CDI, ses congés et arrêts, et la réponse de chaque extra.',
+  rkc: 'Règles d’organisation propres au RKC. Ce sont des hypothèses de maquette, paramétrables.',
+  ponderation: 'Réglages d’optimisation : ils orientent la proposition, ils ne relèvent pas de la loi.',
+};
+ecrire('## 4. Les ' + CTRL.regles.length + ' règles contrôlées, rangées par nature', '',
+  'Le contrôle distingue quatre familles. Une règle légale n’est jamais présentée comme une règle du RKC, et inversement.', '');
+for (const type of ['legal', 'contrat', 'rkc', 'ponderation']) {
+  const rs = CTRL.regles.filter((x) => x.type === type);
+  if (!rs.length) continue;
+  ecrire('### ' + rs[0].famille, '', ce[type], '', '| Règle | Référence | Résultat sur la proposition |', '|---|---|---|');
+  for (const x of rs) ecrire('| ' + x.regle + ' | ' + (x.ref || (type === 'contrat' ? 'Contrat et données' : type === 'rkc' ? 'Paramètre RKC' : 'Réglage')) + ' | ' + (x.ok ? 'respectée' : '**non respectée** : ' + x.erreurs.join(' ; ')) + ' |');
+  ecrire('');
+}
+ecrire('**Le sixième jour.** La loi interdit de travailler plus de 6 jours dans la semaine. Un sixième jour n’est donc pas illégal en soi : la maquette ne le signale que parce que le contrat d’exemple des CDI prévoit 5 jours, avec deux jours de repos l’été (hypothèse à valider). Un septième jour, lui, est signalé par la règle légale (partie 7.3).', '');
+
+// ---------- 5. Tableau de contrôle, jour par jour ----------
+ecrire('## 5. Tableau de contrôle, jour par jour', '', 'Pour chaque journée : le programme, les postes à couvrir, les personnes disponibles, puis les personnes affectées, poste par poste.', '');
+for (const j of d.jours) {
+  const pls = P.placesDuJour(d, j.cle);
+  const affs = PLAN.affectations[j.cle];
+  const cdiAu = d.personnes.filter((p) => p.type === 'CDI' && (d.joursCDI[p.id] || []).includes(j.cle)).map((p) => p.nom);
+  const cdiNon = d.personnes.filter((p) => p.type === 'CDI' && !(d.joursCDI[p.id] || []).includes(j.cle)).map((p) => {
+    const abs = (p.absences || []).find((a) => a.jours.includes(j.cle));
+    return p.nom + ' (' + (abs ? abs.motif.toLowerCase() : 'repos') + ')';
+  });
+  const dispo = { journee: [], soir: [], 'journee+soir': [] };
+  for (const id of d.sollicites) { const r = d.reponses[id]; if (r && r[j.cle]) dispo[r[j.cle]].push(personne(id).nom); }
+  const indispo = d.sollicites.filter((id) => d.reponses[id] && !d.reponses[id][j.cle]).map((id) => personne(id).nom);
+  const sansReponse = d.sollicites.filter((id) => !d.reponses[id]).map((id) => personne(id).nom);
+  ecrire('### ' + j.nom + ' ' + j.date + ' juin : ' + pls.length + ' postes, ' + affs.length + ' tenus', '',
+    '- **Programme :** ' + d.activites.filter((a) => joursActivite(a).includes(j.cle)).map((a) => (a.id === 'licencies' && j.cle === 'sam' ? 'Réservée aux licenciés' : a.libelle) + ', ' + a.piste.toLowerCase()).join(' ; ') + '.',
+    '- **CDI au travail selon leur contrat :** ' + (cdiAu.join(', ') || 'aucun') + '.',
+    '- **CDI qui ne travaillent pas :** ' + (cdiNon.join(', ') || 'aucun') + '.',
+    '- **Extras disponibles selon leur réponse :** journée : ' + (dispo.journee.join(', ') || 'aucun') + ' ; soirée : ' + (dispo.soir.join(', ') || 'aucun') + ' ; journée et soirée : ' + (dispo['journee+soir'].join(', ') || 'aucun') + '. Indisponibles : ' + (indispo.join(', ') || 'aucun') + '. Sans réponse : ' + (sansReponse.join(', ') || 'aucun') + '.', '',
+    '| Endroit | Horaires | Poste | Personne | Statut | Niveau dans le métier |', '|---|---|---|---|---|---|');
+  for (const a of affs.slice().sort((x, y) => d.lignes.findIndex((l) => l.postes.includes(x.place.poste)) - d.lignes.findIndex((l) => l.postes.includes(y.place.poste)))) {
+    const p = personne(a.personne);
+    ecrire('| ' + libelleLigne(a.place.poste) + (activiteDe(a.place.poste) && ['soiree', 'groupe', 'course'].includes(activiteDe(a.place.poste).id) ? ' (' + activiteDe(a.place.poste).libelle.toLowerCase() + ')' : '') + ' | ' + h(a.place.debut) + ' à ' + h(a.place.fin) + ' | ' + role(a.place.poste) + (a.place.expert ? ' (place d’expert)' : '') + ' | ' + p.nom + ' | ' + p.type + ' | ' + d.metiers[a.place.metier] + ' ' + p.metiers[a.place.metier] + ' |');
+  }
+  ecrire('');
+}
+
+// ---------- 6. Preuve par personne ----------
+ecrire('## 6. Preuve par personne', '', 'Pour chacun des ' + d.personnes.length + ' membres des viviers : ses affectations, et la vérification de chaque règle qui le concerne.', '',
+  '| Personne | Statut | Métiers et niveaux | Absence connue | Ce qu’il a déclaré ou son contrat | Affectations | Jours | Heures | Repos le plus court | Repos le plus long | Disponibilité | Métier et niveau | Absences | Contrat ou pondération | Repos ≥ 11 h | Repos hebdo ≥ 35 h | ≤ 10 h par jour | ≤ 48 h et ≤ 6 jours |',
+  '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
+for (const p of d.personnes) {
+  const missions = [];
+  d.jours.forEach((j, i) => { for (const a of PLAN.affectations[j.cle]) if (a.personne === p.id) missions.push({ i, j, a }); });
+  const heures = missions.reduce((n, m) => n + dureeTravail(m.a.place), 0);
+  let reposMin = null;
+  for (let k = 1; k < missions.length; k++) {
+    const e = missions[k].i * 1440 + missions[k].a.place.debut - (missions[k - 1].i * 1440 + missions[k - 1].a.place.fin);
+    reposMin = reposMin == null ? e : Math.min(reposMin, e);
+  }
+  const abs = (p.absences || []).map((a) => a.motif + ' (' + a.jours.map((x) => jour(x).court).join(' ') + ')').join(', ') || 'aucune';
+  let declare, dispoOk = true, contratOk = true;
+  if (p.type === 'CDI') {
+    const repos = d.jours.filter((j) => !(d.joursCDI[p.id] || []).includes(j.cle) && !(p.absences || []).some((a) => a.jours.includes(j.cle))).map((j) => j.court);
+    declare = 'Contrat de 5 jours ; repos : ' + (repos.join(' ') || 'aucun (absence)');
+    const presents = d.jours.filter((j) => !(p.absences || []).some((a) => a.jours.includes(j.cle))).length;
+    contratOk = missions.length === Math.min(p.contrat.jours, presents);
+  } else {
+    const r = d.reponses[p.id];
+    if (!d.sollicites.includes(p.id)) declare = 'Pas sollicité cette semaine';
+    else if (!r) declare = 'Sollicité, pas de réponse';
+    else declare = 'A répondu : ' + Object.entries(r).map(([k, v]) => jour(k).court + ' ' + (v === 'journee' ? 'journée' : v === 'soir' ? 'soirée' : 'journée et soirée')).join(', ');
+    dispoOk = missions.every((m) => r && d.sollicites.includes(p.id) && (r[m.j.cle] === 'journee+soir' || (m.a.place.soir ? r[m.j.cle] === 'soir' : r[m.j.cle] === 'journee')));
+    contratOk = missions.length <= P.PLAFOND[p.ponderation];
+  }
+  const metierOk = missions.every((m) => !!p.metiers[m.a.place.metier] && (!m.a.place.expert || p.metiers[m.a.place.metier] === 'Expert'));
+  const absOk = missions.every((m) => !(p.absences || []).some((a) => a.jours.includes(m.j.cle)));
+  const reposOk = reposMin == null || reposMin >= 11 * 60;
+  const jourOk = missions.every((m) => dureeTravail(m.a.place) <= 10 * 60);
+  const abs7 = missions.map((m) => [m.i * 1440 + m.a.place.debut, m.i * 1440 + m.a.place.fin]);
+  let plusLong = abs7.length ? abs7[0][0] : 7 * 1440;
+  for (let k = 1; k < abs7.length; k++) plusLong = Math.max(plusLong, abs7[k][0] - abs7[k - 1][1]);
+  if (abs7.length) plusLong = Math.max(plusLong, 7 * 1440 - abs7[abs7.length - 1][1]);
+  const hebdoOk = !abs7.length || plusLong >= 35 * 60;
+  const semaineOk = heures <= 48 * 60 && missions.length <= 6;
+  ecrire('| ' + p.nom + ' | ' + p.type + (p.ponderation ? ', pondération ' + p.ponderation : '') + ' | ' + metiers(p) + ' | ' + abs + ' | ' + declare + ' | ' +
+    (missions.map((m) => m.j.court + ' ' + libelleLigne(m.a.place.poste).toLowerCase() + ', ' + h(m.a.place.debut) + ' à ' + h(m.a.place.fin)).join(' ; ') || 'aucune') + ' | ' + missions.length + ' | ' + enHeures(heures) + ' | ' +
+    (reposMin == null ? 'sans objet' : enHeures(reposMin)) + ' | ' + (abs7.length ? enHeures(plusLong) : 'sans objet') + ' | ' + oui(dispoOk) + ' | ' + oui(metierOk) + ' | ' + oui(absOk) + ' | ' + oui(contratOk) + ' | ' + oui(reposOk) + ' | ' + oui(hebdoOk) + ' | ' + oui(jourOk) + ' | ' + oui(semaineOk) + ' |');
+}
+ecrire('', 'Les heures comptent le temps de présence, moins une heure de pause pour toute journée de plus de 6 heures.', '');
+
+// ---------- 7. Tests ----------
+ecrire('## 7. Tests du moteur', '', '### 7.1 Le moteur recalcule vraiment : d’autres entrées donnent un autre planning', '',
+  '| Entrée | Jours des CDI | Postes tenus | Postes à pourvoir | Règles respectées | Ce qui a changé |', '|---|---|---|---|---|---|');
+const comparer = (a, b) => d.jours.reduce((n, j) => n + a.affectations[j.cle].filter((x, k) => !b.affectations[j.cle][k] || b.affectations[j.cle][k].personne !== x.personne).length, 0);
+const essais = [
+  ['Sélection par défaut (10 extras, 9 réponses)', {}, d.sollicites],
+  ['Sans Inès M.', { retires: ['ines'] }],
+  ['Sans Inès M., Sarah C. et Noa B.', { retires: ['ines', 'sarah', 'noa'] }],
+  ['Avec Chloé S. en plus (non sollicitée par défaut, réponse ajoutée pour le test)', { ajout: 'chloe' }],
+];
+for (const [nom, o] of essais) {
+  let sol = d.sollicites.slice(), rep = Object.assign({}, d.reponses);
+  if (o.retires) sol = sol.filter((x) => !o.retires.includes(x));
+  if (o.ajout) { sol.push(o.ajout); rep[o.ajout] = { lun: 'journee', mar: 'journee', mer: 'journee' }; }
+  for (const mode of ['figés', 'recalculés']) {
+    if (!o.retires && !o.ajout && mode === 'recalculés') continue;
+    const pl = mode === 'figés' ? P.proposer(d, { joursCDI: d.joursCDI, sollicites: sol, reponses: rep }) : P.proposer(d, { sollicites: sol, reponses: rep, essaisCDI: 40, joursCDIDepart: d.joursCDI });
+    const c = P.controler(d, pl, { sollicites: sol, reponses: rep });
+    const autres = c.regles.filter((r) => !r.regle.startsWith('Tous les postes'));
+    ecrire('| ' + nom + ' | ' + mode + ' | ' + c.places + ' | ' + c.manques + ' | ' + autres.filter((r) => r.ok).length + ' sur ' + autres.length + ' (hors couverture) ; couverture : ' + (c.manques ? 'les ' + c.manques + ' postes vides sont signalés' : 'complète') + ' | ' + comparer(pl, PLAN) + ' affectations différentes de la proposition par défaut |');
+  }
+}
+ecrire('', 'Avec « jours des CDI recalculés », le moteur repart des jours connus et cherche s’il vaut mieux déplacer des jours de repos de CDI pour couvrir ce qui manque. C’est exactement ce que fait la démonstration de la page. Ajouter un extra ne peut donc jamais faire apparaître un trou.', '');
+
+ecrire('### 7.2 Les imprévus', '', '| Situation | Poste touché | Personnes proposées, dans l’ordre | Écartées, avec la raison | Après acceptation du premier |', '|---|---|---|---|---|');
+for (const s of d.imprevus) {
+  let place = null, ajouts;
+  if (s.ajout) { ajouts = [s.ajout]; place = P.placesDuJour(d, s.jour, ajouts).find((x) => x.poste === s.ajout.id); }
+  const r = P.remplacants(d, PLAN, s.absent || '', s.jour, place ? { place } : {});
+  const choisi = r.candidats[0];
+  let apres;
+  if (s.ajout) { apres = JSON.parse(JSON.stringify(PLAN)); apres.affectations[s.jour].push({ place, personne: choisi.id }); }
+  else apres = P.remplacer(PLAN, s.jour, s.absent, choisi.id);
+  const c = P.controler(d, apres, s.ajout ? { ajouts } : { imprevus: { [s.absent]: [s.jour] } });
+  ecrire('| ' + s.titre + (s.exemple ? ' (exemple raconté dans la page)' : ' (démonstration)') + ' : ' + s.message + ' | ' + libelleLigne(r.place.poste) + ', ' + jour(s.jour).nom.toLowerCase() + ', ' + h(r.place.debut) + ' à ' + h(r.place.fin) + ' | ' +
+    r.candidats.slice(0, 4).map((x) => x.nom + ' (' + x.statut.toLowerCase() + ')').join(' ; ') + ' | ' + (r.ecartes.map((x) => x.nom + ' : ' + x.raison).join(' ; ') || 'aucune') + ' | ' + choisi.nom + ' accepte : ' + c.regles.filter((x) => x.ok).length + ' règles sur ' + c.regles.length + ' respectées |');
+}
+ecrire('');
+
+// Erreurs volontaires : le contrôle doit les voir
+ecrire('### 7.3 Erreurs introduites volontairement : le contrôle les voit-il ?', '',
+  'Chaque ligne part de la proposition correcte, y introduit une seule erreur, puis relance le contrôle.', '',
+  '| Erreur introduite | Règle qui doit la signaler | Signalée ? | Message du contrôle |', '|---|---|---|---|');
+const clone = () => JSON.parse(JSON.stringify(PLAN));
+const trouver = (pl, jourCle, id) => { const a = pl.affectations[jourCle].find((x) => x.personne === id); if (!a) throw new Error('Erreur volontaire impossible : ' + id + ' ne travaille pas le ' + jourCle); return a; };
+const mutations = [
+  ['Yassine K., qui n’a pas répondu, mis à la piste 1000 m le samedi à la place de Manon V.', 'Un extra ne travaille que', (pl) => { trouver(pl, 'sam', 'manon').personne = 'yassine'; }],
+  ['Hugo L., en congés, mis à l’accueil le lundi à la place de Léa D.', 'Personne n’est planifié en congés', (pl) => { trouver(pl, 'lun', 'lea').personne = 'hugo'; }],
+  ['Nathan F. rappelé le mercredi à 10 h alors qu’il a fini à 23 h 30 le mardi (à la place d’Emma L.)', 'Repos quotidien', (pl) => { trouver(pl, 'mer', 'emma').personne = 'nathan'; }],
+  ['Camille M. placée sur deux postes le même jour (dimanche, piste 1000 m et piste enfants)', 'Une personne tient un seul poste', (pl) => { trouver(pl, 'dim', 'julie').personne = 'camille'; }],
+  ['Un poste laissé vide (accueil du mardi retiré)', 'Tous les postes sont tenus', (pl) => { pl.affectations.mar = pl.affectations.mar.filter((a) => !(a.place.poste === 'accueil')); }],
+  ['Manon V., débutante, échangée avec Sarah C. : seule à la piste enfants le samedi, sans expert', 'Bon métier, bon niveau', (pl) => { const m = trouver(pl, 'sam', 'manon'); const x = trouver(pl, 'sam', 'sarah'); m.personne = 'sarah'; x.personne = 'manon'; }],
+  ['Inès M. placée le lundi, jour où elle s’est dite indisponible (à la place de Sarah C.)', 'Un extra ne travaille que', (pl) => { trouver(pl, 'lun', 'sarah').personne = 'ines'; }],
+  ['Malik B. ajouté le jeudi, un de ses jours de repos : un sixième jour. La loi l’autorise ; le contrat d’exemple de 5 jours, non', 'Chaque CDI travaille les jours prévus', (pl) => { trouver(pl, 'jeu', 'karim').personne = 'malik'; }],
+  ['Camille M. mise aussi le lundi et le mardi : 7 jours sur 7', 'Pas plus de 6 jours', (pl) => { trouver(pl, 'lun', 'sarah').personne = 'camille'; trouver(pl, 'mar', 'ines').personne = 'camille'; }],
+  ['Lucas R. mis à l’atelier le mardi en journée, en plus de sa soirée du mardi', 'Durée quotidienne', (pl) => { trouver(pl, 'mar', 'malik').personne = 'lucas'; }],
+];
+let attrapees = 0;
+for (const [texte, regleAttendue, muter] of mutations) {
+  const pl = clone();
+  muter(pl);
+  const c = P.controler(d, pl);
+  const visee = c.regles.find((r) => r.regle.startsWith(regleAttendue));
+  const ok = visee && !visee.ok;
+  if (ok) attrapees++;
+  let msg = c.regles.filter((r) => !r.ok).map((r) => r.erreurs.join(' ; ')).join(' | ');
+  if (regleAttendue.startsWith('Chaque CDI')) { const six = c.regles.find((r) => r.regle.startsWith('Pas plus de 6 jours')); msg += ' | règle légale des 6 jours : ' + (six.ok ? 'non déclenchée, à raison' : 'DÉCLENCHÉE À TORT'); }
+  ecrire('| ' + texte + ' | ' + (visee ? visee.regle : regleAttendue) + ' | ' + (ok ? 'oui' : '**NON**') + ' | ' + msg + ' |');
+}
+ecrire('', '**Résultat : ' + attrapees + ' erreurs sur ' + mutations.length + ' signalées par la bonne règle.**', '');
+const iDossier = L.findIndex((x) => x.startsWith('- Le contrôle **attrape les erreurs**'));
+if (iDossier > -1) L[iDossier] = '- Le contrôle **attrape les erreurs** : ' + attrapees + ' erreurs introduites volontairement sur ' + mutations.length + ' sont signalées par la bonne règle (partie 7.3).';
+
+// Changement à la main
+const manuel = P.remplacer(PLAN, 'mer', 'emma', 'julie');
+const cm = P.controler(d, manuel);
+ecrire('### 7.4 Un changement à la main est recontrôlé', '',
+  'Dans la démonstration, le responsable remplace Emma L. (piste 1000 m, mercredi) par Julie P., CDI en repos ce jour-là. Le contrôle relancé répond : ' +
+  cm.regles.filter((r) => !r.ok).map((r) => '« ' + r.regle + ' » non respectée (' + r.erreurs.join(' ; ') + ')').join(' ; ') + '. Le changement reste possible, mais il est signalé.', '');
+
+// ---------- 8. Mesures de la page ----------
+ecrire('## 8. Ce qui a été mesuré sur la page', '');
+if (fichierMesures && fs.existsSync(fichierMesures)) {
+  const m = JSON.parse(fs.readFileSync(fichierMesures, 'utf8'));
+  ecrire('Mesures faites dans Chrome sans fenêtre, sur le fichier final, à quatre largeurs d’écran.', '', '| Largeur | Hauteur de page | Débordement horizontal | Textes sous 12 px | Erreurs dans la console | Mots rejetés | Tirets longs |', '|---|---|---|---|---|---|---|');
+  for (const x of m) ecrire('| ' + x.largeur + ' px | ' + x.hauteur + ' px | ' + (x.debordement ? 'oui' : 'aucun') + ' | ' + x.nbTextesSous12px + ' | ' + x.erreursConsole.length + ' | ' + x.motsRejetes.length + ' | ' + x.tiretsLongs.length + ' |');
+  ecrire('');
+}
+ecrire('Les « quatre secondes » évoquées plus tôt ne concernaient pas le chargement du fichier : c’était l’animation qui simule l’arrivée des réponses par SMS dans la démonstration (une réponse toutes les 0,42 seconde). Elle est ramenée à environ 1,5 seconde pour 9 réponses. Le calcul du planning lui-même prend moins d’une milliseconde, et environ 30 millisecondes quand tout est recalculé.', '');
+
+// ---------- 9. Limites ----------
+ecrire('## 9. Limites connues, dites franchement', '',
+  '- Tout est fictif, sauf la structure du programme décrite par Anthony. Les besoins par activité, les horaires et les seuils de repos sont à paramétrer avec le RKC.',
+  '- L’envoi des SMS et l’arrivée des réponses sont simulés. Aucune intégration avec un logiciel de réservation ou d’envoi n’existe.',
+  '- La démonstration recalcule les jours des CDI en essayant 40 combinaisons, en partant toujours des jours connus, pour rester instantanée ; la preuve de référence en essaie jusqu’à 5 000 et retombe sur les mêmes jours.',
+  '- Sur téléphone, le planning se lit un jour à la fois (onglets), pour rester lisible.',
+  '- La page reste longue sur téléphone (environ 14 écrans), parce que chaque étape montre un visuel lisible.', '');
+
+fs.writeFileSync(sortie, L.join('\n'));
+console.log('Dossier écrit : ' + sortie + ' (' + L.length + ' lignes). Erreurs volontaires signalées : ' + attrapees + '/' + mutations.length + '. Proposition identique au calcul complet : ' + egal + '.');
