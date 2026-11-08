@@ -1,125 +1,178 @@
-/* Données fictives de la maquette RKC : une seule semaine, une seule vérité, reprise partout dans la page. */
-(typeof window !== 'undefined' ? window : globalThis).DONNEES_RKC = {
-  semaine: 'Semaine du lundi 2 au dimanche 8 juin',
-  jours: [
-    { cle: 'lun', nom: 'Lundi', court: 'Lun.', date: 2, weekend: false },
-    { cle: 'mar', nom: 'Mardi', court: 'Mar.', date: 3, weekend: false },
-    { cle: 'mer', nom: 'Mercredi', court: 'Mer.', date: 4, weekend: false },
-    { cle: 'jeu', nom: 'Jeudi', court: 'Jeu.', date: 5, weekend: false },
-    { cle: 'ven', nom: 'Vendredi', court: 'Ven.', date: 6, weekend: false },
-    { cle: 'sam', nom: 'Samedi', court: 'Sam.', date: 7, weekend: true },
-    { cle: 'dim', nom: 'Dimanche', court: 'Dim.', date: 8, weekend: true },
-  ],
+/* Données de la maquette RKC : une seule semaine, une seule vérité, reprise partout dans la page.
+   Les personnes sont fictives. Les effectifs et les horaires s'inspirent de 57 plannings hebdomadaires réels du RKC
+   (2015 à 2017) et des règles de terrain données par Anthony le 8 novembre 2026 :
+   - une piste qui roule (location, groupe, course) : un directeur de course dans les stands et au moins trois commissaires en piste ;
+   - la 1200 m réservée aux licenciés : personne en piste, ils roulent avec leurs karts ;
+   - le magasin compétition est tenu tous les jours, quelle que soit l'activité ;
+   - en général un seul rôle par personne ; magasin et mécanique compétition vont souvent de pair ;
+   - les pistards ont trois niveaux : commissaire de piste, commissaire de piste confirmé, directeur de course. */
+(function (racine) {
+  // Groupes et soirées : l'effectif suit le nombre de pilotes (hypothèse de maquette, à paramétrer avec le RKC)
+  const TAILLES = [[20, 3], [40, 4], [Infinity, 5]];
+  const commissaires = (pilotes) => TAILLES.find(([max]) => pilotes <= max)[1];
 
-  metiers: {
-    accueil: 'Accueil',
-    piste: 'Piste location',
-    mecaLoc: 'Mécanique location',
-    mecaComp: 'Mécanique compétition',
-    magasin: 'Magasin compétition',
-  },
+  const activites = [
+    { id: 'loc1000', type: 'location', libelle: 'Location', piste: 'Piste 1000 m', jours: 'tous', horaires: { semaine: ['12:30', '20:00'], weekend: ['10:00', '20:00'], ven: ['12:30', '18:30'] } },
+    { id: 'enfants', type: 'enfants', libelle: 'Location', piste: 'Piste Découverte', jours: 'tous', horaires: { semaine: ['13:00', '19:00'], weekend: ['10:00', '19:00'] } },
+    { id: 'licencies', type: 'licencies', libelle: 'Licenciés', piste: 'Piste 1200 m', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam'], horaires: { semaine: ['10:00', '17:30'], sam: ['09:00', '17:30'] } },
+    { id: 'soiree', type: 'groupe', libelle: 'Privatisation', format: 'Grand Prix', pilotes: 40, piste: 'Piste 1000 m', jours: ['mar'], debut: '20:00', fin: '23:30' },
+    { id: 'groupe', type: 'groupe', libelle: 'Challenge inter-entreprises', format: 'Endurance', pilotes: 20, piste: 'Piste 1200 m', jours: ['jeu'], debut: '19:00', fin: '22:30' },
+    { id: 'course2h', type: 'groupe', libelle: 'Course 2H RKC', format: 'Course de nuit par équipes', pilotes: 24, piste: 'Piste 1000 m', jours: ['ven'], debut: '18:30', fin: '22:00' },
+    { id: 'privSam', type: 'groupe', libelle: 'Privatisation', format: 'Grand Prix', pilotes: 20, piste: 'Piste 1000 m', jours: ['sam'], debut: '20:00', fin: '23:30' },
+    { id: 'course', type: 'course', libelle: '6 Heures RKC', format: 'Endurance par équipes', piste: 'Piste 1200 m', jours: ['dim'], debut: '08:00', fin: '18:00' },
+    // Le magasin compétition n'est pas une activité du programme : il est ouvert tous les jours
+    { id: 'boutique', type: 'magasin', libelle: 'Magasin compétition', piste: 'Paddock', jours: 'tous', horsProgramme: true, horaires: { semaine: ['10:00', '18:00'], weekend: ['09:00', '18:30'] } },
+  ];
+  const act = Object.fromEntries(activites.map((a) => [a.id, a]));
 
-  // Le programme de la semaine
-  activites: [
-    { id: 'loc1000', libelle: 'Location', piste: 'Piste 1000 m', jours: 'tous', debut: '10:00', fin: '19:00' },
-    { id: 'enfants', libelle: 'Piste enfants', piste: 'Piste enfants', jours: 'tous', debut: '10:00', fin: '19:00' },
-    { id: 'licencies', libelle: 'Licenciés', piste: 'Piste 1200 m', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam'], debut: '09:00', fin: '18:00', samedi: 'Réservée aux licenciés' },
-    { id: 'soiree', libelle: 'Soirée d’entreprise', piste: 'Piste 1000 m', jours: ['mar'], debut: '19:30', fin: '23:30' },
-    { id: 'groupe', libelle: 'Groupe privatisé', piste: 'Piste 1200 m', jours: ['jeu'], debut: '19:30', fin: '23:30' },
-    { id: 'course', libelle: 'Course des 6 heures', piste: 'Piste 1200 m', jours: ['dim'], debut: '08:00', fin: '17:00' },
-  ],
-
-  // Les besoins de chaque activité : « la piste seule ne suffit jamais à calculer l'équipe »
-  postes: [
-    { id: 'accueil', activite: 'loc1000', role: 'Accueil', metier: 'accueil', nombre: { semaine: 1, weekend: 2 } },
-    { id: 'pistards1000', activite: 'loc1000', role: 'Commissaire de piste', metier: 'piste', nombre: { semaine: 2, weekend: 3 }, experts: 1 },
-    { id: 'mecaLoc', activite: 'loc1000', role: 'Mécanique', metier: 'mecaLoc', nombre: 1 },
-    { id: 'enfants', activite: 'enfants', role: 'Commissaire de piste', metier: 'piste', nombre: { semaine: 1, weekend: 2 } },
-    { id: 'magasin', activite: 'licencies', role: 'Magasin', metier: 'magasin', nombre: 1 },
+  const postes = [
+    // Location sur la 1000 m : accueil, piste, atelier
+    { id: 'accueil', activite: 'loc1000', role: 'Accueil', metier: 'accueil', nombre: { semaine: 2, weekend: 3 } },
+    { id: 'piste1000', activite: 'loc1000', role: 'Commissaire de piste', roleExpert: 'Directeur de course', metier: 'piste', nombre: 4, experts: 1 },
+    { id: 'renfort1000', activite: 'loc1000', jours: ['sam', 'dim'], role: 'Commissaire de piste en renfort', metier: 'piste', nombre: 1, horaires: { weekend: ['14:00', '20:00'] } },
+    { id: 'mecaLoc', activite: 'loc1000', role: 'Mécanicien location', metier: 'mecaLoc', nombre: 1 },
+    // Piste enfants : un commissaire confirmé, deux le week-end
+    { id: 'enfants', activite: 'enfants', role: 'Commissaire de piste', metier: 'piste', nombre: { semaine: 1, weekend: 2 }, niveauMin: 'Confirmé' },
+    // Paddock : le magasin tous les jours, la mécanique compétition le samedi des licenciés
+    { id: 'magasin', activite: 'boutique', role: 'Magasin compétition', metier: 'magasin', nombre: 1 },
     { id: 'mecaCompSam', activite: 'licencies', jours: ['sam'], role: 'Mécanique compétition', metier: 'mecaComp', nombre: 1 },
-    { id: 'soireePistards', activite: 'soiree', role: 'Commissaire de piste', metier: 'piste', nombre: 2, experts: 1 },
-    { id: 'soireeMeca', activite: 'soiree', role: 'Mécanique', metier: 'mecaLoc', nombre: 1 },
-    { id: 'groupePistards', activite: 'groupe', role: 'Commissaire de piste', metier: 'piste', nombre: 2, experts: 1 },
-    { id: 'groupeMeca', activite: 'groupe', role: 'Mécanique', metier: 'mecaLoc', nombre: 1 },
-    { id: 'courseResp', activite: 'course', role: 'Responsable de course', metier: 'piste', nombre: 1, experts: 1 },
-    { id: 'courseComm', activite: 'course', role: 'Commissaire de piste', metier: 'piste', nombre: 3, niveauMin: 'Confirmé' },
+    // Groupes et soirées : un directeur de course, des commissaires selon le nombre de pilotes, un mécanicien
+    ...['soiree', 'groupe', 'course2h', 'privSam'].flatMap((id) => [
+      { id: id + 'Pistes', activite: id, role: 'Commissaire de piste', roleExpert: 'Directeur de course', metier: 'piste', nombre: 1 + commissaires(act[id].pilotes), experts: 1 },
+      { id: id + 'Meca', activite: id, role: 'Mécanicien', metier: 'mecaLoc', nombre: 1 },
+    ]),
+    // L'endurance : un directeur de course, cinq commissaires confirmés en rotation sur les postes de piste et à la pompe, un mécanicien compétition
+    { id: 'coursePistes', activite: 'course', role: 'Commissaire de piste', roleExpert: 'Directeur de course', metier: 'piste', nombre: 6, experts: 1, niveauMin: 'Confirmé' },
     { id: 'courseMeca', activite: 'course', role: 'Mécanique compétition', metier: 'mecaComp', nombre: 1 },
-    { id: 'courseMagasin', activite: 'course', role: 'Magasin', metier: 'magasin', nombre: 1 },
-  ],
+  ];
 
-  // Les lignes du planning : une par endroit, dans l'ordre du site
-  lignes: [
-    { id: 'accueil', libelle: 'Accueil', postes: ['accueil'] },
-    { id: 'loc1000', libelle: 'Piste 1000 m', postes: ['pistards1000'] },
-    { id: 'enfants', libelle: 'Piste enfants', postes: ['enfants', 'renfortEnfants'] },
-    { id: 'atelier', libelle: 'Atelier location', postes: ['mecaLoc'] },
-    { id: 'p1200', libelle: 'Piste 1200 m', postes: ['magasin', 'mecaCompSam', 'courseResp', 'courseComm', 'courseMeca', 'courseMagasin'] },
-    { id: 'soir', libelle: 'En soirée', postes: ['soireePistards', 'soireeMeca', 'groupePistards', 'groupeMeca'] },
-  ],
+  racine.DONNEES_RKC = {
+    semaine: 'Semaine du lundi 2 au dimanche 8 juin',
+    jours: [
+      { cle: 'lun', nom: 'Lundi', court: 'Lun.', date: 2, weekend: false },
+      { cle: 'mar', nom: 'Mardi', court: 'Mar.', date: 3, weekend: false },
+      { cle: 'mer', nom: 'Mercredi', court: 'Mer.', date: 4, weekend: false },
+      { cle: 'jeu', nom: 'Jeudi', court: 'Jeu.', date: 5, weekend: false },
+      { cle: 'ven', nom: 'Vendredi', court: 'Ven.', date: 6, weekend: false },
+      { cle: 'sam', nom: 'Samedi', court: 'Sam.', date: 7, weekend: true },
+      { cle: 'dim', nom: 'Dimanche', court: 'Dim.', date: 8, weekend: true },
+    ],
 
-  // Les jours travaillés des CDI cette semaine, tels que l'outil les a calculés (contrat, congés, arrêt maladie)
-  joursCDI: {
-    camille: ['mer', 'jeu', 'ven', 'sam', 'dim'],
-    malik: ['lun', 'mar', 'mer', 'sam', 'dim'],
-    lea: ['lun', 'mar', 'mer', 'sam', 'dim'],
-    hugo: [],
-    sofiane: ['lun', 'jeu', 'ven', 'sam', 'dim'],
-    julie: ['lun', 'jeu', 'ven', 'sam', 'dim'],
-    karim: ['jeu', 'ven', 'sam', 'dim'],
-    bastien: ['lun', 'mar', 'ven', 'sam', 'dim'],
-  },
+    metiers: {
+      accueil: 'Accueil',
+      piste: 'Pistard',
+      mecaLoc: 'Mécanique location',
+      mecaComp: 'Mécanique compétition',
+      magasin: 'Magasin compétition',
+    },
+    // Les niveaux d'un pistard portent leur nom de terrain ; les autres rôles gardent débutant, confirmé, expert
+    niveauxPiste: { 'Débutant': 'Commissaire de piste', 'Confirmé': 'Commissaire de piste confirmé', 'Expert': 'Directeur de course' },
+    tailles: TAILLES.map(([max, n]) => ({ max: max === Infinity ? null : max, commissaires: n })),
 
-  // Les imprévus, tous tirés de cette même semaine : un exemple raconté dans la page, trois à jouer dans la démonstration
-  imprevus: [
-    { id: 'exemple', exemple: true, titre: 'Un CDI malade', quand: 'Lundi 2 juin, 8 h 05', message: 'Léa D. prévient qu’elle est malade.', absent: 'lea', jour: 'lun' },
-    { id: 'malade', titre: 'Un CDI malade', quand: 'Samedi 7 juin, 8 h 20', message: 'Julie P. prévient qu’elle est malade.', absent: 'julie', jour: 'sam' },
-    { id: 'absent', titre: 'Un extra qui ne vient pas', quand: 'Samedi 7 juin, 9 h 40', message: 'Manon V. ne répond plus. Elle devait être en piste à 10 h.', absent: 'manon', jour: 'sam' },
-    { id: 'evenement', titre: 'Un nouvel événement réservé', quand: 'Vendredi 6 juin, 9 h', message: 'Un anniversaire de 12 enfants vient d’être réservé pour 14 h.', jour: 'ven',
-      ajout: { id: 'renfortEnfants', activite: 'enfants', jours: ['ven'], role: 'Commissaire de piste en renfort', metier: 'piste', nombre: 1, debut: '14:00', fin: '18:00' } },
-  ],
+    activites,
+    postes,
 
-  // Les deux viviers
-  personnes: [
-    { id: 'camille', ordre: 1, nom: 'Camille M.', type: 'CDI', metiers: { piste: 'Expert', accueil: 'Confirmé' }, contrat: { jours: 5 } },
-    { id: 'malik', ordre: 2, nom: 'Malik B.', type: 'CDI', metiers: { mecaLoc: 'Expert', mecaComp: 'Confirmé' }, contrat: { jours: 5 } },
-    { id: 'lea', ordre: 3, nom: 'Léa D.', type: 'CDI', metiers: { accueil: 'Expert', magasin: 'Confirmé' }, contrat: { jours: 5 } },
-    { id: 'hugo', ordre: 4, nom: 'Hugo L.', type: 'CDI', metiers: { piste: 'Confirmé' }, contrat: { jours: 5 },
-      absences: [{ motif: 'Congés', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'] }] },
-    { id: 'sofiane', ordre: 5, nom: 'Sofiane R.', type: 'CDI', metiers: { magasin: 'Expert', mecaComp: 'Expert' }, contrat: { jours: 5 } },
-    { id: 'julie', ordre: 6, nom: 'Julie P.', type: 'CDI', metiers: { accueil: 'Confirmé', piste: 'Confirmé' }, contrat: { jours: 5 } },
-    { id: 'karim', ordre: 7, nom: 'Karim T.', type: 'CDI', metiers: { piste: 'Expert', mecaLoc: 'Confirmé' }, contrat: { jours: 5 },
-      absences: [{ motif: 'Arrêt maladie', jours: ['lun', 'mar', 'mer'] }] },
-    { id: 'bastien', ordre: 8, nom: 'Bastien V.', type: 'CDI', metiers: { piste: 'Confirmé', mecaLoc: 'Débutant' }, contrat: { jours: 5 } },
+    // Les lignes du planning : une par endroit, dans l'ordre du site
+    lignes: [
+      { id: 'accueil', libelle: 'Accueil', postes: ['accueil'] },
+      { id: 'p1000', libelle: 'Piste 1000 m', sous: 'Location', postes: ['piste1000', 'renfort1000'] },
+      { id: 'enfants', libelle: 'Piste Découverte', postes: ['enfants'] },
+      { id: 'atelier', libelle: 'Atelier location', postes: ['mecaLoc'] },
+      { id: 'p1200', libelle: 'Piste 1200 m', postes: ['coursePistes', 'courseMeca'] },
+      { id: 'paddock', libelle: 'Magasin compétition', sous: 'Avec la mécanique compétition', postes: ['magasin', 'mecaCompSam'] },
+      { id: 'soir', libelle: 'En soirée', postes: ['soireePistes', 'soireeMeca', 'groupePistes', 'groupeMeca', 'course2hPistes', 'course2hMeca', 'privSamPistes', 'privSamMeca', 'courseMerPistes', 'courseMerMeca'] },
+    ],
 
-    { id: 'ines', ordre: 11, nom: 'Inès M.', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'forte' },
-    { id: 'sarah', ordre: 12, nom: 'Sarah C.', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'forte' },
-    { id: 'noa', ordre: 13, nom: 'Noa B.', type: 'Extra', metiers: { piste: 'Confirmé', accueil: 'Confirmé' }, ponderation: 'normale' },
-    { id: 'lucas', ordre: 14, nom: 'Lucas R.', type: 'Extra', metiers: { mecaLoc: 'Confirmé' }, ponderation: 'normale' },
-    { id: 'jade', ordre: 15, nom: 'Jade P.', type: 'Extra', metiers: { accueil: 'Expert' }, ponderation: 'normale' },
-    { id: 'emma', ordre: 16, nom: 'Emma L.', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
-    { id: 'nathan', ordre: 17, nom: 'Nathan F.', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
-    { id: 'theo', ordre: 18, nom: 'Théo G.', type: 'Extra', metiers: { mecaComp: 'Confirmé', magasin: 'Confirmé' }, ponderation: 'normale' },
-    { id: 'yassine', ordre: 19, nom: 'Yassine K.', type: 'Extra', metiers: { accueil: 'Confirmé', piste: 'Débutant' }, ponderation: 'faible' },
-    { id: 'manon', ordre: 20, nom: 'Manon V.', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'faible' },
-    { id: 'chloe', ordre: 21, nom: 'Chloé S.', type: 'Extra', metiers: { accueil: 'Confirmé' }, ponderation: 'normale' },
-    { id: 'rayan', ordre: 22, nom: 'Rayan H.', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'normale',
-      absences: [{ motif: 'En déplacement', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'] }] },
-  ],
+    // Les jours travaillés des CDI cette semaine, tels que l'outil les a calculés (contrat, congés, arrêt maladie)
+    joursCDI: { camille: ['lun', 'mar', 'ven', 'sam', 'dim'], karim: ['jeu', 'ven', 'sam', 'dim'], bastien: ['lun', 'jeu', 'ven', 'sam', 'dim'], hugo: [], lea: ['mer', 'jeu', 'ven', 'sam', 'dim'], julie: ['lun', 'mar', 'sam', 'dim'], malik: ['lun', 'jeu', 'ven', 'sam', 'dim'], sofiane: ['mer', 'jeu', 'ven', 'sam', 'dim'] },
 
-  // La demande de disponibilités : une seule semaine, environ sept jours avant
-  demande: { envoi: 'lundi 26 mai', echeance: 'jeudi 29 mai à 18 h' },
-  sollicites: ['ines', 'sarah', 'noa', 'lucas', 'jade', 'emma', 'nathan', 'theo', 'yassine', 'manon'],
+    // Les deux viviers. En général un seul rôle par personne.
+    personnes: [
+      { id: 'camille', ordre: 1, nom: 'Camille M.', genre: 'f', type: 'CDI', metiers: { piste: 'Expert' }, contrat: { jours: 5 } },
+      { id: 'karim', ordre: 2, nom: 'Karim T.', genre: 'm', type: 'CDI', metiers: { piste: 'Expert' }, contrat: { jours: 5 },
+        absences: [{ motif: 'Arrêt maladie', jours: ['lun', 'mar', 'mer'] }] },
+      { id: 'bastien', ordre: 3, nom: 'Bastien V.', genre: 'm', type: 'CDI', metiers: { piste: 'Confirmé' }, contrat: { jours: 5 } },
+      { id: 'hugo', ordre: 4, nom: 'Hugo L.', genre: 'm', type: 'CDI', metiers: { piste: 'Confirmé' }, contrat: { jours: 5 },
+        absences: [{ motif: 'Congés', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'] }] },
+      { id: 'lea', ordre: 5, nom: 'Léa D.', genre: 'f', type: 'CDI', metiers: { accueil: 'Expert' }, contrat: { jours: 5 } },
+      { id: 'julie', ordre: 6, nom: 'Julie P.', genre: 'f', type: 'CDI', metiers: { accueil: 'Confirmé' }, contrat: { jours: 4 } },
+      { id: 'malik', ordre: 7, nom: 'Malik B.', genre: 'm', type: 'CDI', metiers: { mecaLoc: 'Expert' }, contrat: { jours: 5 } },
+      { id: 'sofiane', ordre: 8, nom: 'Sofiane R.', genre: 'm', type: 'CDI', metiers: { magasin: 'Expert', mecaComp: 'Expert' }, contrat: { jours: 5 } },
 
-  // Les réponses reçues (Yassine n'a pas encore répondu)
-  reponses: {
-    ines: { mar: 'journee', mer: 'journee', jeu: 'soir', sam: 'journee', dim: 'journee' },
-    sarah: { lun: 'journee', mar: 'soir', jeu: 'journee', sam: 'journee+soir', dim: 'journee' },
-    noa: { lun: 'journee', mar: 'journee+soir', jeu: 'soir', ven: 'journee', sam: 'journee', dim: 'journee' },
-    lucas: { mar: 'soir', mer: 'journee', jeu: 'soir', dim: 'journee' },
-    jade: { lun: 'journee', mar: 'journee', mer: 'journee', sam: 'journee', dim: 'journee' },
-    nathan: { mar: 'soir', mer: 'journee', jeu: 'journee', sam: 'journee', dim: 'journee' },
-    emma: { mer: 'journee', ven: 'journee', sam: 'journee', dim: 'journee' },
-    theo: { lun: 'journee', mar: 'journee', sam: 'journee', dim: 'journee' },
-    manon: { sam: 'journee', dim: 'journee' },
-  },
-};
+      { id: 'ines', ordre: 11, nom: 'Inès M.', genre: 'f', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'forte' },
+      { id: 'sarah', ordre: 12, nom: 'Sarah C.', genre: 'f', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'forte' },
+      { id: 'yanis', ordre: 13, nom: 'Yanis D.', genre: 'm', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'normale' },
+      { id: 'noa', ordre: 14, nom: 'Noa B.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'emma', ordre: 15, nom: 'Emma L.', genre: 'f', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'nathan', ordre: 16, nom: 'Nathan F.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'lina', ordre: 17, nom: 'Lina R.', genre: 'f', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'mehdi', ordre: 18, nom: 'Mehdi A.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'adam', ordre: 19, nom: 'Adam R.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'maxime', ordre: 19.1, nom: 'Maxime T.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'eva', ordre: 19.2, nom: 'Eva N.', genre: 'f', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'sami', ordre: 19.3, nom: 'Sami O.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'tom', ordre: 20, nom: 'Tom B.', genre: 'm', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'normale' },
+      { id: 'clara', ordre: 21, nom: 'Clara P.', genre: 'f', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'normale' },
+      { id: 'leo', ordre: 22, nom: 'Léo M.', genre: 'm', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'normale' },
+      { id: 'manon', ordre: 23, nom: 'Manon V.', genre: 'f', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'faible' },
+      { id: 'yassine', ordre: 24, nom: 'Yassine K.', genre: 'm', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'faible' },
+      { id: 'rayan', ordre: 25, nom: 'Rayan H.', genre: 'm', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'normale',
+        absences: [{ motif: 'En déplacement', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'] }] },
+      { id: 'jade', ordre: 26, nom: 'Jade P.', genre: 'f', type: 'Extra', metiers: { accueil: 'Expert' }, ponderation: 'normale' },
+      { id: 'chloe', ordre: 27, nom: 'Chloé S.', genre: 'f', type: 'Extra', metiers: { accueil: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'lucas', ordre: 28, nom: 'Lucas R.', genre: 'm', type: 'Extra', metiers: { mecaLoc: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'bilal', ordre: 29, nom: 'Bilal S.', genre: 'm', type: 'Extra', metiers: { mecaLoc: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'theo', ordre: 30, nom: 'Théo G.', genre: 'm', type: 'Extra', metiers: { magasin: 'Confirmé', mecaComp: 'Confirmé' }, ponderation: 'normale' },
+    ],
+
+    // La demande de disponibilités : envoyée chaque semaine par SMS, environ sept jours avant
+    demande: { envoi: 'lundi 26 mai', echeance: 'jeudi 29 mai à 18 h' },
+    sollicites: ['ines', 'sarah', 'yanis', 'noa', 'emma', 'nathan', 'lina', 'mehdi', 'adam', 'maxime', 'eva', 'sami', 'tom', 'clara', 'leo', 'manon', 'yassine', 'jade', 'chloe', 'lucas', 'bilal', 'theo'],
+
+    // Les réponses reçues, jour par jour : un événement du programme (on reprend ses horaires),
+    // un créneau « de-à », ou « toute » la journée. Yassine n'a pas encore répondu.
+    reponses: {
+      ines: { lun: 'toute', mar: ['soiree'], jeu: ['groupe'], sam: 'toute', dim: ['course'] },
+      sarah: { lun: ['loc1000'], mar: ['loc1000'], mer: 'toute', ven: ['course2h'], dim: 'toute' },
+      yanis: { mar: ['soiree'], mer: ['loc1000'], ven: 'toute', sam: ['privSam'], dim: ['course'] },
+      noa: { lun: ['loc1000'], mar: ['loc1000', 'soiree'], jeu: ['groupe'], ven: ['loc1000'], sam: 'toute', dim: 'toute' },
+      emma: { mer: ['loc1000'], ven: ['loc1000'], sam: 'toute', dim: 'toute' },
+      nathan: { mar: ['soiree'], mer: ['loc1000'], jeu: ['loc1000'], sam: ['14:00-20:00'], dim: ['course'] },
+      lina: { lun: ['loc1000'], mar: ['loc1000'], mer: ['enfants'], jeu: ['groupe'], ven: ['course2h'], dim: ['loc1000'] },
+      mehdi: { mar: ['soiree'], jeu: ['loc1000'], ven: ['course2h'], sam: ['loc1000'], dim: ['course'] },
+      adam: { lun: ['loc1000'], mar: ['13:00-20:00'], jeu: ['loc1000', 'groupe'], ven: ['course2h'], dim: ['course'] },
+      maxime: { sam: ['loc1000'], dim: 'toute' },
+      eva: { sam: ['privSam'], dim: ['loc1000'] },
+      sami: { dim: ['course'] },
+      tom: { mar: ['soiree'], mer: ['loc1000'], jeu: ['groupe'], dim: ['loc1000'] },
+      clara: { lun: ['loc1000'], mar: ['loc1000'], mer: ['loc1000'], ven: ['course2h'], sam: ['loc1000'], dim: ['loc1000'] },
+      leo: { mar: ['soiree'], jeu: ['groupe'], sam: ['14:00-20:00', 'privSam'], dim: 'toute' },
+      manon: { sam: ['loc1000'], dim: ['loc1000'] },
+      jade: { lun: ['loc1000'], mar: ['loc1000'], mer: ['loc1000'], sam: 'toute', dim: 'toute' },
+      chloe: { jeu: ['loc1000'], ven: ['loc1000'], sam: ['loc1000'], dim: ['loc1000'] },
+      lucas: { mar: ['loc1000'], mer: ['loc1000'], jeu: ['groupe'], ven: ['course2h'], dim: ['loc1000'] },
+      bilal: { lun: ['loc1000'], mar: ['soiree'], jeu: ['groupe'], ven: ['course2h'], sam: ['privSam'] },
+      theo: { lun: ['boutique'], mar: ['boutique'], sam: 'toute', dim: ['course'] },
+    },
+
+    // Les urgences, toutes tirées de cette même semaine
+    imprevus: [
+      { id: 'arret', titre: 'Un arrêt maladie', quand: 'Dimanche 8 juin, 8 h 05', message: 'Léa D. prévient qu’elle est en arrêt maladie.', absent: 'lea', jour: 'dim' },
+      { id: 'absence', titre: 'Un extra absent', quand: 'Samedi 7 juin, 8 h 20', message: 'Manon V. prévient qu’elle ne pourra pas venir.', absent: 'manon', jour: 'sam' },
+      // Une course réservée après la validation : l'équipe se calcule comme pour tout groupe, selon le nombre de pilotes
+      { id: 'courseajoutee', titre: 'Une course ajoutée', quand: 'Mardi 3 juin, 15 h', jour: 'mer',
+        message: 'Une entreprise réserve une course pour mercredi soir : 24 pilotes sur la Piste 1200 m, de 20 h à 23 h.',
+        activite: { id: 'courseMer', type: 'groupe', libelle: 'Course entreprise', format: 'Grand Prix', pilotes: 24, piste: 'Piste 1200 m', jours: ['mer'], debut: '20:00', fin: '23:00' },
+        ajouts: [
+          { id: 'courseMerPistes', activite: 'courseMer', role: 'Commissaire de piste', roleExpert: 'Directeur de course', metier: 'piste', nombre: 1 + commissaires(24), experts: 1 },
+          { id: 'courseMerMeca', activite: 'courseMer', role: 'Mécanicien', metier: 'mecaLoc', nombre: 1 },
+        ],
+        // Les réponses à la demande ciblée, envoyée par SMS aux extras qui peuvent tenir ces postes
+        reponsesDemande: {
+          ines: { reponse: 'oui', heure: '15 h 04' }, maxime: { reponse: 'oui', heure: '15 h 06' }, bilal: { reponse: 'oui', heure: '15 h 09' },
+          eva: { reponse: 'oui', heure: '15 h 12' }, clara: { reponse: 'non', heure: '15 h 14' }, leo: { reponse: 'oui', heure: '15 h 17' },
+          sami: { reponse: 'oui', heure: '15 h 26' },
+        } },
+    ],
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
