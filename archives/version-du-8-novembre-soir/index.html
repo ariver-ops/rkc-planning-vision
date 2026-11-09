@@ -1,0 +1,2427 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RKC · Planning des équipes</title>
+  <meta name="description" content="Maquette : comment le RKC croise son programme, ses équipes et les disponibilités des extras pour proposer un planning complet, que le responsable valide avant envoi.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffa500'/%3E%3Ctext x='32' y='42' font-family='Arial' font-size='26' font-weight='900' font-style='italic' text-anchor='middle' fill='%2315171c'%3ERKC%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&display=swap">
+  <style>
+/* Maquette RKC · Planning des équipes. Une feuille, sans dépendance. */
+
+:root {
+  --encre: #141414;
+  --encre-2: #4a4a4a;
+  --encre-3: #666666;
+  --fond: #ffffff;
+  --fond-2: #f6f5f1;
+  --fond-3: #efede7;
+  --ligne: #e3e0d8;
+  --ligne-2: #d2cec4;
+  --orange: #ffa500;
+  --orange-fonce: #a85a00;
+  --orange-pale: #fff4dd;
+  --orange-ligne: #f3d39a;
+  --nuit: #0b0b0c;
+  --nuit-2: #232325;
+  --cdi: #1d2433;
+  --vert: #1d7a4b;
+  --vert-pale: #e7f4ec;
+  --rouge: #b42318;
+  --rouge-pale: #fdecea;
+  --bleu: #2c5aa0;
+  --bleu-pale: #e9f0fa;
+  --violet: #6a4bb3;
+  --violet-pale: #f0ebfa;
+  --rayon: 14px;
+  --rayon-petit: 9px;
+  --ombre: 0 1px 2px rgba(20, 22, 28, .05), 0 10px 30px rgba(20, 22, 28, .07);
+  --police: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --largeur: 1180px;
+  --marge: clamp(16px, 4vw, 32px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 72px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+body {
+  margin: 0; background: var(--fond); color: var(--encre);
+  font-family: var(--police); font-size: 17px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+img, svg { display: block; max-width: 100%; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; border-radius: 6px; }
+.lien-evitement { position: absolute; left: 8px; top: 8px; z-index: 100; background: var(--encre); color: #fff; padding: 10px 14px; border-radius: 8px; transform: translateY(-160%); }
+.lien-evitement:focus { transform: none; }
+.conteneur { width: 100%; max-width: var(--largeur); margin: 0 auto; padding: 0 var(--marge); }
+.chiffres { font-variant-numeric: tabular-nums; }
+
+/* ---------- En-tête ---------- */
+.entete {
+  position: sticky; top: 0; z-index: 50; background: rgba(255, 255, 255, .92);
+  backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--ligne);
+}
+.entete .conteneur { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; }
+.marque { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--encre); }
+.marque-logo {
+  display: inline-grid; place-items: center; height: 32px; padding: 0 9px; border-radius: 7px;
+  background: var(--orange); color: var(--encre); font-weight: 900; font-style: italic; letter-spacing: .02em; font-size: 16px;
+}
+.marque-nom { font-weight: 700; font-size: 16px; letter-spacing: -.01em; }
+.entete nav { display: flex; align-items: center; gap: 4px; }
+.entete nav a {
+  text-decoration: none; color: var(--encre-2); font-size: 15px; font-weight: 600; padding: 10px 12px; border-radius: 8px;
+}
+.entete nav a:hover { background: var(--fond-2); color: var(--encre); }
+.entete nav a.lien-fort { background: var(--encre); color: #fff; margin-left: 6px; }
+.entete nav a.lien-fort:hover { background: #000; }
+@media (max-width: 980px) { .entete nav a:not(.lien-fort) { display: none; } }
+@media (max-width: 760px) { .marque-nom { font-size: 15px; } }
+
+/* ---------- Typographie ---------- */
+.surtitre {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px;
+  font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--orange-fonce);
+}
+.surtitre::before { content: ""; width: 18px; height: 3px; border-radius: 2px; background: var(--orange); }
+h1, h2, h3, h4 { margin: 0; letter-spacing: -.022em; line-height: 1.12; }
+h1 { font-size: clamp(36px, 6vw, 60px); font-weight: 800; }
+h2 { font-size: clamp(28px, 3.8vw, 40px); font-weight: 800; font-style: italic; }
+h3 { font-size: clamp(21px, 2.3vw, 26px); font-weight: 700; letter-spacing: -.016em; }
+h4 { font-size: 17px; font-weight: 700; letter-spacing: -.005em; }
+p { margin: 0; }
+.chapo { font-size: clamp(18px, 2vw, 21px); line-height: 1.55; color: var(--encre-2); max-width: 760px; }
+.texte-2 { color: var(--encre-2); }
+.petit { font-size: 15px; }
+.tres-petit { font-size: 13px; }
+
+/* ---------- Sections ---------- */
+.section { padding: clamp(48px, 7vw, 88px) 0; }
+.section + .section { border-top: 1px solid var(--ligne); }
+.section-claire { background: var(--fond-2); }
+.section-nuit { background: var(--nuit); color: #f3f3f1; }
+.section-nuit .chapo, .section-nuit .texte-2 { color: #c6c8cd; }
+.section-nuit .surtitre { color: #ffc560; }
+.tete-section { display: grid; gap: 14px; margin-bottom: clamp(26px, 4vw, 44px); max-width: 820px; }
+
+/* ---------- Ouverture ---------- */
+.ouverture { padding: clamp(48px, 9vw, 112px) 0 clamp(48px, 7vw, 88px); background:
+  radial-gradient(900px 420px at 92% -10%, rgba(255, 165, 0, .14), transparent 60%), var(--fond); }
+.ouverture h1 .accent { display: block; color: var(--orange-fonce); }
+.ouverture .chapo { margin-top: 22px; }
+.equation {
+  margin-top: clamp(32px, 5vw, 48px); display: grid; grid-template-columns: 1fr auto 1.05fr; gap: 18px; align-items: stretch;
+}
+.entrees { display: grid; gap: 10px; }
+.entree, .sortie {
+  display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: center;
+  background: #fff; border: 1px solid var(--ligne); border-radius: var(--rayon); padding: 14px 16px;
+}
+.entree strong, .sortie strong { display: block; font-size: 17px; }
+.entree span, .sortie span { display: block; font-size: 15px; color: var(--encre-3); }
+.pictogramme { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--fond-2); }
+.pictogramme svg { width: 22px; height: 22px; stroke: var(--encre); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.fleche-equation { display: grid; place-items: center; color: var(--orange-fonce); }
+.fleche-equation svg { width: 34px; height: 34px; stroke: currentColor; fill: none; stroke-width: 2; }
+.sortie { align-self: center; background: var(--encre); border-color: var(--encre); color: #fff; padding: 22px 20px; }
+.sortie span { color: #c9ccd2; }
+.sortie .pictogramme { background: var(--orange); }
+.benefices { margin-top: clamp(28px, 4vw, 40px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 0; list-style: none; }
+.benefices li { border-top: 3px solid var(--orange); padding-top: 14px; }
+.benefices strong { display: block; font-size: 18px; letter-spacing: -.01em; margin-bottom: 4px; }
+.benefices span { color: var(--encre-2); font-size: 16px; }
+@media (max-width: 860px) {
+  .equation { grid-template-columns: 1fr; gap: 10px; }
+  .entree, .sortie { padding: 11px 13px; }
+  .benefices li { padding-top: 10px; }
+  .fleche-equation svg { transform: rotate(90deg); }
+  .benefices { grid-template-columns: 1fr; }
+}
+
+/* ---------- Les quatre temps ---------- */
+.temps { display: grid; gap: clamp(18px, 2.5vw, 26px); }
+.temps + .temps { margin-top: clamp(48px, 7vw, 80px); }
+.temps-texte { display: grid; grid-template-columns: 44px minmax(0, 5fr) minmax(0, 6fr); gap: 10px 24px; align-items: start; }
+.temps-texte h3 { padding-top: 6px; }
+.temps-texte .explication { display: grid; gap: 10px; padding-top: 4px; }
+.temps-numero {
+  display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--encre); color: #fff; font-weight: 800; font-size: 18px;
+}
+.temps-texte p { color: var(--encre-2); }
+.temps-texte .note { font-size: 16px; color: var(--encre-2); border-left: 5px solid var(--orange); padding-left: 14px; }
+@media (max-width: 760px) { .temps-texte .note { font-size: 15px; } }
+.temps-visuel { min-width: 0; }
+@media (max-width: 900px) {
+  .temps-texte { grid-template-columns: 44px minmax(0, 1fr); }
+  .temps-texte .explication { grid-column: 1 / -1; }
+}
+
+/* Cadre « écran de l'outil » */
+.ecran { position: relative; background: #fff; border: 1px solid var(--ligne); border-radius: var(--rayon); box-shadow: var(--ombre); overflow: hidden; }
+.ecran-barre {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 14px 18px; border-bottom: 1px solid var(--ligne); background: #fcfbf9;
+}
+.ecran-barre h4 { font-size: 16px; }
+.ecran-barre .tres-petit { color: var(--encre-3); }
+.ecran-corps { padding: 18px; }
+.pastille {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  font-size: 13px; font-weight: 650; white-space: nowrap; background: var(--fond-2); color: var(--encre-2);
+}
+.pastille.vert { background: var(--vert-pale); color: var(--vert); }
+.pastille.orange { background: var(--orange-pale); color: var(--orange-fonce); }
+.pastille.rouge { background: var(--rouge-pale); color: var(--rouge); }
+.pastille.nuit { background: var(--encre); color: #fff; }
+.pastille .point { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* ---------- Temps 1 : le programme de la semaine ---------- */
+table.programme { width: 100%; border-collapse: separate; border-spacing: 6px; table-layout: fixed; margin: -6px; width: calc(100% + 12px); }
+.programme th { text-align: left; vertical-align: bottom; font-size: 13px; color: var(--encre-3); font-weight: 600; padding: 0 2px 4px; }
+.programme thead th strong { display: block; font-size: 15px; color: var(--encre); }
+.programme thead th.weekend strong { color: var(--orange-fonce); }
+.programme th.piste { width: 132px; vertical-align: middle; font-size: 15px; color: var(--encre); font-weight: 700; }
+.programme td { vertical-align: top; padding: 0; }
+.bloc { border-radius: 8px; padding: 8px 9px 9px; font-size: 14px; line-height: 1.3; border-left: 4px solid; height: 100%; }
+.bloc b { display: block; font-size: 14px; }
+.bloc span { display: block; color: var(--encre-2); font-size: 13px; margin-top: 2px; }
+.bloc.p1000 { background: var(--orange-pale); border-color: var(--orange); }
+.bloc.enfants { background: var(--vert-pale); border-color: #3aa36b; }
+.bloc.p1200 { background: var(--bleu-pale); border-color: var(--bleu); }
+.bloc.soir { background: var(--nuit-2); border-color: #ffc560; color: #fff; }
+.bloc.soir span { color: #d4d6db; }
+.bloc.course { background: var(--rouge-pale); border-color: var(--rouge); }
+.bloc.vide { background: transparent; border-left-color: transparent; color: #b8b4aa; }
+.legende { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 14px; font-size: 14px; color: var(--encre-2); }
+.legende i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.semaine-mobile { display: none; }
+@media (max-width: 760px) {
+  table.programme { display: none; }
+  .semaine-mobile { display: grid; gap: 10px; }
+  .semaine-mobile .onglets-jours { display: flex; padding: 0 0 2px; }
+  .semaine-mobile .jour[hidden] { display: none; }
+  .semaine-mobile .jour { display: grid; grid-template-columns: 58px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--ligne); }
+  .semaine-mobile .jour:first-child { border-top: 0; padding-top: 0; }
+  .semaine-mobile .jour-tete strong { display: block; font-size: 15px; }
+  .semaine-mobile .jour-tete span { font-size: 13px; color: var(--encre-3); }
+  .semaine-mobile .jour.weekend .jour-tete strong { color: var(--orange-fonce); }
+  .semaine-mobile .jour-blocs { display: grid; gap: 6px; }
+}
+
+/* ---------- Temps 2 : les viviers ---------- */
+.viviers { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.vivier { border-radius: var(--rayon); padding: 16px; border: 1px solid var(--ligne); background: #fff; }
+.vivier.cdi { background: #f4f5f8; border-color: #dfe2ea; }
+.vivier.extras { background: #fffaf0; border-color: var(--orange-ligne); }
+.vivier-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.vivier-tete h4 { font-size: 18px; }
+.vivier-tete .tres-petit { color: var(--encre-3); }
+.personnes { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.personne {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 9px; align-items: center;
+  background: #fff; border: 1px solid var(--ligne); border-radius: 11px; padding: 7px 9px;
+}
+.personne.indispo { opacity: .78; background: repeating-linear-gradient(-45deg, #fff, #fff 8px, #faf9f6 8px, #faf9f6 16px); }
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 13px; font-weight: 800; letter-spacing: .02em; background: var(--cdi); color: #fff;
+}
+.avatar.extra { background: var(--orange-pale); color: var(--orange-fonce); box-shadow: inset 0 0 0 1.5px var(--orange-ligne); }
+.personne-nom { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; font-weight: 700; font-size: 15px; line-height: 1.3; }
+.personne-metiers { font-size: 13px; color: var(--encre-2); line-height: 1.35; }
+.niveau { font-weight: 650; }
+.niveau.Expert { color: var(--encre); }
+.niveau.Débutant { color: var(--orange-fonce); }
+.etiquette { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; line-height: 1.35; }
+.etiquette.conges { background: var(--bleu-pale); color: var(--bleu); }
+.etiquette.arret { background: var(--rouge-pale); color: var(--rouge); }
+.etiquette.deplacement { background: var(--violet-pale); color: var(--violet); }
+.etiquette.ponderation { background: var(--fond-2); color: var(--encre-2); }
+.etiquette.ponderation.forte { background: var(--orange-pale); color: var(--orange-fonce); }
+.etiquette.ponderation.faible { background: #f1f1f1; color: #5b5f66; }
+@media (min-width: 1000px) { .personnes { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 700px) { .viviers { grid-template-columns: 1fr; } }
+@media (min-width: 360px) and (max-width: 700px) { .personnes { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .personne { grid-template-columns: 1fr; gap: 4px; } .personne .avatar { display: none; } }
+
+/* ---------- Temps 3 : la demande de disponibilités ---------- */
+.demande { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0; }
+.demande > div { min-width: 0; }
+.demande .colonne-choix { border-right: 1px solid var(--ligne); }
+.liste-cases { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.case {
+  display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center;
+  padding: 8px 10px; border-radius: 9px; min-height: 44px; cursor: pointer;
+}
+.case:hover { background: var(--fond-2); }
+.case input { width: 20px; height: 20px; accent-color: var(--encre); margin: 0; }
+.case .qui { font-weight: 650; font-size: 15px; line-height: 1.25; }
+.case .qui small { display: block; font-weight: 500; color: var(--encre-3); font-size: 13px; }
+.case.desactivee { cursor: not-allowed; opacity: .6; }
+.case.desactivee:hover { background: transparent; }
+.bouton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 12px 20px;
+  border-radius: 11px; border: 0; background: var(--encre); color: #fff; font-weight: 700; font-size: 16px; text-decoration: none;
+}
+.bouton:hover { background: #000; }
+.bouton.orange { background: var(--orange); color: var(--encre); }
+.bouton.orange:hover { background: #ffad1f; }
+.bouton.discret { background: #fff; color: var(--encre); box-shadow: inset 0 0 0 1.5px var(--ligne-2); }
+.bouton.discret:hover { background: var(--fond-2); }
+.bouton[disabled] { opacity: .45; cursor: not-allowed; }
+.bouton.large { width: 100%; }
+.envoi { padding: 14px 18px 18px; border-top: 1px solid var(--ligne); display: grid; gap: 10px; }
+.envoi .tres-petit { color: var(--encre-3); }
+.reponses-tete { display: grid; grid-template-columns: 1fr repeat(7, 26px); gap: 4px; align-items: end; padding: 0 4px 8px; font-size: 12px; font-weight: 700; color: var(--encre-3); text-align: center; }
+.reponses-tete span:first-child { text-align: left; }
+.reponse { display: grid; grid-template-columns: 1fr repeat(7, 26px); gap: 4px; align-items: center; padding: 5px 4px; border-top: 1px solid var(--ligne); }
+.reponse .qui { font-size: 14.5px; font-weight: 650; line-height: 1.2; min-width: 0; }
+.reponse .qui small { display: block; font-weight: 500; font-size: 12.5px; color: var(--encre-3); }
+.dispo { width: 22px; height: 22px; border-radius: 6px; justify-self: center; background: #f0eee9; position: relative; }
+.dispo.journee { background: var(--vert); }
+.dispo.soir { background: var(--nuit-2); }
+.dispo.journee-soir { background: linear-gradient(135deg, var(--vert) 50%, var(--nuit-2) 50%); }
+.reponse.attente .qui small { color: var(--orange-fonce); font-weight: 650; }
+.reponse.attente .dispo { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ligne); }
+@media (max-width: 760px) {
+  .demande { grid-template-columns: 1fr; }
+  .demande .colonne-choix { border-right: 0; border-bottom: 1px solid var(--ligne); }
+  .reponses-tete, .reponse { grid-template-columns: 1fr repeat(7, 22px); gap: 3px; }
+  .dispo { width: 19px; height: 19px; border-radius: 5px; }
+}
+
+/* ---------- Temps 4 : le planning ---------- */
+.planning-cadre { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.planning { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 900px; table-layout: fixed; }
+.planning th, .planning td { vertical-align: top; text-align: left; }
+.planning thead th {
+  position: sticky; top: 0; background: #fcfbf9; z-index: 1; padding: 10px 6px; font-size: 13px; color: var(--encre-2);
+  border-bottom: 1px solid var(--ligne); font-weight: 700;
+}
+.planning thead th strong { display: block; font-size: 15px; color: var(--encre); }
+.planning thead th.weekend strong { color: var(--orange-fonce); }
+.planning th.endroit { width: 178px; padding: 12px 12px 12px 16px; font-size: 14px; border-bottom: 1px solid var(--ligne); background: #fff; }
+.planning th.endroit strong { display: block; font-size: 15px; color: var(--encre); }
+.planning th.endroit span { display: block; font-weight: 500; color: var(--encre-3); font-size: 13px; }
+.planning td { padding: 8px 5px; border-bottom: 1px solid var(--ligne); border-left: 1px solid #f0eee8; }
+.planning td.ferme { position: relative; background: #fbfaf8; }
+.planning tr.repos-ligne th, .planning tr.repos-ligne td { background: #fafaf7; }
+.planning tr.repos-ligne td { font-size: 12.5px; color: var(--encre-3); line-height: 1.35; }
+.absents { display: grid; gap: 3px; }
+.absents b { color: var(--encre-2); font-weight: 700; }
+.nom {
+  display: flex; align-items: center; gap: 5px; border-radius: 7px; padding: 4px 7px; margin-bottom: 4px;
+  font-size: 13px; font-weight: 650; line-height: 1.2; background: var(--cdi); color: #fff; min-width: 0;
+}
+.nom.extra { background: var(--orange-pale); color: #5c3600; box-shadow: inset 0 0 0 1px var(--orange-ligne); }
+.nom .role { display: block; font-size: 12px; font-weight: 550; opacity: .85; }
+.nom.vide { background: var(--rouge-pale); color: var(--rouge); box-shadow: inset 0 0 0 1.5px #f3b8b1; }
+.nom.change { box-shadow: inset 0 0 0 2px var(--vert); }
+.nom .etoile { color: #ffc560; font-size: 12px; }
+.nom.extra .etoile { color: var(--orange-fonce); }
+.nom span.txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.planning-pied { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-top: 1px solid var(--ligne); background: #fcfbf9; }
+.legende-planning { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 13.5px; color: var(--encre-2); align-items: center; }
+.legende-planning .nom { display: inline-flex; margin: 0; }
+.onglets-jours { display: none; }
+@media (max-width: 1023px) {
+  .planning-cadre.mobile-jour table.planning { display: none; }
+  .onglets-jours { display: flex; gap: 5px; overflow-x: auto; padding: 12px 14px 4px; -webkit-overflow-scrolling: touch; }
+  .onglets-jours button {
+    flex: 1 0 44px; min-width: 44px; min-height: 48px; border-radius: 10px; border: 1px solid var(--ligne-2); background: #fff;
+    font-size: 13px; font-weight: 700; line-height: 1.15; padding: 6px 2px;
+  }
+  .onglets-jours button[aria-selected="true"] { background: var(--encre); color: #fff; border-color: var(--encre); }
+  .onglets-jours button small { display: block; font-weight: 600; font-size: 12px; opacity: .8; }
+}
+.vue-jour { display: none; }
+@media (max-width: 1023px) {
+  .planning-cadre.mobile-jour .vue-jour { display: grid; gap: 0; padding: 6px 14px 14px; }
+  .vue-jour .rangee { display: grid; grid-template-columns: 112px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--ligne); }
+  .vue-jour .rangee:first-child { border-top: 0; }
+  .vue-jour .rangee strong { font-size: 14px; display: block; line-height: 1.25; }
+  .vue-jour .rangee small { font-size: 12.5px; color: var(--encre-3); display: block; }
+  .vue-jour .noms { display: flex; flex-wrap: wrap; gap: 5px; }
+  .vue-jour .nom { margin: 0; font-size: 13.5px; }
+}
+
+/* Règles tenues, sous le planning */
+.regles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 18px; margin: 0; padding: 16px 18px; list-style: none; }
+.regles li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 14.5px; color: var(--encre-2); line-height: 1.4; }
+.regles li::before { content: "✓"; width: 20px; height: 20px; border-radius: 50%; background: var(--vert-pale); color: var(--vert); font-size: 12px; font-weight: 900; display: grid; place-items: center; margin-top: 1px; }
+.regles li.ko::before { content: "!"; background: var(--rouge-pale); color: var(--rouge); }
+@media (max-width: 1000px) { .regles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .regles { grid-template-columns: 1fr; } }
+.exemple-repos { margin: 0 18px 18px; padding: 12px 14px; border-radius: 10px; background: var(--fond-2); font-size: 15px; color: var(--encre-2); }
+.exemple-repos strong { color: var(--encre); }
+
+/* ---------- La piste seule ne suffit jamais ---------- */
+.besoins { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+@media (min-width: 1100px) { .besoins { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 360px) and (max-width: 640px) { .besoins { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .besoin { padding: 12px; } .besoin h4 { font-size: 16px; } .besoin ul { font-size: 14px; } }
+.besoin { background: #fff; border: 1px solid var(--ligne); border-radius: var(--rayon); padding: 14px; display: grid; gap: 6px; align-content: start; }
+.besoin .piste { font-size: 13px; font-weight: 700; color: var(--encre-3); text-transform: uppercase; letter-spacing: .05em; }
+.besoin h4 { font-size: 18px; }
+.besoin ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 15px; color: var(--encre-2); }
+.besoin ul li::before { content: "·"; font-weight: 900; margin-right: 6px; color: var(--orange-fonce); }
+.besoin .total { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.besoin .total small { font-size: 14px; font-weight: 600; color: var(--encre-3); letter-spacing: 0; margin-left: 4px; }
+.besoin.zero .total { color: var(--vert); }
+.principes { margin-top: clamp(20px, 3vw, 28px); display: grid; grid-template-columns: 1fr; gap: 14px; }
+.principe.bandeau { grid-template-columns: auto 1fr; align-items: center; gap: 6px 18px; padding: 20px 22px; }
+.principe.bandeau strong { font-size: 20px; }
+@media (max-width: 700px) { .principe.bandeau { grid-template-columns: 1fr; } }
+.principe { padding: 18px; border-radius: var(--rayon); background: var(--encre); color: #fff; display: grid; gap: 6px; align-content: start; }
+.principe strong { font-size: 18px; letter-spacing: -.01em; }
+.principe span { color: #c9ccd2; font-size: 15.5px; }
+@media (max-width: 860px) { .principes { grid-template-columns: 1fr; } }
+
+/* ---------- Imprévus ---------- */
+.situations { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 clamp(24px, 4vw, 36px); padding: 0; list-style: none; }
+.situations li { padding: 9px 14px; border-radius: 999px; background: var(--nuit-2); color: #fff; font-size: 15px; font-weight: 600; border: 1px solid #343843; }
+.imprevu { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(20px, 3vw, 36px); align-items: start; }
+.fil { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
+.fil li { position: relative; padding: 0 0 22px 34px; }
+.fil li::before { content: ""; position: absolute; left: 8px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: #ffc560; box-shadow: 0 0 0 4px rgba(255, 197, 96, .18); }
+.fil li::after { content: ""; position: absolute; left: 13px; top: 22px; bottom: 2px; width: 2px; background: #3a3e48; }
+.fil li:last-child::after { display: none; }
+.fil li.fin::before { background: #4fd18b; box-shadow: 0 0 0 4px rgba(79, 209, 139, .18); }
+.fil .heure { display: block; font-size: 14px; font-weight: 800; color: #ffc560; letter-spacing: .02em; }
+.fil li.fin .heure { color: #4fd18b; }
+.fil p { color: #e3e4e7; font-size: 16.5px; }
+.carte-appel { background: #fff; color: var(--encre); border-radius: var(--rayon); overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, .35); }
+.carte-appel .ecran-barre { background: #fff7e6; }
+.alerte { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--ligne); }
+.alerte .signe { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--rouge-pale); color: var(--rouge); font-weight: 900; font-size: 20px; }
+.alerte strong { display: block; font-size: 16px; }
+.alerte span { display: block; font-size: 14.5px; color: var(--encre-2); }
+.candidats { margin: 0; padding: 6px 12px 12px; list-style: none; display: grid; gap: 6px; }
+.candidat { display: grid; grid-template-columns: 38px 1fr auto; gap: 10px; align-items: center; padding: 10px 8px; border-radius: 11px; }
+.candidat.recommande { background: var(--vert-pale); box-shadow: inset 0 0 0 1.5px #b7e0c8; }
+.candidat strong { display: block; font-size: 15px; }
+.candidat span { display: block; font-size: 13.5px; color: var(--encre-2); line-height: 1.35; }
+.ecartes { padding: 12px 18px 16px; border-top: 1px solid var(--ligne); font-size: 14px; color: var(--encre-2); }
+.ecartes strong { color: var(--encre); }
+.ecartes ul { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+@media (max-width: 900px) { .imprevu { grid-template-columns: 1fr; } }
+
+.message-flash { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 10px; background: var(--vert-pale); color: #135c37; font-size: 15px; margin-top: 12px; }
+.message-flash.alerte-rouge { background: var(--rouge-pale); color: var(--rouge); }
+
+/* ---------- Pied ---------- */
+.pied { padding: 28px 0 40px; border-top: 1px solid var(--ligne); color: var(--encre-3); font-size: 14px; }
+.pied a { color: var(--encre-2); font-weight: 600; }
+.pied .conteneur { display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; align-items: center; }
+
+/* Utilitaires */
+.visuellement-cache { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.pile { display: grid; gap: 14px; }
+
+/* Liste d'extras de l'étape 3 (visuel) : deux colonnes quand la place le permet */
+.liste-cases.deux { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 8px; }
+.liste-cases.deux .case { min-height: 40px; padding: 6px 8px; }
+@media (max-width: 1100px) { .liste-cases.deux { grid-template-columns: 1fr; } }
+@media (min-width: 360px) and (max-width: 760px) { .liste-cases.deux.visuel { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ponderation-resultat { margin: 0 18px 18px; padding: 12px 14px; border-radius: 10px; background: var(--orange-pale); font-size: 15px; color: #5c3600; }
+.ponderation-resultat strong { color: var(--encre); }
+
+/* Règles repliées derrière une ligne de synthèse */
+details.controle { border-top: 1px solid var(--ligne); }
+details.controle summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 18px; font-weight: 700; font-size: 16px; min-height: 52px;
+}
+details.controle summary::-webkit-details-marker { display: none; }
+details.controle summary .ouvrir { font-weight: 600; font-size: 14px; color: var(--encre-3); white-space: nowrap; }
+details.controle[open] summary .ouvrir::after { content: " ▲"; }
+details.controle:not([open]) summary .ouvrir::after { content: " ▼"; }
+details.controle summary .ok { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--vert-pale); color: var(--vert); font-weight: 900; font-size: 13px; margin-right: 10px; }
+
+.la-suite { margin-top: 22px; font-size: 17px; color: var(--encre-2); max-width: 760px; }
+.la-suite strong { color: var(--encre); }
+
+/* Programme : ligne des postes à tenir */
+.programme tr.postes th, .programme tr.postes td { border-top: 2px solid var(--encre); padding-top: 8px; }
+.programme tr.postes th small { display: block; font-size: 13px; font-weight: 500; color: var(--encre-3); }
+.programme tr.postes .nombre { display: block; font-size: 24px; font-weight: 800; letter-spacing: -.02em; padding-left: 4px; }
+.programme td[colspan] .bloc { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.programme td[colspan] .bloc span { margin-top: 0; }
+@media (max-width: 760px) {
+  .semaine-mobile .quotidien { font-size: 15px; color: var(--encre-2); padding: 4px 0 8px; }
+  .semaine-mobile .jour { grid-template-columns: 64px 1fr; align-items: start; gap: 10px; padding: 9px 0; }
+  .semaine-mobile .postes-jour { display: block; font-size: 13px; font-weight: 700; color: var(--encre-2); margin-top: 2px; }
+  .semaine-mobile .jour-blocs { gap: 5px; }
+  .semaine-mobile .jour-blocs:empty::before { content: "Licenciés sur la 1200 m"; font-size: 14px; color: var(--encre-3); }
+}
+/* La piste seule ne suffit jamais */
+.piste-seule { margin-top: clamp(22px, 3vw, 30px); display: grid; gap: 8px; }
+.piste-seule h4 { font-size: clamp(19px, 2vw, 22px); }
+.piste-seule .besoins { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 6px; }
+.besoin p { font-size: 14.5px; color: var(--encre-2); line-height: 1.4; }
+.besoin.fort { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); }
+.besoin .points { display: flex; gap: 4px; flex-wrap: wrap; min-height: 10px; }
+.besoin .points i { width: 10px; height: 10px; border-radius: 50%; background: var(--encre); }
+@media (max-width: 900px) { .piste-seule .besoins { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 359px) { .piste-seule .besoins { grid-template-columns: 1fr; } }
+
+/* Cases dessinées (temps 3) : un aperçu, pas un contrôle */
+.faux-case { width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; font-size: 13px; font-weight: 900; box-shadow: inset 0 0 0 1.5px var(--ligne-2); }
+.faux-case.cochee { background: var(--encre); color: #fff; box-shadow: none; }
+.liste-cases.visuel .case { cursor: default; }
+.liste-cases.visuel .case:hover { background: transparent; }
+.entete-groupe { font-size: 13px; font-weight: 700; color: var(--encre-2); margin: 0 0 5px 2px; line-height: 1.25; }
+/* Ouverture plus serrée sur téléphone : la sortie et les apports remontent */
+@media (max-width: 760px) {
+  .ouverture { padding-top: 28px; }
+  .ouverture h1 { font-size: 32px; }
+  .ouverture .chapo { margin-top: 14px; font-size: 17px; }
+  .entree > div > span { display: none; }
+  .entree, .sortie { padding: 9px 12px; grid-template-columns: 34px 1fr; }
+  .pictogramme { width: 34px; height: 34px; }
+  .equation { margin-top: 18px; }
+  .benefices { margin-top: 18px; gap: 10px; }
+  .benefices strong { font-size: 17px; }
+}
+
+/* La validation du responsable, une étape à part entière */
+.validation { margin-top: clamp(20px, 3vw, 28px); display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap;
+  padding: 18px 22px; border-radius: var(--rayon); background: #fff; border: 1.5px solid var(--encre); }
+.validation h3 { font-size: 20px; margin-bottom: 4px; }
+.validation p { color: var(--encre-2); max-width: 720px; }
+
+.famille-regles { margin: 6px 18px 0; padding-top: 12px; font-size: 14px; font-weight: 750; color: var(--encre); }
+.famille-regles + .regles { padding-top: 8px; }
+
+/* ---------- Ouverture : la nature de la maquette ---------- */
+.avertissement { margin-top: 18px; font-size: 14px; color: var(--encre-3); max-width: 760px; }
+.numero-clair { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #ffc560; color: var(--nuit); font-weight: 900; letter-spacing: 0; }
+.section-nuit .surtitre:has(.numero-clair)::before { display: none; }
+
+/* ---------- 1. Chaque activité appelle son équipe ---------- */
+.equipe-activite { margin-top: clamp(22px, 3vw, 30px); display: grid; gap: 8px; }
+.equipe-activite h4 { font-size: clamp(19px, 2vw, 22px); }
+.equipe-activite .besoins { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 6px; }
+.besoin h5 { margin: 0; font-size: 17px; letter-spacing: -.01em; line-height: 1.2; }
+.besoin { border-top: 4px solid var(--ligne-2); }
+.besoin.p1000 { border-top-color: var(--orange); }
+.besoin.enfants { border-top-color: #3aa36b; }
+.besoin.p1200 { border-top-color: var(--bleu); }
+.besoin.paddock { border-top-color: var(--violet); }
+.besoin.soir { border-top-color: var(--nuit-2); }
+.besoin.course { border-top-color: var(--rouge); }
+@media (max-width: 900px) { .equipe-activite .besoins { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .equipe-activite .besoins { grid-template-columns: 1fr; } }
+
+/* ---------- 3. La demande et le SMS ---------- */
+.sollicitation { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+@media (max-width: 960px) { .sollicitation { grid-template-columns: 1fr; } }
+.sms { background: #f4f4f7; border-radius: 22px; padding: 14px; box-shadow: var(--ombre); border: 1px solid var(--ligne); max-width: 340px; width: 100%; }
+.sms-tete { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--encre-3); margin-bottom: 8px; }
+.sms-exp { font-weight: 800; color: var(--encre); }
+.sms-bulle { background: #e6e6eb; color: #111; border-radius: 18px 18px 18px 6px; padding: 10px 13px; font-size: 15px; line-height: 1.4; display: grid; gap: 4px; }
+.sms-lien { color: #0a5cc2; text-decoration: underline; font-weight: 650; }
+.sms-ligne { display: block; font-size: 14px; }
+.sms-ligne b { font-weight: 800; }
+
+/* ---------- 4. Le téléphone de l'extra et les réponses ---------- */
+.dispos { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 1000px) { .dispos { grid-template-columns: 1fr; } .telephone { justify-self: center; } }
+.telephone { margin: 0; width: 100%; max-width: 300px; border-radius: 34px; background: var(--nuit); padding: 10px; box-shadow: var(--ombre); }
+.tel-ecran { background: #fff; border-radius: 26px; overflow: hidden; padding: 12px 12px 14px; display: grid; gap: 8px; }
+.tel-barre { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; padding-bottom: 8px; border-bottom: 1px solid var(--ligne); }
+.marque-logo.petit { height: 24px; font-size: 12px; padding: 0 6px; border-radius: 5px; }
+.tel-intro strong { display: block; font-size: 15px; }
+.tel-intro span { display: block; font-size: 13px; color: var(--encre-3); line-height: 1.35; }
+.tel-jour { border: 1px solid var(--ligne); border-radius: 12px; padding: 8px; display: grid; gap: 6px; }
+.tel-jour.vide { background: #fbfaf8; }
+.tel-date { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.tel-date strong { font-size: 14px; }
+.tel-date small { font-size: 12px; color: var(--encre-3); }
+.tel-puces { display: flex; flex-wrap: wrap; gap: 5px; }
+.puce-choix { font-size: 12px; line-height: 1.25; padding: 5px 8px; border-radius: 9px; border: 1px solid var(--ligne-2); color: var(--encre-2); background: #fff; }
+.puce-choix b { display: block; font-size: 12px; color: var(--encre); }
+.puce-choix.choisie { background: var(--encre); border-color: var(--encre); color: #fff; }
+.puce-choix.choisie b { color: #fff; }
+.puce-choix.autre { border-style: dashed; color: var(--encre-3); }
+.tel-suite { font-size: 12px; color: var(--encre-3); text-align: center; }
+.dispos-corps { overflow-x: auto; }
+.dispos-ligne { display: grid; grid-template-columns: minmax(118px, 1.5fr) repeat(7, minmax(54px, 1fr)); gap: 6px; align-items: center; padding: 6px 0; border-top: 1px solid var(--ligne); }
+.dispos-ligne.tete { border-top: 0; font-size: 12px; font-weight: 700; color: var(--encre-3); padding-top: 0; }
+.dispos-ligne .qui { font-size: 14px; font-weight: 650; line-height: 1.2; min-width: 0; }
+.dispos-ligne .qui small { display: block; font-size: 12px; font-weight: 500; color: var(--encre-3); }
+.cellule-dispo { display: grid; gap: 3px; min-width: 0; }
+.barre { position: relative; height: 10px; border-radius: 5px; background: #efede7; overflow: hidden; }
+.barre i { position: absolute; top: 0; bottom: 0; background: var(--vert); border-radius: 5px; }
+.barre i.soir { background: var(--nuit-2); }
+.cellule-dispo .heures { font-size: 12px; color: var(--encre-2); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dispos-ligne.attente .attente-texte { grid-column: 2 / -1; font-size: 13px; color: var(--orange-fonce); font-weight: 650; }
+.dispos-ligne.attente .qui small { color: var(--orange-fonce); }
+@media (max-width: 640px) {
+  .dispos-ligne { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .dispos-ligne .qui { grid-column: 1 / -1; }
+  .dispos-ligne.tete span:first-child { display: none; }
+  .cellule-dispo .heures { display: none; }
+  .dispos-ligne.attente .attente-texte { grid-column: 1 / -1; }
+}
+
+/* ---------- 5. Le planning : la 1200 m des licenciés ---------- */
+.info-ferme { display: block; font-size: 12px; color: var(--encre-3); padding: 2px 4px; line-height: 1.3; }
+
+/* ---------- 6. La validation ---------- */
+.validation-visuel { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: start; }
+@media (max-width: 960px) { .validation-visuel { grid-template-columns: 1fr; } }
+.chiffres-cles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 16px; }
+.chiffres-cles div { background: var(--fond-2); border-radius: 10px; padding: 10px 12px; }
+.chiffres-cles dt { font-size: 13px; color: var(--encre-3); font-weight: 600; }
+.chiffres-cles dd { margin: 2px 0 0; font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+@media (max-width: 640px) { .chiffres-cles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.actions-validation { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* ---------- 7. Les urgences ---------- */
+.onglets-urgences { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: clamp(18px, 3vw, 26px); }
+.onglets-urgences button { text-align: left; border: 1.5px solid #343843; background: var(--nuit-2); color: #fff; border-radius: 12px; padding: 12px 14px; min-height: 60px; }
+.onglets-urgences button strong { display: block; font-size: 16px; }
+.onglets-urgences button span { display: block; font-size: 13.5px; color: #c6c8cd; }
+.onglets-urgences button[aria-selected="true"] { border-color: #ffc560; box-shadow: 0 0 0 1px #ffc560; }
+@media (max-width: 760px) { .onglets-urgences { grid-template-columns: 1fr; } }
+.autres-cas { margin-top: clamp(18px, 3vw, 26px); color: #c6c8cd; font-size: 15.5px; max-width: 820px; }
+.places-ajout { margin: 0; padding: 4px 18px 12px; list-style: none; display: grid; gap: 6px; }
+.place-ajout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 10px; padding: 9px 10px; border-radius: 10px; background: var(--vert-pale); font-size: 14.5px; line-height: 1.35; }
+.place-ajout.a-pourvoir { background: var(--rouge-pale); }
+.place-ajout .role-place { font-weight: 700; }
+.alerte .signe.plus { background: var(--orange-pale); color: var(--orange-fonce); }
+
+/* ---------- Charte du RKC : bandeaux noirs, Poppins, accent orange ---------- */
+.entete { background: #000; border-bottom-color: #000; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.entete .marque { color: #fff; }
+.entete nav a { color: #d9d9d9; }
+.entete nav a:hover { background: transparent; color: #fff; box-shadow: inset 0 -2px 0 var(--orange); border-radius: 0; }
+.entete nav a.lien-fort { background: var(--orange); color: #000; border-radius: 4px; }
+.entete nav a.lien-fort:hover { background: #ffb733; color: #000; box-shadow: none; border-radius: 4px; }
+.tete-section h2::after { content: ""; display: block; width: 50px; height: 3px; background: var(--orange); margin-top: 16px; }
+.pied { background: #000; color: #bdbdbd; border-top: 0; }
+.pied a { color: #fff; display: inline-block; padding: 12px 0; }
+.bouton { border-radius: 4px; }
+.section-nuit .surtitre { color: var(--orange); }
+.numero-clair { background: var(--orange); }
+.onglets-urgences button[aria-selected="true"] { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
+.fil li::before { background: var(--orange); box-shadow: 0 0 0 4px rgba(255, 165, 0, .2); }
+.fil .heure { color: var(--orange); }
+.bloc.soir { border-color: var(--orange); }
+
+.chiffres-cles dd small { display: block; font-size: 13px; font-weight: 600; color: var(--encre-3); letter-spacing: 0; }
+
+/* ---------- 1. Le programme, jour par jour ---------- */
+.agenda { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.agenda-jour { display: grid; align-content: start; gap: 6px; min-width: 0; }
+.agenda-tete { margin: 0; padding: 0 2px 6px; border-bottom: 2px solid var(--encre); font-size: 13px; font-weight: 600; color: var(--encre-3); line-height: 1.25; }
+.agenda-tete strong { display: block; font-size: 15px; color: var(--encre); }
+.agenda-jour.weekend .agenda-tete { border-bottom-color: var(--orange); }
+.agenda-jour.weekend .agenda-tete strong { color: var(--orange-fonce); }
+.agenda-liste { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.agenda-evt { border-radius: 8px; padding: 7px 8px 8px; border-left: 4px solid; display: grid; gap: 2px; font-size: 13px; line-height: 1.3; min-width: 0; }
+.agenda-heure { font-weight: 700; color: var(--encre); }
+.agenda-quoi b { display: block; font-size: 14px; }
+.agenda-quoi span { display: block; color: var(--encre-2); font-size: 12.5px; }
+.agenda-evt.p1000 { background: var(--orange-pale); border-color: var(--orange); }
+.agenda-evt.enfants { background: var(--vert-pale); border-color: #3aa36b; }
+.agenda-evt.p1200 { background: var(--bleu-pale); border-color: var(--bleu); }
+.agenda-evt.course { background: var(--rouge-pale); border-color: var(--rouge); }
+.agenda-evt.soir { background: var(--nuit-2); border-color: var(--orange); color: #fff; }
+.agenda-evt.soir .agenda-heure, .agenda-evt.soir .agenda-quoi b { color: #fff; }
+.agenda-evt.soir .agenda-quoi span { color: #d4d6db; }
+@media (max-width: 1100px) { .agenda { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 16px; } }
+@media (max-width: 760px) {
+  .agenda { grid-template-columns: 1fr; row-gap: 14px; }
+  .agenda-tete { display: flex; align-items: baseline; gap: 6px; }
+  .agenda-tete strong { display: inline; }
+  .agenda-evt { grid-template-columns: 112px minmax(0, 1fr); gap: 2px 10px; align-items: baseline; }
+}
+/* Écrans d'aperçu : ce sont des images de l'outil, pas des boutons */
+.apercu { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--ligne-2); font-size: 12px; font-weight: 600; color: var(--encre-3); vertical-align: 2px; letter-spacing: 0; }
+span.bouton { cursor: default; }
+span.bouton:hover { background: var(--encre); }
+span.bouton.orange:hover { background: var(--orange); }
+.cellule-dispo .heures { white-space: normal; overflow: visible; text-overflow: clip; }
+.autres-cas strong { color: #fff; }
+
+/* ---------- Retouches de rendu (relecture du 8 novembre au soir) ---------- */
+/* Les sept onglets des jours tiennent sur un petit téléphone */
+@media (max-width: 1023px) {
+  .onglets-jours { gap: 4px; padding: 12px 8px 4px; }
+  .onglets-jours button { flex: 1 1 0; min-width: 0; padding: 6px 0; }
+}
+/* La pastille « Recommandée » passe sous le nom sur téléphone */
+@media (max-width: 480px) {
+  .candidat { grid-template-columns: 38px minmax(0, 1fr); }
+  .candidat .pastille { grid-column: 2; justify-self: start; }
+}
+/* Les dispos en clair sur téléphone */
+.dispos-texte { display: none; }
+@media (max-width: 640px) {
+  .dispos-ligne .cellule-dispo, .dispos-ligne.tete { display: none; }
+  .dispos-texte { display: block; grid-column: 1 / -1; margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--encre-2); }
+  .dispos-corps > p.tres-petit { display: none; }
+}
+/* Le programme plus compact sur téléphone : une ligne par activité */
+@media (max-width: 760px) {
+  .agenda-evt { padding: 6px 8px; grid-template-columns: 104px minmax(0, 1fr); }
+  .agenda-quoi b, .agenda-quoi span { display: inline; }
+  .agenda-quoi b::after { content: " · "; font-weight: 400; }
+  .agenda-quoi span { font-size: 13px; }
+}
+/* Les personnes indisponibles : grisées par la couleur, pas par l'opacité */
+.personne.indispo, .case.desactivee { opacity: 1; }
+.personne.indispo .personne-nom, .personne.indispo .personne-metiers, .case.desactivee .qui, .case.desactivee .qui small { color: #666666; }
+/* Les deux viviers gardent leur hauteur propre */
+.viviers { align-items: start; }
+@media (min-width: 701px) and (max-width: 999px) { .vivier.extras .personnes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- L'appli RKC Planning : notification et onglets ---------- */
+.notif { background: rgba(255, 255, 255, .96); border-radius: 18px; padding: 12px 14px 14px; box-shadow: 0 10px 30px rgba(20, 22, 28, .14); border: 1px solid var(--ligne); max-width: 340px; width: 100%; display: grid; gap: 8px; }
+.notif-tete { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--encre-3); }
+.notif-appli { font-weight: 700; color: var(--encre-2); letter-spacing: .02em; text-transform: uppercase; }
+.notif-heure { margin-left: auto; }
+.notif-corps { display: grid; gap: 4px; font-size: 14.5px; line-height: 1.4; color: var(--encre); }
+.notif-corps strong { font-size: 15px; }
+.tel-onglets { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--fond-2); border-radius: 10px; padding: 3px; font-size: 13px; font-weight: 700; text-align: center; }
+.tel-onglets span { padding: 6px 4px; border-radius: 8px; color: var(--encre-3); }
+.tel-onglets span.actif { background: #fff; color: var(--encre); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.tel-etat { color: var(--vert) !important; font-weight: 600; }
+
+</style>
+</head>
+<body>
+  <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+  <header class="entete">
+    <div class="conteneur">
+      <a class="marque" href="#haut" aria-label="RKC, planning des équipes, haut de page">
+        <span class="marque-logo">RKC</span>
+        <span class="marque-nom">Planning des équipes</span>
+      </a>
+      <nav aria-label="Sections">
+        <a href="#programme">Programme</a>
+        <a href="#equipes">Équipes</a>
+        <a href="#disponibilites">Disponibilités</a>
+        <a href="#planning">Planning</a>
+        <a class="lien-fort" href="#urgences">Urgences</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenu">
+    <!-- Ouverture -->
+    <section class="ouverture" id="haut" aria-labelledby="titre-ouverture">
+      <div class="conteneur">
+        <p class="surtitre">Maquette · le futur planning du RKC</p>
+        <h1 id="titre-ouverture">Un planning dynamique, autonome, intelligent. <span class="accent">Le contrôle reste au RKC.</span></h1>
+        <p class="chapo">Cette maquette montre comment le RKC croise son programme, ses équipes et les disponibilités des extras pour proposer un planning complet, que le responsable valide avant envoi.</p>
+
+        <div class="equation" aria-label="Ce que le RKC y met, et ce que l’outil rend">
+          <div class="entrees">
+            <div class="entree">
+              <span class="pictogramme" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+              <div><strong>Le programme de la semaine</strong><span>Location, Piste Découverte, licenciés, groupes et courses, avec leur taille</span></div>
+            </div>
+            <div class="entree">
+              <span class="pictogramme" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 14.6c2.7-.3 4.8 1.2 5.5 4.4"/></svg></span>
+              <div><strong>Les équipes</strong><span>CDI et extras, rôles, niveaux, contrats, repos, congés, arrêts</span></div>
+            </div>
+            <div class="entree">
+              <span class="pictogramme" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 18.5h4M9.5 9.5l2 2 3.5-4"/></svg></span>
+              <div><strong>Les disponibilités des extras</strong><span>Données chaque semaine dans l’appli, heure par heure</span></div>
+            </div>
+          </div>
+          <div class="fleche-equation" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>
+          <div class="sortie">
+            <span class="pictogramme" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M9 9v12M15 9v12M3 15h18"/></svg></span>
+            <div><strong>Une proposition de planning</strong><span>Qui travaille, où et à quelle heure, chaque jour</span></div>
+          </div>
+        </div>
+
+        <ul class="benefices">
+          <li><strong>Moins de temps au téléphone</strong><span>Plus besoin d’appeler les extras un par un pour bâtir le planning de la semaine.</span></li>
+          <li><strong>Jamais de trou</strong><span>Chaque activité a son équipe, du début à la fin de la journée.</span></li>
+          <li><strong>Une réponse immédiate aux urgences</strong><span>Un arrêt maladie, une absence, une course ajoutée : l’outil dit qui appeler.</span></li>
+        </ul>
+        <p class="avertissement" data-avertissement></p>
+      </div>
+    </section>
+
+    <!-- Fonctionnement -->
+    <section class="section section-claire" id="fonctionnement" aria-labelledby="titre-fonctionnement">
+      <div class="conteneur">
+        <div class="tete-section">
+          <p class="surtitre">Le fonctionnement</p>
+          <h2 id="titre-fonctionnement">Du programme au planning, puis au jour le jour.</h2>
+          <p class="chapo">Le RKC fournit son programme et les données de ses équipes. Chaque semaine, l’outil recueille les disponibilités des extras, prépare une proposition de planning et laisse la décision au responsable. Ensuite, il suit chaque imprévu.</p>
+        </div>
+
+        <article class="temps" id="programme" aria-labelledby="t1">
+          <div class="temps-texte">
+            <span class="temps-numero" aria-hidden="true">1</span>
+            <h3 id="t1">Le programme à couvrir.</h3>
+            <div class="explication" data-texte-programme></div>
+          </div>
+          <div class="temps-visuel" data-programme></div>
+        </article>
+
+        <article class="temps" id="equipes" aria-labelledby="t2">
+          <div class="temps-texte">
+            <span class="temps-numero" aria-hidden="true">2</span>
+            <h3 id="t2">Les équipes connues : deux viviers.</h3>
+            <div class="explication">
+              <p>Chacun a un rôle, rarement deux : accueil, pistard, mécanique location, magasin ou mécanique compétition. Les pistards ont trois niveaux : commissaire de piste, commissaire de piste confirmé et directeur de course.</p>
+              <p class="note">Pour les CDI : le contrat, les jours de repos (deux par semaine l’été, trois l’hiver, pour un temps plein), les congés et les arrêts maladie. Pour les extras : la pondération (forte pour ceux qu’on veut faire travailler davantage, faible pour qui débute) et les indisponibilités. Pour tout le monde : au moins 11 heures de repos entre deux postes, le minimum légal.</p>
+            </div>
+          </div>
+          <div class="temps-visuel" data-viviers></div>
+        </article>
+
+        <article class="temps" id="sollicitation" aria-labelledby="t3">
+          <div class="temps-texte">
+            <span class="temps-numero" aria-hidden="true">3</span>
+            <h3 id="t3">Les extras sollicités.</h3>
+            <div class="explication">
+              <p>Les CDI disponibles sont intégrés d’office. Le responsable choisit les extras à qui demander leurs disponibilités pour la semaine à planifier.</p>
+              <p class="note" data-texte-envoi></p>
+            </div>
+          </div>
+          <div class="temps-visuel" data-sollicitation></div>
+        </article>
+
+        <article class="temps" id="disponibilites" aria-labelledby="t4">
+          <div class="temps-texte">
+            <span class="temps-numero" aria-hidden="true">4</span>
+            <h3 id="t4">Les disponibilités reçues, heure par heure.</h3>
+            <div class="explication">
+              <p>Dans l’appli, l’extra voit les événements déjà connus de la semaine et dit précisément quand il est disponible : pour un événement, sur un créneau, ou toute la journée. Il retrouve à tout moment ce qu’il a envoyé et peut le modifier jusqu’à l’échéance.</p>
+              <p class="note">Les réponses arrivent en direct chez le responsable. Après l’échéance, une modification passe par lui. Celui qui ne répond pas n’entre pas dans la proposition.</p>
+            </div>
+          </div>
+          <div class="temps-visuel" data-disponibilites></div>
+        </article>
+
+        <article class="temps" id="planning" aria-labelledby="t5">
+          <div class="temps-texte">
+            <span class="temps-numero" aria-hidden="true">5</span>
+            <h3 id="t5">Le planning proposé.</h3>
+            <div class="explication">
+              <p>Les mêmes sept journées que le programme. L’outil place d’abord les CDI selon leur contrat, puis complète avec les extras selon leurs créneaux, leur rôle, leur niveau et leur pondération.</p>
+              <p class="note">Chaque poste a ses horaires et chacun garde le même poste toute la journée : jamais de trou. Chaque proposition est contrôlée règle par règle.</p>
+            </div>
+          </div>
+          <div class="temps-visuel" data-planning></div>
+        </article>
+
+        <article class="temps" id="validation" aria-labelledby="t6">
+          <div class="temps-texte">
+            <span class="temps-numero" aria-hidden="true">6</span>
+            <h3 id="t6">La validation du responsable.</h3>
+            <div class="explication">
+              <p>Il relit la proposition, depuis son ordinateur ou son téléphone, change une case s’il le faut, puis valide. Chacun reçoit son planning dans l’appli, avec une notification, et le retrouve à tout moment : ses horaires et son poste.</p>
+              <p class="note">On peut toujours revenir à la main : chaque case du planning et le besoin de chaque activité se changent à tout moment.</p>
+            </div>
+          </div>
+          <div class="temps-visuel" data-validation></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Urgences -->
+    <section class="section section-nuit" id="urgences" aria-labelledby="titre-urgences">
+      <div class="conteneur">
+        <div class="tete-section">
+          <p class="surtitre"><span class="numero-clair">7</span>Les modifications et urgences</p>
+          <h2 id="titre-urgences">« Il me manque quelqu’un, puis-je appeler maintenant ? »</h2>
+          <p class="chapo">Une fois le planning validé, tout peut arriver : un arrêt maladie, un extra qui ne vient pas, une course ajoutée, une soirée qui finit plus tard. L’outil montre ce qui est touché, propose qui peut le tenir et prévient chacun dans l’appli et par SMS. Le reste du planning ne bouge pas.</p>
+        </div>
+        <div data-urgences></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pied">
+    <div class="conteneur">
+      <span data-pied></span>
+      <a href="#haut">Haut de page</a>
+    </div>
+  </footer>
+
+  <script>
+/* Données de la maquette RKC : une seule semaine, une seule vérité, reprise partout dans la page.
+   Les personnes sont fictives. Les effectifs et les horaires s'inspirent de 57 plannings hebdomadaires réels du RKC
+   (2015 à 2017) et des règles de terrain données par Anthony le 8 novembre 2026 :
+   - une piste qui roule (location, groupe, course) : un directeur de course dans les stands et au moins trois commissaires en piste ;
+   - la 1200 m réservée aux licenciés : personne en piste, ils roulent avec leurs karts ;
+   - le magasin compétition est tenu tous les jours, quelle que soit l'activité ;
+   - en général un seul rôle par personne ; magasin et mécanique compétition vont souvent de pair ;
+   - les pistards ont trois niveaux : commissaire de piste, commissaire de piste confirmé, directeur de course. */
+(function (racine) {
+  // Groupes et soirées : l'effectif suit le nombre de pilotes (hypothèse de maquette, à paramétrer avec le RKC)
+  const TAILLES = [[20, 3], [40, 4], [Infinity, 5]];
+  const commissaires = (pilotes) => TAILLES.find(([max]) => pilotes <= max)[1];
+
+  const activites = [
+    { id: 'loc1000', type: 'location', libelle: 'Location', piste: 'Piste 1000 m', jours: 'tous', horaires: { semaine: ['12:30', '20:00'], weekend: ['10:00', '20:00'], ven: ['12:30', '18:30'] } },
+    { id: 'enfants', type: 'enfants', libelle: 'Location', piste: 'Piste Découverte', jours: 'tous', horaires: { semaine: ['13:00', '19:00'], weekend: ['10:00', '19:00'] } },
+    { id: 'licencies', type: 'licencies', libelle: 'Licenciés', piste: 'Piste 1200 m', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam'], horaires: { semaine: ['10:00', '17:30'], sam: ['09:00', '17:30'] } },
+    { id: 'soiree', type: 'groupe', libelle: 'Privatisation', format: 'Grand Prix', pilotes: 40, piste: 'Piste 1000 m', jours: ['mar'], debut: '20:00', fin: '23:30' },
+    { id: 'groupe', type: 'groupe', libelle: 'Challenge inter-entreprises', format: 'Endurance', pilotes: 20, piste: 'Piste 1200 m', jours: ['jeu'], debut: '19:00', fin: '22:30' },
+    { id: 'course2h', type: 'groupe', libelle: 'Course 2H RKC', format: 'Course de nuit par équipes', pilotes: 24, piste: 'Piste 1000 m', jours: ['ven'], debut: '18:30', fin: '22:00' },
+    { id: 'privSam', type: 'groupe', libelle: 'Privatisation', format: 'Grand Prix', pilotes: 20, piste: 'Piste 1000 m', jours: ['sam'], debut: '20:00', fin: '23:30' },
+    { id: 'course', type: 'course', libelle: '6 Heures RKC', format: 'Endurance par équipes', piste: 'Piste 1200 m', jours: ['dim'], debut: '08:00', fin: '18:00' },
+    // Le magasin compétition n'est pas une activité du programme : il est ouvert tous les jours
+    { id: 'boutique', type: 'magasin', libelle: 'Magasin compétition', piste: 'Paddock', jours: 'tous', horsProgramme: true, horaires: { semaine: ['10:00', '18:00'], weekend: ['09:00', '18:30'] } },
+  ];
+  const act = Object.fromEntries(activites.map((a) => [a.id, a]));
+
+  const postes = [
+    // Location sur la 1000 m : accueil, piste, atelier
+    { id: 'accueil', activite: 'loc1000', role: 'Accueil', metier: 'accueil', nombre: { semaine: 2, weekend: 3 } },
+    { id: 'piste1000', activite: 'loc1000', role: 'Commissaire de piste', roleExpert: 'Directeur de course', metier: 'piste', nombre: 4, experts: 1 },
+    { id: 'renfort1000', activite: 'loc1000', jours: ['sam', 'dim'], role: 'Commissaire de piste en renfort', metier: 'piste', nombre: 1, horaires: { weekend: ['14:00', '20:00'] } },
+    { id: 'mecaLoc', activite: 'loc1000', role: 'Mécanicien location', metier: 'mecaLoc', nombre: 1 },
+    // Piste enfants : un commissaire confirmé, deux le week-end
+    { id: 'enfants', activite: 'enfants', role: 'Commissaire de piste', metier: 'piste', nombre: { semaine: 1, weekend: 2 }, niveauMin: 'Confirmé' },
+    // Paddock : le magasin tous les jours, la mécanique compétition le samedi des licenciés
+    { id: 'magasin', activite: 'boutique', role: 'Magasin compétition', metier: 'magasin', nombre: 1 },
+    { id: 'mecaCompSam', activite: 'licencies', jours: ['sam'], role: 'Mécanique compétition', metier: 'mecaComp', nombre: 1 },
+    // Groupes et soirées : un directeur de course, des commissaires selon le nombre de pilotes, un mécanicien
+    ...['soiree', 'groupe', 'course2h', 'privSam'].flatMap((id) => [
+      { id: id + 'Pistes', activite: id, role: 'Commissaire de piste', roleExpert: 'Directeur de course', metier: 'piste', nombre: 1 + commissaires(act[id].pilotes), experts: 1 },
+      { id: id + 'Meca', activite: id, role: 'Mécanicien', metier: 'mecaLoc', nombre: 1 },
+    ]),
+    // L'endurance : un directeur de course, cinq commissaires confirmés en rotation sur les postes de piste et à la pompe, un mécanicien compétition
+    { id: 'coursePistes', activite: 'course', role: 'Commissaire de piste', roleExpert: 'Directeur de course', metier: 'piste', nombre: 6, experts: 1, niveauMin: 'Confirmé' },
+    { id: 'courseMeca', activite: 'course', role: 'Mécanique compétition', metier: 'mecaComp', nombre: 1 },
+  ];
+
+  racine.DONNEES_RKC = {
+    semaine: 'Semaine du lundi 2 au dimanche 8 juin',
+    jours: [
+      { cle: 'lun', nom: 'Lundi', court: 'Lun.', date: 2, weekend: false },
+      { cle: 'mar', nom: 'Mardi', court: 'Mar.', date: 3, weekend: false },
+      { cle: 'mer', nom: 'Mercredi', court: 'Mer.', date: 4, weekend: false },
+      { cle: 'jeu', nom: 'Jeudi', court: 'Jeu.', date: 5, weekend: false },
+      { cle: 'ven', nom: 'Vendredi', court: 'Ven.', date: 6, weekend: false },
+      { cle: 'sam', nom: 'Samedi', court: 'Sam.', date: 7, weekend: true },
+      { cle: 'dim', nom: 'Dimanche', court: 'Dim.', date: 8, weekend: true },
+    ],
+
+    metiers: {
+      accueil: 'Accueil',
+      piste: 'Pistard',
+      mecaLoc: 'Mécanique location',
+      mecaComp: 'Mécanique compétition',
+      magasin: 'Magasin compétition',
+    },
+    // Les niveaux d'un pistard portent leur nom de terrain ; les autres rôles gardent débutant, confirmé, expert
+    niveauxPiste: { 'Débutant': 'Commissaire de piste', 'Confirmé': 'Commissaire de piste confirmé', 'Expert': 'Directeur de course' },
+    tailles: TAILLES.map(([max, n]) => ({ max: max === Infinity ? null : max, commissaires: n })),
+
+    activites,
+    postes,
+
+    // Les lignes du planning : une par endroit, dans l'ordre du site
+    lignes: [
+      { id: 'accueil', libelle: 'Accueil', postes: ['accueil'] },
+      { id: 'p1000', libelle: 'Piste 1000 m', sous: 'Location', postes: ['piste1000', 'renfort1000'] },
+      { id: 'enfants', libelle: 'Piste Découverte', postes: ['enfants'] },
+      { id: 'atelier', libelle: 'Atelier location', postes: ['mecaLoc'] },
+      { id: 'p1200', libelle: 'Piste 1200 m', postes: ['coursePistes', 'courseMeca'] },
+      { id: 'paddock', libelle: 'Magasin compétition', sous: 'Avec la mécanique compétition', postes: ['magasin', 'mecaCompSam'] },
+      { id: 'soir', libelle: 'En soirée', postes: ['soireePistes', 'soireeMeca', 'groupePistes', 'groupeMeca', 'course2hPistes', 'course2hMeca', 'privSamPistes', 'privSamMeca', 'courseMerPistes', 'courseMerMeca'] },
+    ],
+
+    // Les jours travaillés des CDI cette semaine, tels que l'outil les a calculés (contrat, congés, arrêt maladie)
+    joursCDI: { camille: ['lun', 'mar', 'ven', 'sam', 'dim'], karim: ['jeu', 'ven', 'sam', 'dim'], bastien: ['lun', 'jeu', 'ven', 'sam', 'dim'], hugo: [], lea: ['mer', 'jeu', 'ven', 'sam', 'dim'], julie: ['lun', 'mar', 'sam', 'dim'], malik: ['lun', 'jeu', 'ven', 'sam', 'dim'], sofiane: ['mer', 'jeu', 'ven', 'sam', 'dim'] },
+
+    // Les deux viviers. En général un seul rôle par personne.
+    personnes: [
+      { id: 'camille', ordre: 1, nom: 'Camille M.', genre: 'f', type: 'CDI', metiers: { piste: 'Expert' }, contrat: { jours: 5 } },
+      { id: 'karim', ordre: 2, nom: 'Karim T.', genre: 'm', type: 'CDI', metiers: { piste: 'Expert' }, contrat: { jours: 5 },
+        absences: [{ motif: 'Arrêt maladie', jours: ['lun', 'mar', 'mer'] }] },
+      { id: 'bastien', ordre: 3, nom: 'Bastien V.', genre: 'm', type: 'CDI', metiers: { piste: 'Confirmé' }, contrat: { jours: 5 } },
+      { id: 'hugo', ordre: 4, nom: 'Hugo L.', genre: 'm', type: 'CDI', metiers: { piste: 'Confirmé' }, contrat: { jours: 5 },
+        absences: [{ motif: 'Congés', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'] }] },
+      { id: 'lea', ordre: 5, nom: 'Léa D.', genre: 'f', type: 'CDI', metiers: { accueil: 'Expert' }, contrat: { jours: 5 } },
+      { id: 'julie', ordre: 6, nom: 'Julie P.', genre: 'f', type: 'CDI', metiers: { accueil: 'Confirmé' }, contrat: { jours: 4 } },
+      { id: 'malik', ordre: 7, nom: 'Malik B.', genre: 'm', type: 'CDI', metiers: { mecaLoc: 'Expert' }, contrat: { jours: 5 } },
+      { id: 'sofiane', ordre: 8, nom: 'Sofiane R.', genre: 'm', type: 'CDI', metiers: { magasin: 'Expert', mecaComp: 'Expert' }, contrat: { jours: 5 } },
+
+      { id: 'ines', ordre: 11, nom: 'Inès M.', genre: 'f', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'forte' },
+      { id: 'sarah', ordre: 12, nom: 'Sarah C.', genre: 'f', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'forte' },
+      { id: 'yanis', ordre: 13, nom: 'Yanis D.', genre: 'm', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'normale' },
+      { id: 'noa', ordre: 14, nom: 'Noa B.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'emma', ordre: 15, nom: 'Emma L.', genre: 'f', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'nathan', ordre: 16, nom: 'Nathan F.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'lina', ordre: 17, nom: 'Lina R.', genre: 'f', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'mehdi', ordre: 18, nom: 'Mehdi A.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'adam', ordre: 19, nom: 'Adam R.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'maxime', ordre: 19.1, nom: 'Maxime T.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'eva', ordre: 19.2, nom: 'Eva N.', genre: 'f', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'sami', ordre: 19.3, nom: 'Sami O.', genre: 'm', type: 'Extra', metiers: { piste: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'tom', ordre: 20, nom: 'Tom B.', genre: 'm', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'normale' },
+      { id: 'clara', ordre: 21, nom: 'Clara P.', genre: 'f', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'normale' },
+      { id: 'leo', ordre: 22, nom: 'Léo M.', genre: 'm', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'normale' },
+      { id: 'manon', ordre: 23, nom: 'Manon V.', genre: 'f', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'faible' },
+      { id: 'yassine', ordre: 24, nom: 'Yassine K.', genre: 'm', type: 'Extra', metiers: { piste: 'Débutant' }, ponderation: 'faible' },
+      { id: 'rayan', ordre: 25, nom: 'Rayan H.', genre: 'm', type: 'Extra', metiers: { piste: 'Expert' }, ponderation: 'normale',
+        absences: [{ motif: 'En déplacement', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'] }] },
+      { id: 'jade', ordre: 26, nom: 'Jade P.', genre: 'f', type: 'Extra', metiers: { accueil: 'Expert' }, ponderation: 'normale' },
+      { id: 'chloe', ordre: 27, nom: 'Chloé S.', genre: 'f', type: 'Extra', metiers: { accueil: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'lucas', ordre: 28, nom: 'Lucas R.', genre: 'm', type: 'Extra', metiers: { mecaLoc: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'bilal', ordre: 29, nom: 'Bilal S.', genre: 'm', type: 'Extra', metiers: { mecaLoc: 'Confirmé' }, ponderation: 'normale' },
+      { id: 'theo', ordre: 30, nom: 'Théo G.', genre: 'm', type: 'Extra', metiers: { magasin: 'Confirmé', mecaComp: 'Confirmé' }, ponderation: 'normale' },
+    ],
+
+    // La demande de disponibilités : envoyée chaque semaine par SMS, environ sept jours avant
+    demande: { envoi: 'lundi 26 mai', echeance: 'jeudi 29 mai à 18 h' },
+    sollicites: ['ines', 'sarah', 'yanis', 'noa', 'emma', 'nathan', 'lina', 'mehdi', 'adam', 'maxime', 'eva', 'sami', 'tom', 'clara', 'leo', 'manon', 'yassine', 'jade', 'chloe', 'lucas', 'bilal', 'theo'],
+
+    // Les réponses reçues, jour par jour : un événement du programme (on reprend ses horaires),
+    // un créneau « de-à », ou « toute » la journée. Yassine n'a pas encore répondu.
+    reponses: {
+      ines: { lun: 'toute', mar: ['soiree'], jeu: ['groupe'], sam: 'toute', dim: ['course'] },
+      sarah: { lun: ['loc1000'], mar: ['loc1000'], mer: 'toute', ven: ['course2h'], dim: 'toute' },
+      yanis: { mar: ['soiree'], mer: ['loc1000'], ven: 'toute', sam: ['privSam'], dim: ['course'] },
+      noa: { lun: ['loc1000'], mar: ['loc1000', 'soiree'], jeu: ['groupe'], ven: ['loc1000'], sam: 'toute', dim: 'toute' },
+      emma: { mer: ['loc1000'], ven: ['loc1000'], sam: 'toute', dim: 'toute' },
+      nathan: { mar: ['soiree'], mer: ['loc1000'], jeu: ['loc1000'], sam: ['14:00-20:00'], dim: ['course'] },
+      lina: { lun: ['loc1000'], mar: ['loc1000'], mer: ['enfants'], jeu: ['groupe'], ven: ['course2h'], dim: ['loc1000'] },
+      mehdi: { mar: ['soiree'], jeu: ['loc1000'], ven: ['course2h'], sam: ['loc1000'], dim: ['course'] },
+      adam: { lun: ['loc1000'], mar: ['13:00-20:00'], jeu: ['loc1000', 'groupe'], ven: ['course2h'], dim: ['course'] },
+      maxime: { sam: ['loc1000'], dim: 'toute' },
+      eva: { sam: ['privSam'], dim: ['loc1000'] },
+      sami: { dim: ['course'] },
+      tom: { mar: ['soiree'], mer: ['loc1000'], jeu: ['groupe'], dim: ['loc1000'] },
+      clara: { lun: ['loc1000'], mar: ['loc1000'], mer: ['loc1000'], ven: ['course2h'], sam: ['loc1000'], dim: ['loc1000'] },
+      leo: { mar: ['soiree'], jeu: ['groupe'], sam: ['14:00-20:00', 'privSam'], dim: 'toute' },
+      manon: { sam: ['loc1000'], dim: ['loc1000'] },
+      jade: { lun: ['loc1000'], mar: ['loc1000'], mer: ['loc1000'], sam: 'toute', dim: 'toute' },
+      chloe: { jeu: ['loc1000'], ven: ['loc1000'], sam: ['loc1000'], dim: ['loc1000'] },
+      lucas: { mar: ['loc1000'], mer: ['loc1000'], jeu: ['groupe'], ven: ['course2h'], dim: ['loc1000'] },
+      bilal: { lun: ['loc1000'], mar: ['soiree'], jeu: ['groupe'], ven: ['course2h'], sam: ['privSam'] },
+      theo: { lun: ['boutique'], mar: ['boutique'], sam: 'toute', dim: ['course'] },
+    },
+
+    // Les urgences, toutes tirées de cette même semaine
+    imprevus: [
+      { id: 'arret', titre: 'Un arrêt maladie', quand: 'Dimanche 8 juin, 8 h 05', message: 'Léa D. prévient qu’elle est en arrêt maladie.', absent: 'lea', jour: 'dim' },
+      { id: 'absence', titre: 'Un extra absent', quand: 'Samedi 7 juin, 8 h 20', message: 'Manon V. prévient qu’elle ne pourra pas venir.', absent: 'manon', jour: 'sam' },
+      // Une course réservée après la validation : l'équipe se calcule comme pour tout groupe, selon le nombre de pilotes
+      { id: 'courseajoutee', titre: 'Une course ajoutée', quand: 'Mardi 3 juin, 15 h', jour: 'mer',
+        message: 'Une entreprise réserve une course pour mercredi soir : 24 pilotes sur la Piste 1200 m, de 20 h à 23 h.',
+        activite: { id: 'courseMer', type: 'groupe', libelle: 'Course entreprise', format: 'Grand Prix', pilotes: 24, piste: 'Piste 1200 m', jours: ['mer'], debut: '20:00', fin: '23:00' },
+        ajouts: [
+          { id: 'courseMerPistes', activite: 'courseMer', role: 'Commissaire de piste', roleExpert: 'Directeur de course', metier: 'piste', nombre: 1 + commissaires(24), experts: 1 },
+          { id: 'courseMerMeca', activite: 'courseMer', role: 'Mécanicien', metier: 'mecaLoc', nombre: 1 },
+        ],
+        // Les réponses à la demande ciblée, envoyée par SMS aux extras qui peuvent tenir ces postes
+        reponsesDemande: {
+          ines: { reponse: 'oui', heure: '15 h 04' }, maxime: { reponse: 'oui', heure: '15 h 06' }, bilal: { reponse: 'oui', heure: '15 h 09' },
+          eva: { reponse: 'oui', heure: '15 h 12' }, clara: { reponse: 'non', heure: '15 h 14' }, leo: { reponse: 'oui', heure: '15 h 17' },
+          sami: { reponse: 'oui', heure: '15 h 26' },
+        } },
+    ],
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+  <script>
+/* Moteur de la maquette RKC.
+   Prépare une proposition de planning à partir du programme, des besoins, des viviers et des disponibilités,
+   la contrôle règle par règle, et cherche des remplaçants en cas d'imprévu.
+   Script classique, sans module ni dépendance : il fonctionne tel quel dans la page et dans Node. */
+(function (racine) {
+  'use strict';
+
+  const RANG = { 'Débutant': 1, 'Confirmé': 2, 'Expert': 3 };
+  const POIDS = { forte: 3, normale: 2, faible: 1 };
+  const PLAFOND = { forte: 5, normale: 4, faible: 1 };   // journées au plus dans la semaine, par pondération
+  const REPOS_MIN = 11 * 60;                              // minutes entre la fin d'une mission et la suivante
+  const JOURNEE_MAX = 10 * 60;                            // minutes de travail au plus dans une journée
+  const LIMITE_ESSAIS = 20000;
+
+  const minutes = (h) => { const [a, b] = h.split(':').map(Number); return a * 60 + b; };
+  const duree = (m) => Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + String(m % 60).padStart(2, '0') : '');
+  function texteHeure(m) {
+    const x = ((m % 1440) + 1440) % 1440;
+    const h = Math.floor(x / 60), mn = x % 60;
+    return h + ' h' + (mn ? ' ' + String(mn).padStart(2, '0') : '');
+  }
+
+  function contexte(d) {
+    return {
+      d,
+      jours: d.jours.map((j) => j.cle),
+      jour: Object.fromEntries(d.jours.map((j) => [j.cle, j])),
+      activite: Object.fromEntries(d.activites.map((a) => [a.id, a])),
+      poste: Object.fromEntries(d.postes.map((p) => [p.id, p])),
+      personne: Object.fromEntries(d.personnes.map((p) => [p.id, p])),
+    };
+  }
+
+  const joursActivite = (ctx, a) => (a.jours === 'tous' ? ctx.jours : a.jours);
+
+  // Horaires d'une activité un jour donné : ceux du jour, sinon ceux de la semaine ou du week-end, sinon les horaires communs
+  function horairesActivite(ctx, a, jour) {
+    const h = a.horaires || {};
+    const x = h[jour] || (ctx.jour[jour] && ctx.jour[jour].weekend ? h.weekend : h.semaine) || [a.debut, a.fin];
+    const debut = minutes(x[0]);
+    let fin = minutes(x[1]);
+    if (fin <= debut) fin += 1440;
+    return { debut, fin };
+  }
+  // Horaires d'un poste : les siens s'il en a (par jour, semaine ou week-end), sinon ceux de son activité
+  function horaires(ctx, poste, jour) {
+    const a = ctx.activite[poste.activite];
+    const propre = poste.horaires && (poste.horaires[jour] || (ctx.jour[jour] && ctx.jour[jour].weekend ? poste.horaires.weekend : poste.horaires.semaine));
+    if (propre) {
+      const debut = minutes(propre[0]);
+      let fin = minutes(propre[1]);
+      if (fin <= debut) fin += 1440;
+      return { debut, fin };
+    }
+    if (poste.debut) {
+      const debut = minutes(poste.debut);
+      let fin = minutes(poste.fin);
+      if (fin <= debut) fin += 1440;
+      return { debut, fin };
+    }
+    return horairesActivite(ctx, a, jour);
+  }
+
+  function nombre(ctx, poste, jour) {
+    if (typeof poste.nombre === 'number') return poste.nombre;
+    if (poste.nombre[jour] != null) return poste.nombre[jour];
+    return ctx.jour[jour].weekend ? poste.nombre.weekend : poste.nombre.semaine;
+  }
+
+  // Les places à tenir un jour donné. « ajouts » sert aux besoins nouveaux (un événement réservé au dernier moment).
+  function placesDuJour(ctx, jour, ajouts) {
+    const res = [];
+    for (const p of ctx.d.postes.concat(ajouts || [])) {
+      const a = ctx.activite[p.activite];
+      if (!a || !joursActivite(ctx, a).includes(jour)) continue;
+      if (p.jours && !p.jours.includes(jour)) continue;
+      const n = nombre(ctx, p, jour);
+      if (!n) continue;
+      const { debut, fin } = horaires(ctx, p, jour);
+      // Pause comprise dans l'amplitude : celle du poste, sinon une heure pour une journée de 9 heures ou plus,
+      // 30 minutes au-delà de 6 heures (pratique des plannings du RKC : 1 h pour les journées, 30 min sinon)
+      const amplitude = fin - debut;
+      const pause = p.pause != null ? p.pause : (amplitude >= 9 * 60 ? 60 : amplitude > 6 * 60 ? 30 : 0);
+      for (let i = 0; i < n; i++) {
+        const expert = i < (p.experts || 0);
+        res.push({
+          id: jour + '/' + p.id + '/' + i, jour, poste: p.id, metier: p.metier,
+          role: expert && p.roleExpert ? p.roleExpert : p.role,
+          expert, niveauMin: p.niveauMin || null,
+          encadre: (p.experts || 0) >= 1 && n >= 2 && i === n - 1, debut, fin, pause, soir: debut >= 17 * 60,
+        });
+      }
+    }
+    return res;
+  }
+
+  const absence = (p, jour) => (p.absences || []).find((a) => a.jours.includes(jour)) || null;
+
+  // Les disponibilités sont des créneaux horaires, jour par jour : « toute » pour toute la journée,
+  // un événement du programme (son identifiant : on reprend ses horaires de ce jour-là),
+  // ou un créneau « 12:00-20:00 » (un créneau qui finit après minuit déborde sur la nuit).
+  function creneau(ctx, jour, s) {
+    if (s === 'toute') return [0, 2880];
+    if (ctx.activite[s]) { const h = horairesActivite(ctx, ctx.activite[s], jour); return [h.debut, h.fin]; }
+    const [a, b] = s.split('-');
+    const de = minutes(a);
+    let fin = minutes(b);
+    if (fin <= de) fin += 1440;
+    return [de, fin];
+  }
+  // Les créneaux qui se touchent ou se chevauchent n'en font qu'un (l'événement du soir à la suite de la journée)
+  function creneaux(ctx, jour, dispo) {
+    if (!dispo) return [];
+    const liste = (dispo === 'toute' ? ['toute'] : dispo).map((s) => creneau(ctx, jour, s)).sort((x, y) => x[0] - y[0]);
+    const res = [];
+    for (const c of liste) {
+      const der = res[res.length - 1];
+      if (der && c[0] <= der[1]) der[1] = Math.max(der[1], c[1]); else res.push(c.slice());
+    }
+    return res;
+  }
+  function couvre(ctx, jour, dispo, place) {
+    return creneaux(ctx, jour, dispo).some(([de, fin]) => de <= place.debut && place.fin <= fin);
+  }
+  // Disponible avant une heure donnée ce jour-là (pour la journée : avant 17 h ; pour le matin : avant midi)
+  const dispoAvant = (ctx, jour, dispo, limite) => creneaux(ctx, jour, dispo).some(([de]) => de < limite);
+
+  // A-t-elle le métier et le niveau pour cette place ? Un débutant ne tient qu'une place encadrée par un expert.
+  function apte(p, place) {
+    const niv = p.metiers[place.metier];
+    if (!niv) return false;
+    const r = RANG[niv];
+    if (place.expert) return r === 3;
+    if (place.niveauMin && r < RANG[place.niveauMin]) return false;
+    if (r === 1 && !place.encadre) return false;
+    return true;
+  }
+
+  // ---------- 1. Les jours des CDI : le contrat d'abord ----------
+
+  function optionsCDI(ctx, p) {
+    const presents = ctx.jours.filter((j) => !absence(p, j));
+    const n = Math.min(p.contrat.jours, presents.length);
+    if (presents.length <= n) return [presents];
+    const k = presents.length - n;                       // jours de repos, pris d'affilée
+    const res = [];
+    for (let s = 0; s + k <= ctx.jours.length; s++) {
+      const repos = ctx.jours.slice(s, s + k);
+      if (repos.every((j) => presents.includes(j))) res.push({ jours: presents.filter((j) => !repos.includes(j)), weekend: repos.some((j) => ctx.jour[j].weekend) });
+    }
+    // Repos en semaine d'abord, quand l'activité est la plus faible ; le week-end seulement s'il n'y a pas d'autre choix
+    const semaine = res.filter((o) => !o.weekend);
+    const retenus = (semaine.length ? semaine : res).map((o) => o.jours);
+    return retenus.length ? retenus : [presents.slice(0, n)];
+  }
+
+  function besoinsParJour(ctx) {
+    const res = {};
+    for (const j of ctx.jours) {
+      const pls = placesDuJour(ctx, j);
+      const parMetier = {}, experts = {};
+      for (const pl of pls) {
+        if (pl.soir) continue;
+        parMetier[pl.metier] = (parMetier[pl.metier] || 0) + 1;
+        if (pl.expert) experts[pl.metier] = (experts[pl.metier] || 0) + 1;
+      }
+      res[j] = { total: pls.length, journee: pls.filter((p) => !p.soir).length, parMetier, experts };
+    }
+    return res;
+  }
+
+  function noteCDI(ctx, combo, cdis, extras, reponses, besoins) {
+    let note = 0;
+    const dispoJour = (e, j) => !!reponses[e.id] && dispoAvant(ctx, j, reponses[e.id][j], 17 * 60);
+    for (const j of ctx.jours) {
+      const b = besoins[j];
+      const presents = cdis.filter((p) => combo[p.id].includes(j));
+      const offre = extras.filter((e) => dispoJour(e, j));
+      if (presents.length > b.journee) note += 10000 * (presents.length - b.journee);   // CDI payé à attendre
+      const manque = b.journee - presents.length - offre.length;
+      if (manque > 0) note += 3000 * manque;
+      for (const [m, n] of Object.entries(b.parMetier)) {
+        const qui = presents.filter((p) => p.metiers[m]).length + offre.filter((e) => e.metiers[m]).length;
+        if (qui < n) note += 2000 * (n - qui);
+      }
+      for (const [m, n] of Object.entries(b.experts)) {
+        const qui = presents.filter((p) => p.metiers[m] === 'Expert').length + offre.filter((e) => e.metiers[m] === 'Expert').length;
+        if (qui < n) note += 2000 * (n - qui);
+      }
+      note += (Math.max(0, b.journee - presents.length) * 10) / Math.max(1, offre.length);
+    }
+    for (const p of cdis) {
+      for (const j of ctx.jours) {
+        if (!combo[p.id].includes(j) && !absence(p, j) && ctx.jour[j].weekend) note += 400;   // repos le week-end : à éviter
+      }
+    }
+    return note;
+  }
+
+  function combinaisonsCDI(ctx, cdis) {
+    let combos = [{}];
+    for (const p of cdis) {
+      const opts = optionsCDI(ctx, p);
+      const suivant = [];
+      for (const c of combos) for (const o of opts) suivant.push(Object.assign({}, c, { [p.id]: o }));
+      combos = suivant;
+    }
+    return combos;
+  }
+
+  // ---------- 2. Les places de chaque jour ----------
+
+  function reposOk(etat, id, iJour, pl) {
+    const f = etat.fin[id];
+    return f == null || iJour * 1440 + pl.debut - f >= REPOS_MIN;
+  }
+
+  // Affectation optimale d'un jour : chaque place reçoit une personne, au moindre coût (méthode hongroise).
+  function hongrois(cout) {
+    const n = cout.length, m = cout[0].length;
+    const u = new Array(n + 1).fill(0), v = new Array(m + 1).fill(0);
+    const p = new Array(m + 1).fill(0), way = new Array(m + 1).fill(0);
+    for (let i = 1; i <= n; i++) {
+      p[0] = i;
+      let j0 = 0;
+      const minv = new Array(m + 1).fill(Infinity), used = new Array(m + 1).fill(false);
+      do {
+        used[j0] = true;
+        const i0 = p[j0];
+        let delta = Infinity, j1 = 0;
+        for (let j = 1; j <= m; j++) {
+          if (used[j]) continue;
+          const cur = cout[i0 - 1][j - 1] - u[i0] - v[j];
+          if (cur < minv[j]) { minv[j] = cur; way[j] = j0; }
+          if (minv[j] < delta) { delta = minv[j]; j1 = j; }
+        }
+        for (let j = 0; j <= m; j++) {
+          if (used[j]) { u[p[j]] += delta; v[j] -= delta; } else minv[j] -= delta;
+        }
+        j0 = j1;
+      } while (p[j0] !== 0);
+      do { const j1 = way[j0]; p[j0] = p[j1]; j0 = j1; } while (j0);
+    }
+    const res = new Array(n).fill(-1);
+    for (let j = 1; j <= m; j++) if (p[j]) res[p[j] - 1] = j - 1;
+    return res;
+  }
+
+  const INTERDIT = 1e7, VIDE = 1e5, CDI_PLACE = -1e4;
+
+  function resoudreJour(ctx, iJour, places, cdis, extras, reponses, etat, cdiTravailleDemain, extraDispoDemain) {
+    const jour = ctx.jours[iJour];
+    const gens = cdis.concat(extras);
+    const n = places.length;
+    if (!n) return { affectations: [], vides: [], cout: 0 };
+    // Coût de chaque personne sur chaque place : CDI d'abord et à leur métier principal, extras selon leur pondération
+    const prix = (pl, p) => {
+      if (!apte(p, pl) || !reposOk(etat, p.id, iJour, pl)) return INTERDIT;
+      if (etat.interdits && etat.interdits.has(p.id + '|' + jour)) return INTERDIT;
+      const niv = RANG[p.metiers[pl.metier]];
+      // Garder les experts pour les places d'expert, et d'abord les experts CDI
+      const gaspille = !pl.expert && niv === 3 ? (p.type === 'CDI' ? 8 : 5) : 0;
+      if (p.type === 'CDI') {
+        if (pl.soir) return INTERDIT;                              // les groupes du soir sont tenus par des extras
+        const principal = Object.keys(p.metiers)[0] === pl.metier ? 0 : 60;
+        return CDI_PLACE + principal + gaspille + (p.ordre || 0) * 0.001;
+      }
+      if (!couvre(ctx, jour, reponses[p.id][jour], pl)) return INTERDIT;
+      if ((etat.joursExtra[p.id] || 0) >= PLAFOND[p.ponderation]) return INTERDIT;
+      const tour = 100 * (((etat.joursExtra[p.id] || 0) + 1) / POIDS[p.ponderation]);
+      const soirPuisMatin = pl.soir && extraDispoDemain(p) ? 30 : 0;
+      const debutant = niv === 1 ? 20 : 0;
+      return 200 + tour + gaspille + soirPuisMatin + debutant + (p.ordre || 0) * 0.01;
+    };
+    const cout = places.map((pl) => gens.map((p) => prix(pl, p)).concat(places.map(() => VIDE)));
+    let choix = hongrois(cout);
+    // Un débutant n'est jamais seul : si la place d'expert de son poste reste vide, sa place l'est aussi
+    const tenue = (k) => choix[k] >= 0 && choix[k] < gens.length && cout[k][choix[k]] < INTERDIT;
+    for (let k = 0; k < n; k++) {
+      if (!tenue(k)) continue;
+      const p = gens[choix[k]];
+      if (RANG[p.metiers[places[k].metier]] !== 1) continue;
+      const expertTenu = places.some((pl, x) => pl.poste === places[k].poste && pl.expert && tenue(x));
+      if (!expertTenu) choix[k] = -1;
+    }
+    const affectations = [], vides = [];
+    let total = 0;
+    places.forEach((pl, k) => {
+      if (tenue(k)) {
+        affectations.push({ place: pl, personne: gens[choix[k]].id });
+        total += cout[k][choix[k]] - (gens[choix[k]].type === 'CDI' ? CDI_PLACE : 0);
+      } else vides.push(pl);
+    });
+    return { affectations, vides, cout: total };
+  }
+
+  function affecterSemaine(ctx, joursCDI, extras, reponses, ajouts, interdits) {
+    const etat = { joursExtra: {}, fin: {}, interdits: interdits || new Set() };
+    const affectations = {};
+    const manques = [];
+    let cout = 0;
+    for (let i = 0; i < ctx.jours.length; i++) {
+      const jour = ctx.jours[i];
+      const demain = ctx.jours[i + 1];
+      const cdis = ctx.d.personnes.filter((p) => p.type === 'CDI' && (joursCDI[p.id] || []).includes(jour));
+      const ex = extras.filter((e) => reponses[e.id] && reponses[e.id][jour] && !absence(e, jour));
+      const places = placesDuJour(ctx, jour, ajouts);
+      const res = resoudreJour(
+        ctx, i, places, cdis, ex, reponses, etat,
+        (p) => !!demain && (joursCDI[p.id] || []).includes(demain),
+        (p) => !!demain && !!reponses[p.id] && dispoAvant(ctx, demain, reponses[p.id][demain], 12 * 60),
+      );
+      affectations[jour] = res.affectations;
+      manques.push(...res.vides);
+      cout += res.cout;
+      for (const a of res.affectations) {
+        etat.fin[a.personne] = i * 1440 + a.place.fin;
+        if (ctx.personne[a.personne].type === 'Extra') etat.joursExtra[a.personne] = (etat.joursExtra[a.personne] || 0) + 1;
+      }
+    }
+    return { joursCDI, affectations, manques, cout };
+  }
+
+  // ---------- 2 bis. Le repos hebdomadaire : au moins 35 heures d'affilée dans la semaine ----------
+  const REPOS_HEBDO = 35 * 60;
+  function plusLongRepos(missions, finSemaine) {
+    if (!missions.length) return finSemaine;
+    const m = missions.slice().sort((x, y) => x[0] - y[0]);
+    let plus = m[0][0];
+    for (let k = 1; k < m.length; k++) plus = Math.max(plus, m[k][0] - m[k - 1][1]);
+    return Math.max(plus, finSemaine - m[m.length - 1][1]);
+  }
+  function missionsDe(ctx, plan, id) {
+    const res = [];
+    ctx.jours.forEach((j, i) => { for (const a of plan.affectations[j] || []) if (a.personne === id) res.push([i * 1440 + a.place.debut, i * 1440 + a.place.fin]); });
+    return res;
+  }
+  function reposHebdoKo(ctx, plan) {
+    const fin = ctx.jours.length * 1440;
+    return ctx.d.personnes.filter((p) => p.type === 'Extra').map((p) => p.id)
+      .filter((id) => { const m = missionsDe(ctx, plan, id); return m.length && plusLongRepos(m, fin) < REPOS_HEBDO; });
+  }
+  // Si un extra n'a pas 35 heures d'affilée, on lui retire un jour et l'on recalcule, en gardant la meilleure solution
+  function reparerReposHebdo(ctx, plan, recalcul) {
+    let courant = plan, interdits = new Set();
+    for (let tour = 0; tour < 12; tour++) {
+      const ko = reposHebdoKo(ctx, courant);
+      if (!ko.length) return courant;
+      let mieux = null;
+      for (const id of ko) {
+        for (const j of ctx.jours.filter((x) => (courant.affectations[x] || []).some((a) => a.personne === id))) {
+          const essai = new Set(interdits); essai.add(id + '|' + j);
+          const res = recalcul(essai);
+          if (res.manques.length > courant.manques.length) continue;
+          const note = [reposHebdoKo(ctx, res).length, res.manques.length, res.cout];
+          const meilleur = !mieux || note[0] < mieux.note[0] || (note[0] === mieux.note[0] && (note[1] < mieux.note[1] || (note[1] === mieux.note[1] && note[2] < mieux.note[2])));
+          if (meilleur) mieux = { res, essai, note };
+        }
+      }
+      if (!mieux || mieux.note[0] >= ko.length) return courant;
+      courant = mieux.res; interdits = mieux.essai;
+    }
+    return courant;
+  }
+
+  // ---------- 3. La proposition complète ----------
+
+  function proposer(d, opts) {
+    opts = opts || {};
+    const ctx = contexte(d);
+    const reponses = opts.reponses || d.reponses;
+    const sollicites = new Set(opts.sollicites || d.sollicites);
+    const cdis = d.personnes.filter((p) => p.type === 'CDI');
+    const extras = d.personnes.filter((p) => p.type === 'Extra' && sollicites.has(p.id) && reponses[p.id]);
+    if (opts.joursCDI) {
+      const base = affecterSemaine(ctx, opts.joursCDI, extras, reponses, opts.ajouts);
+      return reparerReposHebdo(ctx, base, (interdits) => affecterSemaine(ctx, opts.joursCDI, extras, reponses, opts.ajouts, interdits));
+    }
+    const besoins = besoinsParJour(ctx);
+    const combos = combinaisonsCDI(ctx, cdis)
+      .map((c) => ({ c, note: noteCDI(ctx, c, cdis, extras, reponses, besoins) }))
+      .sort((a, b) => a.note - b.note);
+    if (opts.joursCDIDepart) combos.unshift({ c: opts.joursCDIDepart, note: -1 });
+    // Repos du week-end, quand l'activité est la plus forte : à éviter pour les CDI
+    const reposWeekend = (c) => cdis.reduce((n, p) => n + ctx.jours.filter((j) => ctx.jour[j].weekend && !absence(p, j) && !c[p.id].includes(j)).length, 0);
+    let meilleur = null;
+    for (const { c } of combos.slice(0, opts.essaisCDI || 60)) {
+      const r = affecterSemaine(ctx, c, extras, reponses, opts.ajouts);
+      r.cout += 150 * reposWeekend(c);
+      if (!meilleur || r.manques.length < meilleur.manques.length ||
+        (r.manques.length === meilleur.manques.length && r.cout < meilleur.cout)) meilleur = r;
+    }
+    return reparerReposHebdo(ctx, meilleur, (interdits) => affecterSemaine(ctx, meilleur.joursCDI, extras, reponses, opts.ajouts, interdits));
+  }
+
+  // ---------- 4. Le contrôle, règle par règle, sans faire confiance au moteur ----------
+
+  function libellePoste(ctx, posteId) {
+    const l = (ctx.d.lignes || []).find((x) => x.postes.includes(posteId));
+    const p = ctx.poste[posteId] || {};
+    const role = (p.role || '').toLowerCase();
+    return (l ? l.libelle : posteId) + (role && l && l.libelle.toLowerCase() !== role ? ' (' + role + ')' : '');
+  }
+
+  // Quatre familles de règles, à ne pas confondre :
+  //  - legal : minimums généraux du Code du travail (des dérogations encadrées existent par accord) ;
+  //  - contrat : ce que disent le contrat et les données de chaque personne (congés, arrêt, réponses des extras) ;
+  //  - rkc : règles d'organisation du RKC, paramétrables (hypothèses de la maquette) ;
+  //  - ponderation : préférences et réglages d'optimisation.
+  const FAMILLES = {
+    legal: 'Règles légales générales',
+    contrat: 'Contrats et données de chaque personne',
+    rkc: 'Règles d’organisation du RKC, paramétrables',
+    ponderation: 'Préférences et pondérations',
+  };
+
+  function controler(d, plan, opts) {
+    opts = opts || {};
+    const ctx = contexte(d);
+    const reponses = opts.reponses || d.reponses;
+    const sollicites = new Set(opts.sollicites || d.sollicites);
+    const regles = [];
+    const regle = (type, nom, erreurs, ref) => regles.push({ type, famille: FAMILLES[type], regle: nom, ref: ref || null, ok: erreurs.length === 0, erreurs });
+    const toutes = [];
+    for (let i = 0; i < ctx.jours.length; i++) {
+      for (const a of plan.affectations[ctx.jours[i]] || []) toutes.push(Object.assign({ i }, a));
+    }
+    // Temps de travail d'un poste : son amplitude moins sa pause
+    const travail = (deb, fin, pause) => fin - deb - (pause != null ? pause : (fin - deb > 6 * 60 ? 30 : 0));
+    const parPersonne = {};
+    for (const a of toutes) (parPersonne[a.personne] = parPersonne[a.personne] || []).push([a.i * 1440 + a.place.debut, a.i * 1440 + a.place.fin, a.place.pause]);
+    for (const m of Object.values(parPersonne)) m.sort((x, y) => x[0] - y[0]);
+    let e;
+
+    // ----- Règles légales générales -----
+    e = [];
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      for (let k = 1; k < missions.length; k++) {
+        const ecart = missions[k][0] - missions[k - 1][1];
+        if (ecart < 0) e.push(ctx.personne[id].nom + ' : deux postes qui se chevauchent');
+        else if (ecart < REPOS_MIN) e.push(ctx.personne[id].nom + ' : ' + duree(ecart) + ' de repos seulement');
+      }
+    }
+    regle('legal', 'Repos quotidien : au moins 11 heures entre la fin d’un poste et le début du suivant', e, 'Code du travail, art. L3131-1');
+
+    e = [];
+    const finSemaine = ctx.jours.length * 1440;
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      let plusLong = missions[0][0];
+      for (let k = 1; k < missions.length; k++) plusLong = Math.max(plusLong, missions[k][0] - missions[k - 1][1]);
+      plusLong = Math.max(plusLong, finSemaine - missions[missions.length - 1][1]);
+      if (plusLong < 35 * 60) e.push(ctx.personne[id].nom + ' : ' + duree(Math.max(0, plusLong)) + ' de repos d’affilée au plus dans la semaine');
+    }
+    regle('legal', 'Repos hebdomadaire : au moins 35 heures d’affilée dans la semaine (24 heures plus les 11 heures quotidiennes)', e, 'Code du travail, art. L3132-2');
+
+    e = [];
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      const parJour = {};
+      for (const [deb, fin, pause] of missions) { const j = Math.floor(deb / 1440); parJour[j] = (parJour[j] || 0) + travail(deb, fin, pause); }
+      for (const [j, m] of Object.entries(parJour)) if (m > JOURNEE_MAX) e.push(ctx.personne[id].nom + ' : ' + duree(m) + ' de travail le ' + ctx.jour[ctx.jours[j]].nom.toLowerCase());
+    }
+    regle('legal', 'Durée quotidienne : pas plus de 10 heures de travail', e, 'Code du travail, art. L3121-18');
+
+    e = [];
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      const total = missions.reduce((n, [deb, fin, pause]) => n + travail(deb, fin, pause), 0);
+      if (total > 48 * 60) e.push(ctx.personne[id].nom + ' : ' + duree(total) + ' de travail dans la semaine');
+    }
+    regle('legal', 'Durée hebdomadaire : pas plus de 48 heures de travail', e, 'Code du travail, art. L3121-20');
+
+    e = [];
+    for (const [id, missions] of Object.entries(parPersonne)) {
+      const n = new Set(missions.map(([deb]) => Math.floor(deb / 1440))).size;
+      if (n > 6) e.push(ctx.personne[id].nom + ' : ' + n + ' jours de travail dans la semaine');
+    }
+    regle('legal', 'Pas plus de 6 jours de travail dans la semaine', e, 'Code du travail, art. L3132-1');
+
+    // ----- Contrats et données de chaque personne -----
+    e = [];
+    for (const a of toutes) {
+      const p = ctx.personne[a.personne];
+      const abs = absence(p, ctx.jours[a.i]);
+      if (abs) e.push(p.nom + ' planifié pendant : ' + abs.motif);
+    }
+    regle('contrat', 'Personne n’est planifié en congés, en arrêt maladie ou en déplacement', e);
+
+    e = [];
+    for (const a of toutes) {
+      const p = ctx.personne[a.personne];
+      if (p.type !== 'Extra') continue;
+      if (!sollicites.has(p.id)) e.push(p.nom + ' planifié sans avoir été sollicité');
+      else if (!reponses[p.id]) e.push(p.nom + ' planifié sans avoir répondu');
+      else if (!couvre(ctx, ctx.jours[a.i], reponses[p.id][ctx.jours[a.i]], a.place)) e.push(p.nom + ' planifié hors de ses créneaux (' + ctx.jour[ctx.jours[a.i]].nom.toLowerCase() + ', ' + texteHeure(a.place.debut) + ' à ' + texteHeure(a.place.fin) + ')');
+    }
+    regle('contrat', 'Un extra ne travaille que dans les créneaux horaires qu’il a donnés', e);
+
+    e = [];
+    const travaillesCDI = {};
+    for (const p of d.personnes.filter((x) => x.type === 'CDI')) {
+      const presents = ctx.jours.filter((j) => !absence(p, j));
+      const imprevus = ((opts.imprevus || {})[p.id] || []).length;   // absence survenue après la proposition
+      const attendu = Math.min(p.contrat.jours, presents.length + imprevus) - imprevus;
+      const travailles = ctx.jours.filter((j) => (plan.affectations[j] || []).some((a) => a.personne === p.id));
+      travaillesCDI[p.id] = { presents, travailles };
+      if (travailles.length !== attendu) e.push(p.nom + ' : ' + travailles.length + (travailles.length > 1 ? ' jours' : ' jour') + ' de travail au lieu des ' + attendu + ' prévus par son contrat');
+    }
+    regle('contrat', 'Chaque CDI travaille les jours prévus par son contrat (dans cette maquette, 5 par semaine l’été, 4 pour un temps partiel)', e);
+
+    // ----- Règles d'organisation du RKC, paramétrables -----
+    e = [];
+    for (const j of ctx.jours) {
+      const attendues = placesDuJour(ctx, j, opts.ajouts);
+      const tenues = (plan.affectations[j] || []).map((a) => a.place.id);
+      for (const pl of attendues) {
+        const n = tenues.filter((x) => x === pl.id).length;
+        if (n === 0) e.push(ctx.jour[j].nom + ' : ' + libellePoste(ctx, pl.poste) + ' sans personne');
+        if (n > 1) e.push(ctx.jour[j].nom + ' : ' + libellePoste(ctx, pl.poste) + ' tenue deux fois');
+      }
+    }
+    regle('rkc', 'Tous les postes sont tenus, sans trou', e);
+
+    e = [];
+    for (const j of ctx.jours) {
+      const vu = {};
+      for (const a of plan.affectations[j] || []) {
+        if (vu[a.personne]) e.push(ctx.jour[j].nom + ' : ' + ctx.personne[a.personne].nom + ' sur deux postes');
+        vu[a.personne] = true;
+      }
+    }
+    regle('rkc', 'Une personne tient un seul poste dans la journée', e);
+
+    e = [];
+    for (const a of toutes) {
+      const p = ctx.personne[a.personne];
+      if (!apte(p, a.place)) e.push(ctx.jour[ctx.jours[a.i]].nom + ' : ' + p.nom + ' sans le métier ou le niveau pour ' + libellePoste(ctx, a.place.poste));
+    }
+    regle('rkc', 'Bon métier, bon niveau sur chaque poste', e);
+
+    e = [];
+    for (const j of ctx.jours) {
+      const parPoste = {};
+      for (const a of plan.affectations[j] || []) (parPoste[a.place.poste] = parPoste[a.place.poste] || []).push(a);
+      for (const [poste, affs] of Object.entries(parPoste)) {
+        const debutants = affs.filter((a) => RANG[ctx.personne[a.personne].metiers[a.place.metier]] === 1);
+        const expert = affs.some((a) => a.place.expert && RANG[ctx.personne[a.personne].metiers[a.place.metier]] === 3);
+        if (debutants.length > 1) e.push(ctx.jour[j].nom + ' : ' + debutants.length + ' débutants sur ' + libellePoste(ctx, poste));
+        if (debutants.length && !expert) e.push(ctx.jour[j].nom + ' : débutant sans expert sur ' + libellePoste(ctx, poste));
+      }
+    }
+    regle('rkc', 'Au plus un débutant par poste, toujours aux côtés d’un expert (pour les pistards : un commissaire de piste aux côtés d’un directeur de course)', e);
+
+    e = [];
+    for (const p of d.personnes.filter((x) => x.type === 'CDI')) {
+      const { presents, travailles } = travaillesCDI[p.id];
+      const malade = (opts.imprevus || {})[p.id] || [];
+      const repos = presents.filter((j) => !travailles.includes(j) && !malade.includes(j));
+      if (repos.length >= 2) {
+        const idx = repos.map((j) => ctx.jours.indexOf(j));
+        if (!idx.every((x, k) => k === 0 || x === idx[k - 1] + 1)) e.push(p.nom + ' : jours de repos non consécutifs');
+      }
+    }
+    regle('rkc', 'Jours de repos des CDI pris d’affilée', e);
+
+    // ----- Préférences et pondérations -----
+    e = [];
+    const joursExtra = {};
+    for (const a of toutes) if (ctx.personne[a.personne].type === 'Extra') joursExtra[a.personne] = (joursExtra[a.personne] || 0) + 1;
+    for (const [id, n] of Object.entries(joursExtra)) {
+      const p = ctx.personne[id];
+      if (n > PLAFOND[p.ponderation]) e.push(p.nom + ' : ' + n + ' jours de travail pour une pondération ' + p.ponderation + ' (' + PLAFOND[p.ponderation] + ' au plus)');
+    }
+    regle('ponderation', 'Pondération des extras : plafond de jours respecté (forte 5, normale 4, faible 1)', e);
+
+    return { ok: regles.every((r) => r.ok), regles, places: toutes.length, manques: (plan.manques || []).length };
+  }
+
+  // ---------- 5. Les imprévus : qui appeler maintenant ? ----------
+
+  function remplacants(d, plan, absentId, jour, opts) {
+    opts = opts || {};
+    const ctx = contexte(d);
+    const reponses = opts.reponses || d.reponses;
+    const sollicites = new Set(opts.sollicites || d.sollicites);
+    const i = ctx.jours.indexOf(jour);
+    const aff = (plan.affectations[jour] || []).find((a) => a.personne === absentId);
+    const place = opts.place || (aff && aff.place);
+    if (!place) return { place: null, candidats: [], ecartes: [] };
+    const finVeille = {}, debutLendemain = {}, enPoste = {};
+    if (i > 0) for (const a of plan.affectations[ctx.jours[i - 1]] || []) finVeille[a.personne] = (i - 1) * 1440 + a.place.fin;
+    if (i < ctx.jours.length - 1) for (const a of plan.affectations[ctx.jours[i + 1]] || []) debutLendemain[a.personne] = (i + 1) * 1440 + a.place.debut;
+    for (const a of plan.affectations[jour] || []) enPoste[a.personne] = a.place;
+    const deb = i * 1440 + place.debut, fin = i * 1440 + place.fin;
+    const candidats = [], ecartes = [];
+    for (const p of d.personnes) {
+      if (p.id === absentId || !p.metiers[place.metier]) continue;
+      const abs = absence(p, jour);
+      if (abs) { ecartes.push({ id: p.id, nom: p.nom, raison: abs.motif }); continue; }
+      if (enPoste[p.id] && enPoste[p.id].id !== place.id) { ecartes.push({ id: p.id, nom: p.nom, raison: 'déjà en poste ce jour-là', poste: enPoste[p.id].poste }); continue; }
+      if (!apte(p, place)) { ecartes.push({ id: p.id, nom: p.nom, raison: 'niveau insuffisant pour ce poste' }); continue; }
+      if (p.type === 'CDI' && place.soir) { ecartes.push({ id: p.id, nom: p.nom, raison: 'les soirées sont tenues par des extras' }); continue; }
+      const r = reponses[p.id];
+      const aRepondu = p.type === 'Extra' && sollicites.has(p.id) && r;
+      if (aRepondu && !couvre(ctx, jour, r[jour], place)) { ecartes.push({ id: p.id, nom: p.nom, raison: r[jour] ? 'pas disponible à ces heures-là' : 'pas disponible ce jour-là' }); continue; }
+      if (finVeille[p.id] != null && deb - finVeille[p.id] < REPOS_MIN) { ecartes.push({ id: p.id, nom: p.nom, raison: 'repos trop court : a fini à ' + texteHeure(finVeille[p.id]) + ' la veille' }); continue; }
+      if (debutLendemain[p.id] != null && debutLendemain[p.id] - fin < REPOS_MIN) { ecartes.push({ id: p.id, nom: p.nom, raison: 'reprend trop tôt le lendemain' }); continue; }
+      if (plusLongRepos(missionsDe(ctx, plan, p.id).concat([[deb, fin]]), ctx.jours.length * 1440) < REPOS_HEBDO) { ecartes.push({ id: p.id, nom: p.nom, raison: 'n’aurait plus 35 heures de repos d’affilée dans la semaine' }); continue; }
+      if (p.type === 'CDI') {
+        candidats.push({ id: p.id, nom: p.nom, type: 'CDI', rang: 2, statut: 'En repos ce jour-là', detail: 'seulement avec son accord' });
+        continue;
+      }
+      const deja = Object.values(plan.affectations).reduce((n, affs) => n + affs.filter((a) => a.personne === p.id).length, 0);
+      const semaine = deja ? 'déjà ' + deja + (deja > 1 ? ' jours' : ' jour') + ' de travail cette semaine' : '';
+      if (!sollicites.has(p.id)) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 3, statut: 'Pas sollicité cette semaine', detail: 'à appeler directement' });
+      else if (!r) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 3, statut: 'Pas de réponse à la demande', detail: 'à appeler directement' });
+      else if (deja >= PLAFOND[p.ponderation]) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 2.5, statut: 'Disponible, mais au-delà de sa pondération', detail: semaine });
+      else candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 1, statut: 'Disponible à ces heures-là selon sa réponse', detail: semaine, veille: finVeille[p.id] != null ? texteHeure(finVeille[p.id]) : null });
+    }
+    const poids = (c) => (ctx.personne[c.id].ponderation ? POIDS[ctx.personne[c.id].ponderation] : 0);
+    const niveau = (c) => RANG[ctx.personne[c.id].metiers[place.metier]];
+    candidats.sort((a, b) => a.rang - b.rang || niveau(b) - niveau(a) || poids(b) - poids(a) || (ctx.personne[a.id].ordre || 0) - (ctx.personne[b.id].ordre || 0));
+    return { place, candidats, ecartes };
+  }
+
+  function remplacer(plan, jour, absentId, remplacantId) {
+    const copie = JSON.parse(JSON.stringify(plan));
+    for (const a of copie.affectations[jour]) {
+      if (a.personne === absentId) { a.personne = remplacantId; a.remplace = absentId; }
+    }
+    return copie;
+  }
+
+  function ajouter(plan, jour, place, id) {
+    const copie = JSON.parse(JSON.stringify(plan));
+    (copie.affectations[jour] = copie.affectations[jour] || []).push({ place, personne: id, ajout: true });
+    return copie;
+  }
+
+  // Un événement ajouté après la validation : l'équipe qu'il demande, place par place, avec qui peut la tenir.
+  // Les places d'expert d'abord ; chaque personne retenue entre dans le planning avant la recherche suivante.
+  function renforts(d, plan, ajouts, jour, opts) {
+    opts = opts || {};
+    const ctx = contexte(d);
+    const ids = new Set(ajouts.map((a) => a.id));
+    const places = placesDuJour(ctx, jour, ajouts).filter((p) => ids.has(p.poste));
+    places.sort((a, b) => (b.expert - a.expert) || (Number(a.encadre) - Number(b.encadre)));
+    let courant = plan;
+    const res = [];
+    for (const place of places) {
+      const r = remplacants(d, courant, '', jour, Object.assign({}, opts, { place }));
+      const premier = r.candidats.find((c) => c.rang === 1) || null;
+      if (premier) courant = ajouter(courant, jour, place, premier.id);
+      res.push({ place, candidats: r.candidats, ecartes: r.ecartes, choisi: premier ? premier.id : null });
+    }
+    return { places: res, plan: courant };
+  }
+
+  // ---------- 6. La grille d'affichage : une ligne par endroit, une colonne par jour ----------
+
+  function grille(d, plan) {
+    const ctx = contexte(d);
+    return d.lignes.map((l) => ({
+      id: l.id,
+      libelle: l.libelle,
+      jours: ctx.jours.map((j) => {
+        const affs = (plan.affectations[j] || []).filter((a) => l.postes.includes(a.place.poste));
+        const vides = (plan.manques || []).filter((m) => m.jour === j && l.postes.includes(m.poste));
+        return {
+          jour: j,
+          actif: affs.length + vides.length > 0,
+          personnes: affs.map((a) => ({
+            id: a.personne,
+            nom: ctx.personne[a.personne].nom,
+            type: ctx.personne[a.personne].type,
+            poste: a.place.poste,
+            role: a.place.role || (ctx.poste[a.place.poste] ? ctx.poste[a.place.poste].role : ''),
+            expert: a.place.expert,
+            debut: a.place.debut, fin: a.place.fin, pause: a.place.pause,
+            horaire: texteHeure(a.place.debut) + ' à ' + texteHeure(a.place.fin),
+            remplace: a.remplace ? ctx.personne[a.remplace].nom : null,
+          })),
+          vides: vides.length,
+        };
+      }),
+    }));
+  }
+
+  racine.PlanningRKC = {
+    proposer, controler, remplacants, remplacer, ajouter, renforts, grille, texteHeure,
+    creneaux: (d, jour, dispo) => creneaux(contexte(d), jour, dispo),
+    horairesActivite: (d, id, jour) => { const ctx = contexte(d); return horairesActivite(ctx, ctx.activite[id], jour); },
+    libellePoste: (d, id) => libellePoste(contexte(d), id),
+    placesDuJour: (d, jour, ajouts) => placesDuJour(contexte(d), jour, ajouts),
+    RANG, POIDS, PLAFOND, REPOS_MIN, JOURNEE_MAX, FAMILLES,
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+  <script>
+/* Maquette RKC : rendu de la page.
+   Tout ce qui est affiché vient des données (donnees.js) et du moteur (planning.js) : rien n'est écrit à la main. */
+(function () {
+  'use strict';
+  const d = window.DONNEES_RKC;
+  const P = window.PlanningRKC;
+
+  // ---------- Utilitaires ----------
+  const NBSP = ' ';
+  function typo(s) {
+    return String(s)
+      .replace(/(\d) (?=\p{L})/gu, '$1' + NBSP)
+      .replace(/(\d) (h|m|min|juin|mai|ans|oui|non|jours?|journées?|postes?|personnes?|pilotes?|extras?|CDI|heures|sur|commissaires?|réponses?|règles?|soirées?|directeurs?|directrices?|mécaniciens?|créneaux?|semaines?|équipes?|groupes?)(?=[\s.,:;!?)]|$)/g, '$1' + NBSP + '$2')
+      .replace(/ · /g, NBSP + '· ')
+      .replace(/([A-Za-zÀ-ÿ]) ([A-Z]\.)(?=[\s,:;!?)]|$)/g, '$1' + NBSP + '$2')
+      .replace(/ h (\d)/g, ' h' + NBSP + '$1')
+      .replace(/(\d\u00a0h) (\d)/g, '$1' + NBSP + '$2')
+      .replace(/([\s\u00a0])et (\d)/g, '$1et' + NBSP + '$2')
+      .replace(/ ([:;?!»])/g, NBSP + '$1')
+      .replace(/« /g, '«' + NBSP);
+  }
+  function typographier(racine) {
+    const w = document.createTreeWalker(racine, NodeFilter.SHOW_TEXT);
+    const noeuds = [];
+    let n;
+    while ((n = w.nextNode())) if (!n.parentElement.closest('script, style')) noeuds.push(n);
+    for (const x of noeuds) { const v = typo(x.nodeValue); if (v !== x.nodeValue) x.nodeValue = v; }
+  }
+  function h(tag, attrs, ...enfants) {
+    const el = document.createElement(tag);
+    if (attrs) {
+      for (const [k, v] of Object.entries(attrs)) {
+        if (v == null || v === false) continue;
+        if (k === 'class') el.className = v;
+        else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+        else el.setAttribute(k, v === true ? '' : v);
+      }
+    }
+    for (const e of enfants.flat(Infinity)) {
+      if (e == null || e === false) continue;
+      el.append(e.nodeType ? e : document.createTextNode(typo(e)));
+    }
+    return el;
+  }
+  const personne = (id) => d.personnes.find((p) => p.id === id);
+  const jour = (cle) => d.jours.find((j) => j.cle === cle);
+  const initiales = (p) => p.nom.replace('.', '').split(' ').map((x) => x[0]).join('').toUpperCase();
+  const prenom = (p) => p.nom.split(' ')[0];
+  const pluriel = (n, un, plusieurs) => n + ' ' + (n > 1 ? plusieurs : un);
+  const hm = (m) => P.texteHeure(m);
+  const plage = (de, a) => hm(de) + ' à ' + hm(a);
+  const activite = (id) => d.activites.find((a) => a.id === id);
+  const joursDe = (a) => (a.jours === 'tous' ? d.jours.map((j) => j.cle) : a.jours);
+  const horaire = (id, j) => P.horairesActivite(d, id, j);
+  const plageActivite = (id, j) => { const x = horaire(id, j); return plage(x.debut, x.fin); };
+  const fem = (p) => p.genre === 'f';
+  const dateLongue = (j) => j.nom.toLowerCase() + ' ' + j.date + ' juin';
+  const majuscule = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const groupes = d.activites.filter((a) => a.type === 'groupe');
+  const course = d.activites.find((a) => a.type === 'course');
+
+  // Rôles et niveaux : les pistards portent leur nom de terrain
+  const NIV = { 'Débutant': ['débutant', 'débutante'], 'Confirmé': ['confirmé', 'confirmée'], 'Expert': ['expert', 'experte'] };
+  function niveauPiste(p, n) {
+    if (n === 'Expert') return fem(p) ? 'Directrice de course' : 'Directeur de course';
+    if (n === 'Confirmé') return fem(p) ? 'Commissaire de piste confirmée' : 'Commissaire de piste confirmé';
+    return 'Commissaire de piste';
+  }
+  function rolesDe(p) {
+    const m = p.metiers;
+    if (m.magasin && m.mecaComp) return 'Magasin et mécanique compétition · ' + NIV[m.magasin][fem(p) ? 1 : 0];
+    return Object.entries(m).map(([k, n]) => (k === 'piste' ? niveauPiste(p, n) : d.metiers[k] + ' · ' + NIV[n][fem(p) ? 1 : 0])).join(', ');
+  }
+  const roleAffiche = (p, role) => (role === 'Directeur de course' && fem(p) ? 'Directrice de course' : role);
+
+  function statutSemaine(p) {
+    const a = (p.absences || [])[0];
+    if (!a) return null;
+    const classe = a.motif === 'Congés' ? 'conges' : a.motif === 'Arrêt maladie' ? 'arret' : 'deplacement';
+    if (a.jours.length === d.jours.length) return { classe, texte: a.motif + ' toute la semaine', semaine: true };
+    const dernier = jour(a.jours[a.jours.length - 1]);
+    return { classe, texte: a.motif + ' jusqu’au ' + dernier.nom.toLowerCase() + ' ' + dernier.date, semaine: false };
+  }
+
+  const joursFiges = d.joursCDI && Object.keys(d.joursCDI).length ? d.joursCDI : null;
+  const PLAN = P.proposer(d, joursFiges ? { joursCDI: joursFiges } : {});
+  const CONTROLE = P.controler(d, PLAN);
+  const joursTravailles = (plan, id) => d.jours.filter((j) => (plan.affectations[j.cle] || []).some((a) => a.personne === id));
+
+  // ---------- 1. Le programme à couvrir ----------
+  // « deux privatisations, un challenge inter-entreprises et la Course 2H RKC »
+  function soirees() {
+    const NOMBRES = ['', 'un', 'deux', 'trois', 'quatre'];
+    const parNom = {};
+    for (const a of groupes) parNom[a.libelle] = (parNom[a.libelle] || 0) + 1;
+    const morceaux = Object.entries(parNom).map(([nom, n]) => {
+      if (/RKC/.test(nom)) return (n > 1 ? NOMBRES[n] + ' ' : 'la ') + nom;
+      const bas = nom.charAt(0).toLowerCase() + nom.slice(1);
+      return n > 1 ? NOMBRES[n] + ' ' + bas.replace(/^(\S+)/, '$1s') : 'un' + (/^(privatisation)/.test(bas) ? 'e ' : ' ') + bas;
+    });
+    return morceaux.slice(0, -1).join(', ') + (morceaux.length > 1 ? ' et ' : '') + morceaux[morceaux.length - 1];
+  }
+  function rendreTexteProgramme(cible) {
+    cible.append(
+      h('p', null, 'Location sur la Piste 1000 m et la Piste Découverte (la piste enfants) tous les jours, licenciés sur la Piste 1200 m en journée, ' + groupes.length + ' soirées (' + soirees() + ') et les ' + course.libelle + ' le dimanche.'),
+      h('p', null, 'Chaque type d’activité appelle ses rôles et son effectif. Pour un groupe, l’effectif suit aussi le nombre de pilotes, écrit au programme.'),
+      h('p', { class: 'note' }, 'Quand la Piste 1200 m est réservée aux licenciés, personne en piste : ils roulent avec leurs karts. Le magasin compétition, lui, est tenu tous les jours.'));
+  }
+
+  // Le programme, jour par jour : ce qui se passe sur chaque piste, dans l'ordre de la journée
+  function evenementsDuJour(j) {
+    const ids = ['loc1000', 'enfants', 'licencies', course.id, ...groupes.map((a) => a.id)];
+    return ids.map(activite).filter((a) => a && joursDe(a).includes(j.cle)).map((a) => {
+      const x = horaire(a.id, j.cle);
+      let titre, classe, detail = a.piste;
+      if (a.type === 'location') { titre = 'Location'; classe = 'p1000'; }
+      else if (a.type === 'enfants') { titre = 'Location'; classe = 'enfants'; }
+      else if (a.type === 'licencies') { titre = j.cle === 'sam' ? 'Réservée aux licenciés' : 'Licenciés'; classe = 'p1200'; }
+      else if (a.type === 'course') { titre = a.libelle; classe = 'course'; detail = a.piste + ' · endurance par équipes'; }
+      else { titre = a.libelle; classe = 'soir'; detail = a.piste + ' · ' + (a.format ? a.format.charAt(0).toLowerCase() + a.format.slice(1) + ' · ' : '') + a.pilotes + ' pilotes'; }
+      return { debut: x.debut, fin: x.fin, titre, classe, detail };
+    }).sort((x, y) => x.debut - y.debut || x.fin - y.fin);
+  }
+
+  function rendreProgramme(cible) {
+    const agenda = h('div', { class: 'agenda' }, d.jours.map((j) => h('section', { class: 'agenda-jour' + (j.weekend ? ' weekend' : ''), 'aria-label': j.nom + ' ' + j.date + ' juin' },
+      h('h5', { class: 'agenda-tete' }, h('strong', null, j.nom), ' ' + j.date + ' juin'),
+      h('ul', { class: 'agenda-liste' }, evenementsDuJour(j).map((e) => h('li', { class: 'agenda-evt ' + e.classe },
+        h('span', { class: 'agenda-heure' }, plage(e.debut, e.fin)),
+        h('span', { class: 'agenda-quoi' }, h('b', null, e.titre), h('span', null, e.detail))))))));
+    cible.append(h('div', { class: 'ecran' },
+      h('div', { class: 'ecran-barre' }, h('h4', null, 'Programme de la semaine'), h('span', { class: 'tres-petit' }, 'Semaine d’exemple, du lundi 2 au dimanche 8 juin')),
+      h('div', { class: 'ecran-corps' }, agenda)),
+      h('p', { class: 'tres-petit texte-2', style: 'margin-top:10px' }, 'Selon les semaines s’y ajoutent des stages de pilotage, le Trophée Gentleman des licenciés et des endurances de 6 à 25 heures, surtout le week-end.'));
+  }
+
+  // Chaque activité appelle son équipe : le type fixe les rôles, la taille fixe le nombre
+  function rendreBesoins(cible) {
+    const poste = (id) => d.postes.find((p) => p.id === id);
+    const nb = (id, j) => P.placesDuJour(d, j).filter((x) => x.poste === id).length;
+    const loc = poste('piste1000');
+    const acc = poste('accueil').nombre;
+    const enf = poste('enfants').nombre;
+    const tailles = d.tailles.map((t, i) => (t.max ? t.commissaires + ' jusqu’à ' + t.max + ' pilotes' : t.commissaires + ' au-delà')).join(', ');
+    const equipeGroupe = (a) => P.placesDuJour(d, joursDe(a)[0]).filter((x) => x.poste.startsWith(a.id)).length;
+    const cp = poste('coursePistes');
+    const cartes = [
+      { classe: 'p1000', titre: 'Location Piste 1000 m', quand: 'Tous les jours', n: nb('accueil', 'lun') + nb('piste1000', 'lun') + nb('mecaLoc', 'lun'),
+        apres: ', ' + (nb('accueil', 'sam') + nb('piste1000', 'sam') + nb('renfort1000', 'sam') + nb('mecaLoc', 'sam')) + ' le week-end',
+        lignes: ['1 directeur de course', (loc.nombre - loc.experts) + ' commissaires de piste, aux postes 1, 2 et 3', acc.semaine + ' à l’accueil, ' + acc.weekend + ' le week-end', '1 mécanicien location', 'Le week-end, 1 commissaire en renfort l’après-midi'] },
+      { classe: 'enfants', titre: 'Location Piste Découverte', quand: 'Tous les jours', n: enf.semaine, apres: ', ' + enf.weekend + ' le week-end',
+        lignes: [enf.semaine + ' commissaire de piste confirmé, ' + enf.weekend + ' le week-end', 'Karts KID, dès 7 ans'] },
+      { classe: 'p1200', titre: 'Licenciés sur la Piste 1200 m', quand: 'En journée', n: 0, unite: 'en piste', zero: true,
+        lignes: ['Personne en piste : ils roulent avec leurs karts', 'Le samedi, 1 mécanicien compétition'] },
+      { classe: 'paddock', titre: 'Magasin compétition', quand: 'Tous les jours', n: 1,
+        lignes: ['Tenu tous les jours, quelle que soit l’activité', 'Épaulé par la mécanique compétition le samedi et le jour de course'] },
+      { classe: 'soir', titre: 'Groupes et courses de nuit', quand: 'En soirée, selon le nombre de pilotes', n: null,
+        lignes: ['1 directeur de course', 'Commissaires : ' + tailles, '1 mécanicien'],
+        semaine: 'Cette semaine : ' + groupes.map((a) => a.pilotes + ' pilotes ' + jour(joursDe(a)[0]).nom.toLowerCase() + ', ' + pluriel(equipeGroupe(a), 'personne', 'personnes')).join(' ; ') + '.' },
+      { classe: 'course', titre: course.libelle, quand: 'Dimanche', n: P.placesDuJour(d, joursDe(course)[0]).filter((x) => x.poste.startsWith('course')).length,
+        lignes: ['1 directeur de course', (cp.nombre - cp.experts) + ' commissaires de piste confirmés, en rotation sur les postes de piste et à la pompe à essence', '1 mécanicien compétition'] },
+    ];
+    cible.append(h('div', { class: 'equipe-activite' },
+      h('h4', null, 'Chaque activité appelle son équipe.'),
+      h('p', { class: 'texte-2' }, 'Le type d’activité fixe les rôles ; sa taille, écrite au programme, fixe le nombre. Hypothèses de maquette, à paramétrer avec le RKC.'),
+      h('div', { class: 'besoins' }, cartes.map((c) => h('div', { class: 'besoin ' + c.classe + (c.zero ? ' zero' : '') },
+        h('span', { class: 'piste' }, c.quand),
+        h('h5', null, c.titre),
+        c.n != null ? h('div', { class: 'total chiffres' }, String(c.n) + '\u00a0', h('small', null, (c.unite || (c.n > 1 ? 'personnes' : 'personne')) + (c.apres || ''))) : null,
+        h('ul', null, c.lignes.map((x) => h('li', null, x))),
+        c.semaine ? h('p', null, c.semaine) : null)))));
+  }
+
+  // ---------- 2. Les équipes : deux viviers ----------
+  function cartePersonne(p) {
+    const st = statutSemaine(p);
+    return h('div', { class: 'personne' + (st && st.semaine ? ' indispo' : '') },
+      h('div', { class: 'avatar' + (p.type === 'Extra' ? ' extra' : ''), 'aria-hidden': 'true' }, initiales(p)),
+      h('div', null,
+        h('div', { class: 'personne-nom' }, p.nom,
+          st ? h('span', { class: 'etiquette ' + st.classe }, st.texte) : null,
+          p.type === 'Extra' && !st && p.ponderation !== 'normale' ? h('span', { class: 'etiquette ponderation ' + p.ponderation }, 'Pondération ' + p.ponderation) : null),
+        h('div', { class: 'personne-metiers' }, rolesDe(p) + (p.type === 'CDI' ? ' · ' + (p.contrat.jours < 5 ? 'temps partiel, ' : '') + p.contrat.jours + ' jours par semaine' : ''))));
+  }
+  function rendreViviers(cible) {
+    const cdi = d.personnes.filter((p) => p.type === 'CDI');
+    const ext = d.personnes.filter((p) => p.type === 'Extra');
+    cible.append(h('div', { class: 'viviers' },
+      h('div', { class: 'vivier cdi' },
+        h('div', { class: 'vivier-tete' }, h('h4', null, 'Vivier CDI'), h('span', { class: 'tres-petit' }, pluriel(cdi.length, 'personne', 'personnes'))),
+        h('div', { class: 'personnes' }, cdi.map(cartePersonne))),
+      h('div', { class: 'vivier extras' },
+        h('div', { class: 'vivier-tete' }, h('h4', null, 'Vivier extras'), h('span', { class: 'tres-petit' }, pluriel(ext.length, 'personne', 'personnes') + ' · pondération normale sauf mention')),
+        h('div', { class: 'personnes' }, ext.map(cartePersonne)))));
+  }
+
+  // ---------- 3. Les extras sollicités ----------
+  // Une notification de l'appli RKC Planning (doublée d'un SMS en secours)
+  function bulleAppli(entete, titre, corps) {
+    return h('div', { class: 'notif', role: 'group', 'aria-label': 'Exemple de notification de l’appli RKC Planning' },
+      h('div', { class: 'notif-tete' }, h('span', { class: 'marque-logo petit', 'aria-hidden': 'true' }, 'RKC'), h('span', { class: 'notif-appli' }, 'RKC Planning'), h('span', { class: 'notif-heure' }, entete)),
+      h('div', { class: 'notif-corps' }, h('strong', null, titre), corps));
+  }
+  function rendreSollicitation(cible, cibleTexte) {
+    const extras = d.personnes.filter((p) => p.type === 'Extra');
+    const sol = new Set(d.sollicites);
+    const cdis = d.personnes.filter((p) => p.type === 'CDI');
+    const cdiDispo = cdis.filter((p) => !(statutSemaine(p) || {}).semaine).length;
+    cibleTexte.append('Le responsable coche, l’outil envoie : chaque semaine, environ sept jours avant, une notification dans l’appli RKC Planning, doublée d’un SMS. Chacun répond dans l’appli, pour cette seule semaine, avant le ' + d.demande.echeance + '. En juin, il faut du monde : ici, tous les extras présents sont sollicités.');
+    const exemple = personne(d.sollicites[0]);
+    cible.append(h('div', { class: 'sollicitation' },
+      h('div', { class: 'ecran' },
+        h('div', { class: 'ecran-barre' }, h('h4', null, 'Demande de disponibilités · semaine du 2 au 8 juin', h('span', { class: 'apercu' }, 'Aperçu')),
+          h('span', { class: 'pastille' }, cdiDispo + ' CDI sur ' + cdis.length + ' intégrés d’office')),
+        h('div', { class: 'ecran-corps' },
+          h('ul', { class: 'liste-cases deux visuel' }, extras.map((p) => {
+            const st = statutSemaine(p);
+            const coche = sol.has(p.id);
+            return h('li', { class: 'case' + (st ? ' desactivee' : '') },
+              h('span', { 'aria-hidden': 'true', class: 'faux-case' + (coche ? ' cochee' : '') }, coche ? '✓' : ''),
+              h('span', { class: 'qui' }, p.nom, h('small', null, st ? st.texte : rolesDe(p))),
+              h('span', { class: 'visuellement-cache' }, coche ? 'coché' : 'non coché'));
+          }))),
+        h('div', { class: 'envoi' },
+          h('span', { class: 'bouton orange large', 'aria-hidden': 'true' }, 'Demander les dispos'),
+          h('span', { class: 'tres-petit' }, pluriel(sol.size, 'extra coché', 'extras cochés') + ' sur ' + extras.length + '. Envoi le ' + d.demande.envoi + ', réponses attendues avant le ' + d.demande.echeance + '.'))),
+      bulleAppli(d.demande.envoi.replace(/^./, (x) => x.toUpperCase()) + ', 10 h', 'Vos dispos pour la semaine du 2 au 8 juin',
+        h('span', null, 'Bonjour ' + prenom(exemple) + ', à donner avant le ' + d.demande.echeance + '. Touchez pour répondre.'))));
+  }
+
+  // ---------- 4. Les disponibilités reçues ----------
+  // Ce que l'extra voit sur son téléphone : les événements déjà connus du jour, selon son rôle
+  function evenementsPour(p, j) {
+    const m = p.metiers;
+    const ids = [];
+    if (m.piste) ids.push('loc1000', 'enfants', ...groupes.map((a) => a.id), course.id);
+    if (m.accueil) ids.push('loc1000');
+    if (m.mecaLoc) ids.push('loc1000', ...groupes.map((a) => a.id));
+    if (m.magasin || m.mecaComp) ids.push('boutique', 'licencies', course.id);
+    return [...new Set(ids)].map(activite).filter((a) => joursDe(a).includes(j.cle));
+  }
+  const nomCourt = (a) => (a.type === 'location' ? 'Location 1000 m' : a.type === 'enfants' ? 'Piste Découverte' : a.type === 'licencies' ? 'Licenciés' : a.libelle);
+
+  function rendreTelephone(p) {
+    const r = d.reponses[p.id] || {};
+    const jours = d.jours.slice(0, 4).map((j) => {
+      const choix = r[j.cle];
+      const liste = Array.isArray(choix) ? choix : [];
+      const perso = liste.filter((x) => !activite(x));
+      return h('div', { class: 'tel-jour' + (!choix ? ' vide' : '') },
+        h('div', { class: 'tel-date' }, h('strong', null, j.nom + ' ' + j.date + ' juin'), h('small', null, !choix ? 'Pas disponible' : choix === 'toute' ? 'Toute la journée' : pluriel(liste.length, 'créneau', 'créneaux'))),
+        h('div', { class: 'tel-puces' },
+          h('span', { class: 'puce-choix' + (choix === 'toute' ? ' choisie' : '') }, 'Toute la journée'),
+          evenementsPour(p, j).map((a) => h('span', { class: 'puce-choix' + (liste.includes(a.id) ? ' choisie' : '') }, h('b', null, nomCourt(a)), plageActivite(a.id, j.cle))),
+          perso.map((x) => h('span', { class: 'puce-choix choisie' }, h('b', null, 'Mon créneau'), x.split('-').map((t) => hm(+t.split(':')[0] * 60 + +t.split(':')[1])).join(' à '))),
+          h('span', { class: 'puce-choix autre' }, '+ Un autre créneau')));
+    });
+    return h('figure', { class: 'telephone', 'aria-label': 'Les dispos de ' + p.nom + ' dans l’appli RKC Planning' },
+      h('div', { class: 'tel-ecran' },
+        h('div', { class: 'tel-barre' }, h('span', { class: 'marque-logo petit' }, 'RKC'), h('span', null, 'RKC Planning')),
+        h('div', { class: 'tel-onglets', 'aria-hidden': 'true' }, h('span', { class: 'actif' }, 'Mes dispos'), h('span', null, 'Mon planning')),
+        h('div', { class: 'tel-intro' }, h('strong', null, 'Semaine du 2 au 8 juin'), h('span', { class: 'tel-etat' }, '✓ Envoyées le lundi 26 mai à 21 h 14. Modifiables jusqu’au ' + d.demande.echeance + '.')),
+        jours,
+        h('div', { class: 'tel-suite' }, 'Et ainsi jusqu’au dimanche…'),
+        h('span', { class: 'bouton large', 'aria-hidden': 'true' }, 'Modifier mes dispos')));
+  }
+
+  // La barre d'une journée, de 8 h à minuit
+  const DEBUT_BARRE = 8 * 60, FIN_BARRE = 24 * 60;
+  function barreDispo(p, j) {
+    const r = d.reponses[p.id];
+    const v = r && r[j.cle];
+    const crs = v ? P.creneaux(d, j.cle, v) : [];
+    const texte = !v ? 'pas disponible' : v === 'toute' ? 'toute la journée' : crs.map(([a, b]) => plage(a, b)).join(' et ');
+    const court = !v ? '' : v === 'toute' ? 'Toute la journée' : crs.map(([a, b]) => plage(a, b)).join(', ');
+    return h('div', { class: 'cellule-dispo' + (v ? '' : ' vide'), title: j.nom + ' : ' + texte },
+      h('div', { class: 'barre', 'aria-hidden': 'true' }, crs.map(([a, b]) => {
+        const g = Math.max(a, DEBUT_BARRE), dr = Math.min(b, FIN_BARRE);
+        if (dr <= g) return null;
+        return h('i', { class: a >= 17 * 60 ? 'soir' : '', style: 'left:' + ((g - DEBUT_BARRE) / (FIN_BARRE - DEBUT_BARRE) * 100).toFixed(2) + '%;width:' + ((dr - g) / (FIN_BARRE - DEBUT_BARRE) * 100).toFixed(2) + '%' });
+      })),
+      h('span', { class: 'heures' }, court),
+      h('span', { class: 'visuellement-cache' }, j.nom + ' : ' + texte));
+  }
+  // Sur téléphone : « Lun. 2 : 12 h 30 à 20 h · Sam. 7 : toute la journée », les jours disponibles seulement
+  function texteDispos(p) {
+    const r = d.reponses[p.id] || {};
+    const morceaux = d.jours.filter((j) => r[j.cle]).map((j) => j.court + ' ' + j.date + ' : ' + (r[j.cle] === 'toute' ? 'toute la journée' : P.creneaux(d, j.cle, r[j.cle]).map(([a, b]) => plage(a, b)).join(' et ')));
+    return h('p', { class: 'dispos-texte' }, morceaux.join(' · '));
+  }
+  function rendreDisponibilites(cible) {
+    const sol = d.sollicites.map(personne);
+    const recues = sol.filter((p) => d.reponses[p.id]).length;
+    const tete = h('div', { class: 'dispos-ligne tete', 'aria-hidden': 'true' }, h('span', null, 'Extra'), d.jours.map((j) => h('span', null, j.court + ' ' + j.date)));
+    const lignes = sol.map((p) => {
+      const attente = !d.reponses[p.id];
+      return h('div', { class: 'dispos-ligne' + (attente ? ' attente' : '') },
+        h('div', { class: 'qui' }, p.nom, h('small', null, attente ? rolesDe(p).split(' · ')[0] : rolesDe(p).split(' · ')[0])),
+        attente ? h('div', { class: 'attente-texte' }, 'Pas encore de réponse') : [d.jours.map((j) => barreDispo(p, j)), texteDispos(p)]);
+    });
+    cible.append(h('div', { class: 'dispos' },
+      rendreTelephone(personne('ines')),
+      h('div', { class: 'ecran' },
+        h('div', { class: 'ecran-barre' }, h('h4', null, 'Disponibilités reçues, en direct'), h('span', { class: 'pastille orange' }, 'Réponses : ' + recues + ' sur ' + sol.length)),
+        h('div', { class: 'ecran-corps dispos-corps' },
+          h('p', { class: 'tres-petit texte-2', style: 'margin:0 0 10px' }, 'Chaque barre va de 8 h à minuit. En foncé, les créneaux du soir.'),
+          tete, lignes))));
+  }
+
+  // ---------- 5. Le planning proposé ----------
+  const ROLE_LIGNE = { accueil: 'Accueil', p1000: 'Commissaire de piste', enfants: 'Commissaire de piste', atelier: 'Mécanicien location', p1200: 'Commissaire de piste', paddock: 'Magasin compétition', soir: 'Commissaire de piste' };
+  function horaireLigne(l, j) {
+    const p0 = d.postes.find((p) => l.postes.includes(p.id) && P.placesDuJour(d, j).some((x) => x.poste === p.id));
+    if (!p0) return null;
+    const x = P.placesDuJour(d, j).find((y) => y.poste === p0.id);
+    return [x.debut, x.fin];
+  }
+  function sousTitreLigne(l) {
+    if (l.id === 'soir') return 'Groupes, ' + hm(Math.min(...groupes.map((a) => horaire(a.id, joursDe(a)[0]).debut))) + ' à ' + hm(Math.max(...groupes.map((a) => horaire(a.id, joursDe(a)[0]).fin)));
+    if (l.id === 'p1200') return course.libelle + ', ' + plageActivite(course.id, joursDe(course)[0]);
+    const sem = horaireLigne(l, 'lun'), we = horaireLigne(l, 'sam');
+    const ecarts = d.jours.filter((j) => !j.weekend && j.cle !== 'lun').map((j) => [j, horaireLigne(l, j.cle)]).filter(([, x]) => x && (x[0] !== sem[0] || x[1] !== sem[1]));
+    const base = (l.sous ? l.sous + ', ' : '') + plage(sem[0], sem[1]) + ecarts.map(([j, x]) => (x[0] === sem[0] ? ' (' + hm(x[1]) + ' le ' + j.nom.toLowerCase() + ')' : ' (' + plage(x[0], x[1]) + ' le ' + j.nom.toLowerCase() + ')')).join('');
+    if (we && (we[0] !== sem[0] || we[1] !== sem[1])) return base + (we[1] === sem[1] ? ' ; dès ' + hm(we[0]) : ' ; ' + plage(we[0], we[1])) + ' le week-end';
+    return base;
+  }
+  function puceNom(x, l) {
+    const p = personne(x.id);
+    const role = roleAffiche(p, x.role);
+    const defaut = horaireLigne(l, x.jour);
+    const autreHoraire = l.id !== 'soir' && defaut && (defaut[0] !== x.debut || defaut[1] !== x.fin);
+    const sousTitre = [role !== ROLE_LIGNE[l.id] ? role : '', autreHoraire ? plage(x.debut, x.fin) : ''].filter(Boolean).join(' · ');
+    const titre = p.nom + ' · ' + (p.type === 'CDI' ? 'CDI' : 'extra') + ' · ' + role + ' · ' + plage(x.debut, x.fin) + (x.pause ? ', pause ' + x.pause + ' min' : '') + (x.remplace ? ' · à la place de ' + x.remplace : '');
+    return h('div', { class: 'nom' + (p.type === 'Extra' ? ' extra' : '') + (x.change ? ' change' : ''), title: titre },
+      x.expert ? h('span', { class: 'etoile', 'aria-hidden': 'true' }, '★') : null,
+      h('span', { class: 'txt' }, p.nom, sousTitre ? h('span', { class: 'role' }, sousTitre) : null,
+        x.remplace ? h('span', { class: 'role' }, 'à la place de ' + x.remplace) : null),
+      h('span', { class: 'visuellement-cache' }, ', ' + (p.type === 'CDI' ? 'CDI' : 'extra') + ', ' + role + ', ' + plage(x.debut, x.fin)));
+  }
+  function enteteGroupe(cellule, jourCle) {
+    const ids = [...new Set(cellule.personnes.map((x) => x.poste))];
+    const act = ids.map((id) => activite((d.postes.find((p) => p.id === id) || {}).activite)).find((a) => a && (a.type === 'groupe' || a.type === 'course'));
+    if (act && act.type === 'course') return h('div', { class: 'entete-groupe' }, act.libelle + ' · ' + plageActivite(act.id, jourCle));
+    if (!act) return null;
+    return h('div', { class: 'entete-groupe' }, act.libelle + ' · ' + act.pilotes + ' pilotes · ' + act.piste.replace('Piste ', '') + ' · ' + plageActivite(act.id, jourCle));
+  }
+  function absentsDuJour(plan, j) {
+    const groupesAbs = { 'Repos': [], 'Congés': [], 'Arrêt maladie': [] };
+    const affs = plan.affectations[j.cle] || [];
+    for (const p of d.personnes.filter((x) => x.type === 'CDI')) {
+      if (affs.some((a) => a.personne === p.id)) continue;
+      const abs = (p.absences || []).find((a) => a.jours.includes(j.cle));
+      const cle = !abs ? 'Repos' : abs.motif === 'Congés' ? 'Congés' : 'Arrêt maladie';
+      groupesAbs[cle].push(prenom(p));
+    }
+    return Object.entries(groupesAbs).filter(([, n]) => n.length);
+  }
+  const blocAbsents = (plan, j) => h('div', { class: 'absents' }, absentsDuJour(plan, j).map(([k, n]) => h('span', null, h('b', null, k + ' : '), n.join(', '))));
+
+  function celluleLigne(l, c, jourCle) {
+    if (c.actif) {
+      return [enteteGroupe(c, jourCle), c.personnes.map((x) => puceNom(Object.assign({ jour: jourCle }, x), l)),
+        Array.from({ length: c.vides }, () => h('div', { class: 'nom vide' }, h('span', { class: 'txt' }, 'À pourvoir')))];
+    }
+    return null;
+  }
+  function texteFerme(l, jourCle) {
+    if (l.id === 'p1200' && activite('licencies') && joursDe(activite('licencies')).includes(jourCle)) return 'Licenciés : personne en piste';
+    return null;
+  }
+
+  function rendrePlanning(cible, plan) {
+    const grille = P.grille(d, plan);
+    const tableau = h('table', { class: 'planning' },
+      h('caption', { class: 'visuellement-cache' }, 'Proposition de planning, du lundi 2 au dimanche 8 juin'),
+      h('thead', null, h('tr', null, h('th', { class: 'endroit', scope: 'col' }, h('span', null, 'Endroit')),
+        d.jours.map((j) => h('th', { scope: 'col', class: j.weekend ? 'weekend' : '' }, h('strong', null, j.court), j.date + ' juin')))),
+      h('tbody', null,
+        grille.map((g) => {
+          const l = d.lignes.find((x) => x.id === g.id);
+          return h('tr', null,
+            h('th', { class: 'endroit', scope: 'row' }, h('strong', null, g.libelle), h('span', null, sousTitreLigne(l))),
+            g.jours.map((c) => (c.actif
+              ? h('td', null, celluleLigne(l, c, c.jour))
+              : h('td', { class: 'ferme' }, texteFerme(l, c.jour) ? h('span', { class: 'info-ferme' }, texteFerme(l, c.jour)) : h('span', { class: 'visuellement-cache' }, 'Pas d’activité')))));
+        }),
+        h('tr', { class: 'repos-ligne' },
+          h('th', { class: 'endroit', scope: 'row' }, h('strong', null, 'CDI qui ne travaillent pas'), h('span', null, 'Repos, congés, arrêt maladie')),
+          d.jours.map((j) => h('td', null, blocAbsents(plan, j))))));
+
+    let jourActif = 'lun';
+    const vueJour = h('div', { class: 'vue-jour', 'aria-live': 'polite' });
+    const onglets = h('div', { class: 'onglets-jours', role: 'tablist', 'aria-label': 'Choisir le jour' });
+    function dessinerJour() {
+      vueJour.replaceChildren();
+      for (const g of grille) {
+        const l = d.lignes.find((x) => x.id === g.id);
+        const c = g.jours.find((x) => x.jour === jourActif);
+        if (!c.actif) {
+          const t = texteFerme(l, jourActif);
+          if (t) vueJour.append(h('div', { class: 'rangee' }, h('div', null, h('strong', null, g.libelle)), h('div', { class: 'tres-petit texte-2' }, t)));
+          continue;
+        }
+        vueJour.append(h('div', { class: 'rangee' },
+          h('div', null, h('strong', null, g.libelle), h('small', null, l.id === 'soir' ? 'Groupe' : (() => { const x = horaireLigne(l, jourActif); return x ? plage(x[0], x[1]) : ''; })())),
+          h('div', null, enteteGroupe(c, jourActif), h('div', { class: 'noms' }, celluleLigne(l, c, jourActif).slice(1)))));
+      }
+      vueJour.append(h('div', { class: 'rangee' }, h('div', null, h('strong', null, 'CDI qui ne travaillent pas'), h('small', null, 'Repos, congés, arrêt')),
+        h('div', { class: 'tres-petit texte-2' }, blocAbsents(plan, jour(jourActif)))));
+      for (const b of onglets.children) b.setAttribute('aria-selected', String(b.dataset.jour === jourActif));
+      typographier(vueJour);
+    }
+    for (const j of d.jours) onglets.append(h('button', { type: 'button', role: 'tab', 'data-jour': j.cle, onclick: () => { jourActif = j.cle; dessinerJour(); } }, j.court, h('small', null, String(j.date))));
+    dessinerJour();
+
+    const tenues = Object.values(plan.affectations).reduce((n, a) => n + a.length, 0);
+    let jCdi = 0, jExtra = 0;
+    for (const affs of Object.values(plan.affectations)) for (const a of affs) (personne(a.personne).type === 'CDI' ? jCdi++ : jExtra++);
+    const vides = (plan.manques || []).length;
+    cible.append(h('div', { class: 'ecran' },
+      h('div', { class: 'ecran-barre' },
+        h('h4', null, 'Proposition de planning · semaine 23, du 2 au 8 juin'),
+        vides
+          ? h('span', { class: 'pastille rouge' }, h('span', { class: 'point' }), pluriel(vides, 'poste à pourvoir', 'postes à pourvoir'))
+          : h('span', { class: 'pastille vert' }, h('span', { class: 'point' }), 'Tous les postes sont tenus')),
+      h('div', { class: 'planning-cadre mobile-jour' }, onglets, vueJour, tableau),
+      h('div', { class: 'planning-pied' },
+        h('div', { class: 'legende-planning' },
+          h('span', { class: 'nom' }, h('span', { class: 'txt' }, 'CDI')),
+          h('span', { class: 'nom extra' }, h('span', { class: 'txt' }, 'Extra')),
+          h('span', null, '★ Directeur de course')),
+        h('span', { class: 'tres-petit texte-2 chiffres' }, tenues + ' postes tenus : ' + jCdi + ' par des CDI, ' + jExtra + ' par des extras'))));
+  }
+
+  function rendreRegles(cible, controle) {
+    const c = controle;
+    const ok = c.regles.filter((r) => r.ok).length;
+    const familles = [...new Set(c.regles.map((r) => r.type))];
+    const liste = h('div', null, familles.map((f) => {
+      const rs = c.regles.filter((r) => r.type === f);
+      return [h('p', { class: 'famille-regles' }, rs[0].famille + (f === 'legal' ? ' (minimums du Code du travail ; des dérogations encadrées existent par accord)' : f === 'rkc' ? ' (hypothèses de la maquette)' : '')),
+        h('ul', { class: 'regles' }, rs.map((r) => h('li', { class: r.ok ? '' : 'ko' }, r.ok ? r.regle + (r.ref ? ' (' + r.ref + ')' : '') : r.regle + ' : ' + r.erreurs.join(' ; '))))];
+    }));
+    const ko = c.regles.length - ok;
+    cible.append(h('details', { class: 'controle', open: c.ok ? null : true },
+      h('summary', null, h('span', null, h('span', { class: c.ok ? 'ok' : 'ok ko' }, c.ok ? '✓' : '!'),
+        c.ok ? ok + ' règles vérifiées sur cette proposition' : ko + (ko > 1 ? ' règles non respectées' : ' règle non respectée')),
+        h('span', { class: 'ouvrir' }, 'Voir le détail')),
+      liste,
+      h('p', { class: 'tres-petit texte-2', style: 'padding:0 18px 16px' }, 'Les règles légales sont les minimums généraux ; la convention et les accords du RKC peuvent prévoir des dérogations encadrées. Les règles du RKC et les pondérations sont des hypothèses de maquette, à paramétrer avec le RKC.')));
+  }
+
+  // Un exemple vérifié dans la proposition : un extra qui finit tard le soir n'est pas rappelé trop tôt le lendemain,
+  // alors qu'il s'était dit disponible à cette heure-là (moins de 11 heures de repos)
+  function exempleRepos(plan) {
+    for (let i = 1; i < d.jours.length; i++) {
+      const veille = d.jours[i - 1], j = d.jours[i];
+      for (const a of plan.affectations[veille.cle] || []) {
+        if (!a.place.soir) continue;
+        const p = personne(a.personne);
+        const r = d.reponses[p.id];
+        if (p.type !== 'Extra' || !r || !r[j.cle]) continue;
+        const limite = a.place.fin + P.REPOS_MIN - 1440;
+        const items = r[j.cle] === 'toute' ? ['toute'] : r[j.cle];
+        const trop = items.map((x) => ({ x, c: P.creneaux(d, j.cle, [x])[0] })).find((y) => y.c && y.c[0] < limite);
+        const travaille = (plan.affectations[j.cle] || []).find((x) => x.personne === p.id);
+        if (trop && (!travaille || travaille.place.debut >= limite)) {
+          const act = activite(trop.x);
+          const evt = activite((d.postes.find((x) => x.id === a.place.poste) || {}).activite);
+          return { p, veille, j, fin: hm(a.place.fin), debut: hm(Math.max(trop.c[0], 0)), repos: trop.c[0] + 1440 - a.place.fin, act, evt };
+        }
+      }
+    }
+    return null;
+  }
+
+  // « , aux côtés de [nom], directrice de course » : l'expert de son poste, ce jour-là
+  function aCotes(p) {
+    for (const j of d.jours) {
+      const a = (PLAN.affectations[j.cle] || []).find((x) => x.personne === p.id);
+      if (!a) continue;
+      const exp = (PLAN.affectations[j.cle] || []).find((x) => x.place.poste === a.place.poste && x.place.expert);
+      if (exp) { const e = personne(exp.personne); return ', aux côtés de ' + e.nom + ', ' + roleAffiche(e, exp.place.role).toLowerCase(); }
+    }
+    return '';
+  }
+  function rendreNotesPlanning(cible, plan) {
+    const jours = (id) => joursTravailles(plan, id).length;
+    const fortes = d.personnes.filter((p) => p.type === 'Extra' && p.ponderation === 'forte' && jours(p.id));
+    const faibles = d.personnes.filter((p) => p.type === 'Extra' && p.ponderation === 'faible' && jours(p.id));
+    const ecran = h('div', { class: 'ecran', style: 'margin-top:12px;box-shadow:none' });
+    const normales = d.personnes.filter((p) => p.type === 'Extra' && p.ponderation === 'normale' && jours(p.id));
+    const exRepos = exempleRepos(plan);
+    if (fortes.length && faibles.length) {
+      const fortesTxt = fortes.slice().sort((x, y) => jours(y.id) - jours(x.id)).map((p) => {
+        const n = jours(p.id);
+        const raison = n < P.PLAFOND.forte && exRepos && exRepos.p.id === p.id ? ', son dernier jour tombait trop tôt après sa soirée (voir le repos ci-dessous)' : '';
+        return prenom(p) + ' ' + pluriel(n, 'jour', 'jours') + raison;
+      }).join(' ; ');
+      const maxNormale = Math.max(...normales.map((p) => jours(p.id)));
+      ecran.append(h('p', { class: 'ponderation-resultat', style: 'margin-top:18px' }, h('strong', null, 'La pondération se lit dans le résultat. '),
+        'Forte : ' + fortesTxt + '. Normale : ' + maxNormale + ' jours au plus, même pour qui en avait donné davantage. Faible, pour qui débute : ' + faibles.map((p) => prenom(p) + ' ' + pluriel(jours(p.id), 'jour', 'jours') + aCotes(p)).join(', ') + '.'));
+    }
+    const ex = exRepos;
+    if (ex) {
+      const il = fem(ex.p) ? 'Elle' : 'Il', le = fem(ex.p) ? 'la' : 'le', dit = fem(ex.p) ? 'dite' : 'dit';
+      ecran.append(h('p', { class: 'exemple-repos' }, h('strong', null, 'Le repos aussi. '),
+        ex.p.nom + ' finit ' + (ex.evt ? (ex.evt.type === 'groupe' ? 'la ' + ex.evt.libelle.toLowerCase() : ex.evt.libelle) : 'sa soirée') + ' de ' + ex.veille.nom.toLowerCase() + ' à ' + ex.fin + '. ' + il + ' s’était ' + dit + ' disponible ' + ex.j.nom.toLowerCase() + ' dès ' + ex.debut + (ex.act ? ', pour les ' + ex.act.libelle : '') + ' : l’outil ne ' + le + ' rappelle pas, ' + il.toLowerCase() + ' n’aurait eu que ' + hm(ex.repos) + ' de repos.'));
+    }
+    rendreRegles(ecran, CONTROLE);
+    cible.append(ecran);
+  }
+
+  // ---------- 6. La validation du responsable ----------
+  function rendreValidation(cible) {
+    const tenues = Object.values(PLAN.affectations).reduce((n, a) => n + a.length, 0);
+    const ids = new Set();
+    let jCdi = 0, jExtra = 0;
+    for (const affs of Object.values(PLAN.affectations)) for (const a of affs) { ids.add(a.personne); personne(a.personne).type === 'CDI' ? jCdi++ : jExtra++; }
+    const nCdi = [...ids].filter((id) => personne(id).type === 'CDI').length;
+    const nExtra = ids.size - nCdi;
+    // Le planning d'un extra, dans l'appli : ses journées, son poste, ses horaires
+    const exemple = d.personnes.find((p) => p.id === 'noa') || personne(d.sollicites[0]);
+    const lignesSms = d.jours.map((j) => {
+      const a = (PLAN.affectations[j.cle] || []).find((x) => x.personne === exemple.id);
+      if (!a) return null;
+      const l = d.lignes.find((x) => x.postes.includes(a.place.poste));
+      const act = activite((d.postes.find((p) => p.id === a.place.poste) || {}).activite);
+      const lieu = act && act.type === 'groupe' ? act.libelle + ', ' + act.piste : l.libelle;
+      return h('span', { class: 'sms-ligne' }, h('b', null, j.court + ' ' + j.date), ' ' + lieu + ', ' + plage(a.place.debut, a.place.fin));
+    }).filter(Boolean);
+    cible.append(h('div', { class: 'validation-visuel' },
+      h('div', { class: 'ecran' },
+        h('div', { class: 'ecran-barre' }, h('h4', null, 'Proposition prête', h('span', { class: 'apercu' }, 'Aperçu')), h('span', { class: 'pastille vert' }, h('span', { class: 'point' }), CONTROLE.regles.filter((r) => r.ok).length + ' règles vérifiées')),
+        h('div', { class: 'ecran-corps' },
+          h('dl', { class: 'chiffres-cles chiffres' },
+            h('div', null, h('dt', null, 'Postes tenus'), h('dd', null, String(tenues))),
+            h('div', null, h('dt', null, 'Journées CDI'), h('dd', null, String(jCdi), h('small', null, pluriel(nCdi, 'personne', 'personnes')))),
+            h('div', null, h('dt', null, 'Journées extras'), h('dd', null, String(jExtra), h('small', null, pluriel(nExtra, 'personne', 'personnes')))),
+            h('div', null, h('dt', null, 'Postes à pourvoir'), h('dd', null, String((PLAN.manques || []).length)))),
+          h('div', { class: 'actions-validation' },
+            h('span', { class: 'bouton', 'aria-hidden': 'true' }, 'Valider et envoyer')))),
+      bulleAppli('Jeudi 29 mai, 19 h', 'Votre planning du 2 au 8 juin', [h('span', null, 'Bonjour ' + prenom(exemple) + ', le voici, à retrouver à tout moment dans l’appli :'), lignesSms, h('span', null, 'L’heure de début est celle de la prise de poste, pas de l’arrivée sur le site. Touchez pour valider.')])));
+  }
+
+  // ---------- 7. Les modifications et urgences ----------
+  const libelleLigne = (posteId) => (d.lignes.find((x) => x.postes.includes(posteId)) || {}).libelle || '';
+  // « Piste 1000 m, commissaire de piste » ; « accueil » quand le lieu et le rôle se confondent
+  function textePoste(place, p) {
+    const l = libelleLigne(place.poste);
+    const lieu = /^Piste/.test(l) ? l : l.toLowerCase();
+    const role = roleAffiche(p, place.role).toLowerCase();
+    return lieu.toLowerCase() === role ? lieu : lieu + ', ' + role;
+  }
+  function carteCandidats(r, max) {
+    const cand = r.candidats.slice(0, max || 3);
+    return h('ul', { class: 'candidats' }, cand.map((c, i) => {
+      const p = personne(c.id);
+      return h('li', { class: 'candidat' + (i === 0 && c.rang === 1 ? ' recommande' : '') },
+        h('div', { class: 'avatar' + (p.type === 'Extra' ? ' extra' : ''), 'aria-hidden': 'true' }, initiales(p)),
+        h('div', null, h('strong', null, p.nom + ' · ' + (p.type === 'CDI' ? 'CDI' : 'extra')),
+          h('span', null, rolesDe(p) + '. ' + c.statut + (c.detail ? (c.rang === 1 ? ' ; ' : ' : ') + c.detail : '') + '.')),
+        i === 0 && c.rang === 1 ? h('span', { class: 'pastille vert' }, 'Recommandé' + (fem(p) ? 'e' : '')) : null);
+    }));
+  }
+  function listeEcartes(r, max) {
+    const utiles = r.ecartes.filter((x) => !/Congés|déplacement/i.test(x.raison)).slice(0, max || 4);
+    if (!utiles.length) return null;
+    return h('div', { class: 'ecartes' }, h('strong', null, 'Pourquoi pas les autres ?'),
+      h('ul', null, utiles.map((x) => h('li', null, x.nom + ' : ' + (x.poste ? 'déjà en poste ce jour-là (' + (/^Piste/.test(libelleLigne(x.poste)) ? libelleLigne(x.poste) : libelleLigne(x.poste).toLowerCase()) + ')' : x.raison) + '.'))));
+  }
+  const ajouteMinutes = (hhmm, n) => { const m = hhmm.match(/(\d+) h(?: (\d+))?/); const t = +m[1] * 60 + +(m[2] || 0) + n; return hm(t); };
+
+  function scenarioRemplacement(s) {
+    const absent = personne(s.absent);
+    const r = P.remplacants(d, PLAN, s.absent, s.jour);
+    const choisi = r.candidats[0] && personne(r.candidats[0].id);
+    const j = jour(s.jour);
+    const heure = s.quand.split(', ')[1];
+    const role = roleAffiche(absent, r.place.role);
+    const apres = choisi ? P.remplacer(PLAN, s.jour, s.absent, choisi.id) : PLAN;
+    const opts = absent.type === 'CDI' ? { imprevus: { [s.absent]: [s.jour] } } : {};
+    const controle = P.controler(d, apres, opts);
+    const fil = h('ol', { class: 'fil' },
+      h('li', null, h('span', { class: 'heure' }, heure), h('p', null, s.message + ' ' + (fem(absent) ? 'Elle' : 'Il') + ' devait tenir ce poste : ' + textePoste(r.place, absent) + ', de ' + plage(r.place.debut, r.place.fin) + '.')),
+      h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 1)), h('p', null, 'L’outil isole le seul poste touché et cherche qui peut le tenir : bon rôle, bon niveau, disponible à ces heures-là, reposé.')),
+      choisi ? h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 2)), h('p', null, 'Le responsable envoie une demande à ' + choisi.nom + ', dans l’appli et par SMS, ' + (choisi.type === 'CDI' ? 'en repos ce jour-là' : 'qui s’était ' + (fem(choisi) ? 'dite' : 'dit') + ' disponible à ces heures-là') + ' : « Pouvez-vous nous dépanner ' + j.nom.toLowerCase() + ', de ' + plage(r.place.debut, r.place.fin) + ' ? »')) : null,
+      choisi ? h('li', { class: 'fin' }, h('span', { class: 'heure' }, ajouteMinutes(heure, 7)), h('p', null, prenom(choisi) + ' accepte. Le planning est à jour, l’équipe du jour est prévenue. Le reste de la semaine ne bouge pas.')) : null);
+    const carte = h('div', { class: 'carte-appel' },
+      h('div', { class: 'ecran-barre' }, h('h4', null, 'Il me manque quelqu’un'), h('span', { class: 'tres-petit' }, s.quand)),
+      h('div', { class: 'alerte' }, h('div', { class: 'signe', 'aria-hidden': 'true' }, '!'),
+        h('div', null, h('strong', null, '1 poste à tenir : ' + textePoste(r.place, absent)), h('span', null, majuscule(dateLongue(j)) + ', de ' + plage(r.place.debut, r.place.fin) + '.'))),
+      h('div', { class: 'ecran-corps', style: 'padding:14px 18px 4px' }, h('h4', null, 'Qui peut le tenir maintenant ?')),
+      carteCandidats(r),
+      listeEcartes(r),
+      h('div', { class: 'message-flash', style: 'margin:0 18px 18px' }, '✓ Après remplacement : ' + (controle.ok ? 'toutes les règles sont toujours respectées.' : pluriel(controle.regles.filter((x) => !x.ok).length, 'règle à revoir', 'règles à revoir') + '.')));
+    return [fil, carte];
+  }
+
+  function scenarioAjout(s) {
+    const d2 = Object.assign({}, d, { activites: d.activites.concat([s.activite]) });
+    const a = s.activite;
+    const j = jour(s.jour);
+    const avant = P.renforts(d2, PLAN, s.ajouts, s.jour);
+    // La demande ciblée : les extras qui pourraient tenir au moins un de ces postes s'ils disaient oui
+    // (bon rôle, bon niveau, reposés, pas déjà en poste, sous leur plafond) : on le vérifie en simulant un oui de chacun
+    const extrasPresents = d.personnes.filter((p) => p.type === 'Extra' && !(p.absences || []).some((x) => x.jours.includes(s.jour)));
+    const tousOui = JSON.parse(JSON.stringify(d.reponses));
+    for (const p of extrasPresents) { tousOui[p.id] = tousOui[p.id] || {}; const v = tousOui[p.id][s.jour]; tousOui[p.id][s.jour] = (v === 'toute' ? ['toute'] : (v || [])).concat([a.id]); }
+    const cibles = new Set();
+    for (const x of avant.places) {
+      const r = P.remplacants(d2, PLAN, '', s.jour, { place: x.place, reponses: tousOui, sollicites: extrasPresents.map((p) => p.id) });
+      for (const c of r.candidats) if (c.rang === 1 && personne(c.id).type === 'Extra') cibles.add(c.id);
+    }
+    const oui = Object.entries(s.reponsesDemande).filter(([, v]) => v.reponse === 'oui').map(([id]) => id).filter((id) => cibles.has(id));
+    const non = Object.entries(s.reponsesDemande).filter(([, v]) => v.reponse === 'non').map(([id]) => id).filter((id) => cibles.has(id));
+    const reponses = JSON.parse(JSON.stringify(d.reponses));
+    for (const id of oui) { reponses[id] = reponses[id] || {}; const v = reponses[id][s.jour]; reponses[id][s.jour] = (v === 'toute' ? ['toute'] : (v || [])).concat([a.id]); }
+    const sollicites = [...new Set(d.sollicites.concat(oui))];
+    const apres = P.renforts(d2, PLAN, s.ajouts, s.jour, { reponses, sollicites });
+    const controle = P.controler(d2, apres.plan, { ajouts: s.ajouts, reponses, sollicites });
+    const nPlaces = apres.places.length;
+    const pourvues = apres.places.filter((x) => x.choisi).length;
+    const tout = avant.places.filter((x) => x.choisi).length;
+    const derniere = Object.values(s.reponsesDemande).map((v) => v.heure).sort().pop();
+    const heure = s.quand.split(', ')[1];
+    const equipe = (() => { const pl = apres.places; const dc = pl.filter((x) => x.place.expert).length; const com = pl.filter((x) => x.place.metier === 'piste' && !x.place.expert).length; const mec = pl.length - dc - com; return dc + ' directeur de course, ' + com + ' commissaires de piste et ' + mec + ' mécanicien'; })();
+    const fil = h('ol', { class: 'fil' },
+      h('li', null, h('span', { class: 'heure' }, heure), h('p', null, s.message)),
+      h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 1)), h('p', null, 'L’outil calcule l’équipe comme pour tout groupe : ' + a.pilotes + ' pilotes, donc ' + equipe + '. ' + (tout ? pluriel(tout, 'extra encore libre avait', 'extras encore libres avaient') + ' déjà donné ce créneau.' : 'Aucun extra encore libre ce soir-là n’avait donné ce créneau.'))),
+      h('li', null, h('span', { class: 'heure' }, ajouteMinutes(heure, 2)), h('p', null, 'Le responsable envoie en un geste la demande « Besoin de monde ' + j.nom.toLowerCase() + ' soir », dans l’appli et par SMS, aux ' + cibles.size + ' extras que l’outil a retenus : bon rôle, bon niveau, reposés, pas déjà en poste, sous leur plafond de pondération.')),
+      h('li', { class: 'fin' }, h('span', { class: 'heure' }, derniere), h('p', null, oui.length + ' oui et ' + non.length + ' non : ' + (pourvues === nPlaces ? 'l’équipe est complète. Le responsable valide ; chacun reçoit son poste et son horaire. Le reste du planning ne bouge pas.' : (nPlaces - pourvues) + ' postes restent à pourvoir.'))));
+    const ordreRole = (x) => (x.place.expert ? 0 : x.place.metier === 'piste' ? 1 : 2);
+    const lignes = apres.places.slice().sort((x, y) => ordreRole(x) - ordreRole(y)).map((x) => {
+      const p = x.choisi && personne(x.choisi);
+      const rep = p && s.reponsesDemande[p.id];
+      return h('li', { class: 'place-ajout' + (p ? '' : ' a-pourvoir') },
+        h('span', { class: 'role-place' }, x.place.expert ? '★ ' + roleAffiche(p || {}, x.place.role) : x.place.role),
+        p ? h('span', null, h('strong', null, p.nom), rep ? ' · oui à ' + rep.heure : '') : h('span', null, 'À pourvoir'));
+    });
+    const carte = h('div', { class: 'carte-appel' },
+      h('div', { class: 'ecran-barre' }, h('h4', null, 'Une course ajoutée'), h('span', { class: 'tres-petit' }, s.quand)),
+      h('div', { class: 'alerte' }, h('div', { class: 'signe plus', 'aria-hidden': 'true' }, '+'),
+        h('div', null, h('strong', null, a.libelle + ' · ' + a.pilotes + ' pilotes'), h('span', null, majuscule(dateLongue(j)) + ', ' + a.piste + ', de ' + (() => { const x = P.horairesActivite(d2, a.id, s.jour); return plage(x.debut, x.fin); })() + '. ' + pluriel(nPlaces, 'poste', 'postes') + ' à tenir.'))),
+      h('div', { class: 'ecran-corps', style: 'padding:14px 18px 6px' }, h('h4', null, 'L’équipe, après la demande ciblée')),
+      h('ul', { class: 'places-ajout' }, lignes),
+      non.length ? h('div', { class: 'ecartes' }, h('strong', null, 'Ont répondu non : '), non.map((id) => personne(id).nom).join(', ').replace(/\.?$/, '.')) : null,
+      h('div', { class: 'message-flash', style: 'margin:0 18px 18px' }, '✓ ' + (controle.ok ? 'Toutes les règles sont toujours respectées, sur toute la semaine.' : pluriel(controle.regles.filter((x) => !x.ok).length, 'règle à revoir', 'règles à revoir') + '.')));
+    return [fil, carte];
+  }
+
+  function rendreUrgences(cible) {
+    const onglets = h('div', { class: 'onglets-urgences', role: 'tablist', 'aria-label': 'Choisir une situation' });
+    const zone = h('div', { class: 'imprevu', role: 'tabpanel', 'aria-live': 'polite' });
+    function montrer(id) {
+      const s = d.imprevus.find((x) => x.id === id);
+      zone.replaceChildren(...(s.ajouts ? scenarioAjout(s) : scenarioRemplacement(s)));
+      for (const b of onglets.children) b.setAttribute('aria-selected', String(b.dataset.id === id));
+      typographier(zone);
+    }
+    for (const s of d.imprevus) onglets.append(h('button', { type: 'button', role: 'tab', 'data-id': s.id, onclick: () => montrer(s.id) }, h('strong', null, s.titre), h('span', null, s.quand)));
+    cible.append(onglets, zone,
+      h('p', { class: 'autres-cas' }, h('strong', null, 'L’ordre de recherche : '), 'd’abord un extra disponible à ces heures-là selon sa réponse, puis un CDI en repos, avec son accord, enfin un extra non sollicité, à appeler directement. De la même façon : un retard, un désistement la veille, une piste fermée. Chaque changement repasse par les mêmes règles.'));
+    montrer(d.imprevus[0].id);
+  }
+
+  // ---------- Montage ----------
+  function monter() {
+    const q = (s) => document.querySelector(s);
+    const av = q('[data-avertissement]');
+    if (av) av.append('Maquette d’illustration : les personnes sont fictives ; les effectifs et les horaires s’inspirent de vrais plannings du RKC.');
+    if (q('[data-texte-programme]')) rendreTexteProgramme(q('[data-texte-programme]'));
+    if (q('[data-programme]')) { rendreProgramme(q('[data-programme]')); rendreBesoins(q('[data-programme]')); }
+    if (q('[data-viviers]')) rendreViviers(q('[data-viviers]'));
+    if (q('[data-sollicitation]')) rendreSollicitation(q('[data-sollicitation]'), q('[data-texte-envoi]'));
+    if (q('[data-disponibilites]')) rendreDisponibilites(q('[data-disponibilites]'));
+    if (q('[data-planning]')) { rendrePlanning(q('[data-planning]'), PLAN); rendreNotesPlanning(q('[data-planning]'), PLAN); }
+    if (q('[data-validation]')) rendreValidation(q('[data-validation]'));
+    if (q('[data-urgences]')) rendreUrgences(q('[data-urgences]'));
+    const pied = q('[data-pied]');
+    if (pied) pied.append('Maquette réalisée pour le RKC, sur une semaine d’exemple.', h('br'), 'Prochaine étape : paramétrer les règles du RKC, puis tester la proposition sur une semaine réelle.');
+    typographier(document.body);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', monter); else monter();
+})();
+
+</script>
+</body>
+</html>
