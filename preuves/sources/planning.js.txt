@@ -10,6 +10,11 @@
   const PLAFOND = { forte: 5, normale: 4, faible: 1 };   // journées au plus dans la semaine, par pondération
   const REPOS_MIN = 11 * 60;                              // minutes entre la fin d'une mission et la suivante
   const JOURNEE_MAX = 10 * 60;                            // minutes de travail au plus dans une journée
+  const HEBDO_MAX = 48 * 60;                              // minutes de travail au plus dans la semaine
+  const ENCHAINEMENT_MAX = 60;                            // au plus une heure entre la fin de la journée et l'événement du soir
+  const SEUL_SOIR = 300;                                  // faire venir un extra pour la seule soirée : s'il n'y a pas d'autre solution
+  // La pause comprise dans une amplitude : 1 h pour 9 heures ou plus, 30 min au-delà de 6 heures (pratique des plannings du RKC)
+  const pauseDe = (amplitude) => (amplitude >= 9 * 60 ? 60 : amplitude > 6 * 60 ? 30 : 0);
   const LIMITE_ESSAIS = 20000;
 
   const minutes = (h) => { const [a, b] = h.split(':').map(Number); return a * 60 + b; };
@@ -80,11 +85,11 @@
       // Pause comprise dans l'amplitude : celle du poste, sinon une heure pour une journée de 9 heures ou plus,
       // 30 minutes au-delà de 6 heures (pratique des plannings du RKC : 1 h pour les journées, 30 min sinon)
       const amplitude = fin - debut;
-      const pause = p.pause != null ? p.pause : (amplitude >= 9 * 60 ? 60 : amplitude > 6 * 60 ? 30 : 0);
+      const pause = p.pause != null ? p.pause : pauseDe(amplitude);
       for (let i = 0; i < n; i++) {
         const expert = i < (p.experts || 0);
         res.push({
-          id: jour + '/' + p.id + '/' + i, jour, poste: p.id, metier: p.metier,
+          id: jour + '/' + p.id + '/' + i, jour, poste: p.id, activite: p.activite, metier: p.metier,
           role: expert && p.roleExpert ? p.roleExpert : p.role,
           expert, niveauMin: p.niveauMin || null,
           encadre: (p.experts || 0) >= 1 && n >= 2 && i === n - 1, debut, fin, pause, soir: debut >= 17 * 60,
@@ -96,11 +101,70 @@
 
   const absence = (p, jour) => (p.absences || []).find((a) => a.jours.includes(jour)) || null;
 
-  // Les disponibilités sont des créneaux horaires, jour par jour : « toute » pour toute la journée,
-  // un événement du programme (son identifiant : on reprend ses horaires de ce jour-là),
-  // ou un créneau « 12:00-20:00 » (un créneau qui finit après minuit déborde sur la nuit).
-  function creneau(ctx, jour, s) {
+  // Un événement : un groupe, une privatisation, une course. La location, la Piste Découverte, les licenciés
+  // et le magasin font la journée.
+  const estEvenement = (ctx, id) => { const a = ctx.activite[id]; return !!a && (a.type === 'groupe' || a.type === 'course'); };
+
+  // La journée d'une personne, un jour donné : de la première prise de poste à la dernière fin de poste des activités
+  // du jour (hors événements), pour les rôles qu'elle tient. L'accueil a les horaires de l'accueil, un pistard ceux de
+  // la location, le magasin les siens. Sans personne : la journée du site.
+  function journee(ctx, jour, p) {
+    const cle = jour + '|' + (p ? Object.keys(p.metiers).sort().join(',') : '');
+    const memo = ctx.journees || (ctx.journees = {});
+    if (cle in memo) return memo[cle];
+    let de = Infinity, fin = -Infinity;
+    for (const pl of placesDuJour(ctx, jour)) {
+      if (estEvenement(ctx, pl.activite) || (p && !p.metiers[pl.metier])) continue;
+      de = Math.min(de, pl.debut); fin = Math.max(fin, pl.fin);
+    }
+    return (memo[cle] = de < fin ? [de, fin] : null);
+  }
+  // Les événements du jour où une personne peut tenir un poste : ceux que l'appli lui montre
+  function evenementsPour(ctx, jour, p) {
+    const ids = [];
+    for (const pl of placesDuJour(ctx, jour)) if (estEvenement(ctx, pl.activite) && p.metiers[pl.metier] && !ids.includes(pl.activite)) ids.push(pl.activite);
+    return ids.sort((x, y) => horairesActivite(ctx, ctx.activite[x], jour).debut - horairesActivite(ctx, ctx.activite[y], jour).debut);
+  }
+
+  // ---------- La journée, puis la soirée : les mêmes personnes ----------
+  // Le soir, le RKC prend d'abord ceux qui sont déjà là dans la journée : on ne fait pas venir un extra pour deux heures,
+  // et quelqu'un présent depuis le matin sera là le soir. Deux places du même jour s'enchaînent quand la première est
+  // une place de la journée et la seconde un événement qui commence à sa fin, ou au plus une heure après.
+  function enchainables(ctx, a, b) {
+    return !estEvenement(ctx, a.activite) && estEvenement(ctx, b.activite) && b.debut >= a.fin && b.debut - a.fin <= ENCHAINEMENT_MAX;
+  }
+  // Le travail d'une présence : une place seule, ou la journée et la soirée enchaînées, de la prise de poste à la fin
+  // de la soirée, moins une seule pause (l'heure creuse entre les deux en tient lieu)
+  function travailPresence(places) {
+    if (places.length === 1) return places[0].fin - places[0].debut - places[0].pause;
+    const t = places.slice().sort((x, y) => x.debut - y.debut);
+    const amplitude = t[t.length - 1].fin - t[0].debut;
+    let creux = 0;
+    for (let k = 1; k < t.length; k++) creux += Math.max(0, t[k].debut - t[k - 1].fin);
+    return amplitude - Math.max(pauseDe(amplitude), creux);
+  }
+  // Les places d'une personne un jour donné, regroupées en présences : la journée et la soirée enchaînées n'en font qu'une
+  function blocsDuJour(ctx, places) {
+    const t = places.slice().sort((x, y) => x.debut - y.debut);
+    return t.length === 2 && enchainables(ctx, t[0], t[1]) ? [t] : t.map((x) => [x]);
+  }
+  const travailJour = (ctx, places) => blocsDuJour(ctx, places).reduce((n, b) => n + travailPresence(b), 0);
+  // Les présences d'une personne dans un plan : [début, fin, travail, places], en minutes depuis le lundi 0 h
+  function presencesDe(ctx, plan, id) {
+    const res = [];
+    ctx.jours.forEach((j, i) => {
+      const pls = (plan.affectations[j] || []).filter((a) => a.personne === id).map((a) => a.place);
+      for (const b of blocsDuJour(ctx, pls)) res.push([i * 1440 + b[0].debut, i * 1440 + b[b.length - 1].fin, travailPresence(b), b]);
+    });
+    return res;
+  }
+
+  // Les disponibilités, jour par jour, telles que l'extra les coche dans l'appli : « journee » pour la journée,
+  // aux horaires de son rôle, et l'identifiant de chaque événement coché (on reprend ses horaires de ce jour-là).
+  // Le moteur lit aussi « toute » (tout le jour et la nuit) et un créneau « 12:00-20:00 » (qui peut finir après minuit).
+  function creneau(ctx, jour, s, p) {
     if (s === 'toute') return [0, 2880];
+    if (s === 'journee') return journee(ctx, jour, p);
     if (ctx.activite[s]) { const h = horairesActivite(ctx, ctx.activite[s], jour); return [h.debut, h.fin]; }
     const [a, b] = s.split('-');
     const de = minutes(a);
@@ -109,9 +173,9 @@
     return [de, fin];
   }
   // Les créneaux qui se touchent ou se chevauchent n'en font qu'un (l'événement du soir à la suite de la journée)
-  function creneaux(ctx, jour, dispo) {
+  function creneaux(ctx, jour, dispo, p) {
     if (!dispo) return [];
-    const liste = (dispo === 'toute' ? ['toute'] : dispo).map((s) => creneau(ctx, jour, s)).sort((x, y) => x[0] - y[0]);
+    const liste = (dispo === 'toute' ? ['toute'] : dispo).map((s) => creneau(ctx, jour, s, p)).filter(Boolean).sort((x, y) => x[0] - y[0]);
     const res = [];
     for (const c of liste) {
       const der = res[res.length - 1];
@@ -119,11 +183,17 @@
     }
     return res;
   }
-  function couvre(ctx, jour, dispo, place) {
-    return creneaux(ctx, jour, dispo).some(([de, fin]) => de <= place.debut && place.fin <= fin);
+  // Ce qui vaut pour une place : la journée pour un poste de la journée, l'événement lui-même pour un poste d'événement.
+  // Cocher la journée ne dit rien de la soirée, ni cocher la soirée de la journée. « toute » et un créneau « de-à » valent
+  // pour ce qu'ils couvrent.
+  function couvre(ctx, jour, dispo, place, p) {
+    if (!dispo) return false;
+    const evt = estEvenement(ctx, place.activite);
+    const vaut = (s) => (s === 'toute' ? true : s === 'journee' ? !evt : ctx.activite[s] ? (estEvenement(ctx, s) ? s === place.activite : !evt) : true);
+    return creneaux(ctx, jour, (dispo === 'toute' ? ['toute'] : dispo).filter(vaut), p).some(([de, fin]) => de <= place.debut && place.fin <= fin);
   }
   // Disponible avant une heure donnée ce jour-là (pour la journée : avant 17 h ; pour le matin : avant midi)
-  const dispoAvant = (ctx, jour, dispo, limite) => creneaux(ctx, jour, dispo).some(([de]) => de < limite);
+  const dispoAvant = (ctx, jour, dispo, limite, p) => creneaux(ctx, jour, dispo, p).some(([de]) => de < limite);
 
   // A-t-elle le métier et le niveau pour cette place ? Un débutant ne tient qu'une place encadrée par un expert.
   function apte(p, place) {
@@ -171,7 +241,7 @@
 
   function noteCDI(ctx, combo, cdis, extras, reponses, besoins) {
     let note = 0;
-    const dispoJour = (e, j) => !!reponses[e.id] && dispoAvant(ctx, j, reponses[e.id][j], 17 * 60);
+    const dispoJour = (e, j) => !!reponses[e.id] && dispoAvant(ctx, j, reponses[e.id][j], 17 * 60, e);
     for (const j of ctx.jours) {
       const b = besoins[j];
       const presents = cdis.filter((p) => combo[p.id].includes(j));
@@ -248,13 +318,19 @@
 
   const INTERDIT = 1e7, VIDE = 1e5, CDI_PLACE = -1e4;
 
+  // Un jour se résout en deux temps : les places de la journée, puis les événements du soir, tenus d'abord par ceux qui
+  // sont déjà là et qui ont coché l'événement. Un extra ne vient pour la seule soirée que s'il n'y a pas d'autre solution.
   function resoudreJour(ctx, iJour, places, cdis, extras, reponses, etat, cdiTravailleDemain, extraDispoDemain) {
     const jour = ctx.jours[iJour];
+    if (!places.length) return { affectations: [], vides: [], cout: 0 };
     const gens = cdis.concat(extras);
-    const n = places.length;
-    if (!n) return { affectations: [], vides: [], cout: 0 };
-    // Coût de chaque personne sur chaque place : CDI d'abord et à leur métier principal, extras selon leur pondération
-    const prix = (pl, p) => {
+    const soirs = places.filter((pl) => pl.soir && estEvenement(ctx, pl.activite));
+    const journee = places.filter((pl) => !soirs.includes(pl));
+    const deja = (id) => etat.minutes[id] || 0;
+    // Pourra-t-elle rester le soir après cette place ? Elle a coché l'événement, en a le rôle, et sa journée tient en 10 heures
+    const resteLeSoir = (pl, p) => soirs.some((s) => apte(p, s) && enchainables(ctx, pl, s) && couvre(ctx, jour, reponses[p.id][jour], s, p)
+      && travailPresence([pl, s]) <= JOURNEE_MAX && deja(p.id) + travailPresence([pl, s]) <= HEBDO_MAX);
+    const prixJournee = (pl, p) => {
       if (!apte(p, pl) || !reposOk(etat, p.id, iJour, pl)) return INTERDIT;
       if (etat.interdits && etat.interdits.has(p.id + '|' + jour)) return INTERDIT;
       const niv = RANG[p.metiers[pl.metier]];
@@ -265,37 +341,68 @@
         const principal = Object.keys(p.metiers)[0] === pl.metier ? 0 : 60;
         return CDI_PLACE + principal + gaspille + (p.ordre || 0) * 0.001;
       }
-      if (!couvre(ctx, jour, reponses[p.id][jour], pl)) return INTERDIT;
+      if (!couvre(ctx, jour, reponses[p.id][jour], pl, p)) return INTERDIT;
       if ((etat.joursExtra[p.id] || 0) >= PLAFOND[p.ponderation]) return INTERDIT;
+      if (deja(p.id) + travailPresence([pl]) > HEBDO_MAX) return INTERDIT;
       const tour = 100 * (((etat.joursExtra[p.id] || 0) + 1) / POIDS[p.ponderation]);
       const soirPuisMatin = pl.soir && extraDispoDemain(p) ? 30 : 0;
       const debutant = niv === 1 ? 20 : 0;
-      return 200 + tour + gaspille + soirPuisMatin + debutant + (p.ordre || 0) * 0.01;
+      // Prioriser ceux qui sont disponibles pour tout : ils resteront pour l'événement du soir. Qui a coché la soirée mais ne
+      // pourrait pas la tenir après cette place (journée trop longue) est gardé pour le soir, si d'autres peuvent tenir la journée.
+      const soirPossible = soirs.length && soirs.some((s) => apte(p, s) && couvre(ctx, jour, reponses[p.id][jour], s, p));
+      const pourTout = !soirPossible ? 0 : resteLeSoir(pl, p) ? -60 : 150;
+      // Le directeur de course du soir : un expert qui a coché la soirée passe la journée sur place, puis dirige la soirée
+      const dcDuSoir = pourTout < 0 && niv === 3 && soirs.some((s) => s.expert && apte(p, s) && enchainables(ctx, pl, s) && couvre(ctx, jour, reponses[p.id][jour], s, p) && travailPresence([pl, s]) <= JOURNEE_MAX) ? -120 : 0;
+      return 200 + tour + gaspille + soirPuisMatin + debutant + pourTout + dcDuSoir + (p.ordre || 0) * 0.01;
     };
-    const cout = places.map((pl) => gens.map((p) => prix(pl, p)).concat(places.map(() => VIDE)));
-    let choix = hongrois(cout);
-    // Un débutant n'est jamais seul : si la place d'expert de son poste reste vide, sa place l'est aussi
-    const tenue = (k) => choix[k] >= 0 && choix[k] < gens.length && cout[k][choix[k]] < INTERDIT;
-    for (let k = 0; k < n; k++) {
-      if (!tenue(k)) continue;
-      const p = gens[choix[k]];
-      if (RANG[p.metiers[places[k].metier]] !== 1) continue;
-      const expertTenu = places.some((pl, x) => pl.poste === places[k].poste && pl.expert && tenue(x));
-      if (!expertTenu) choix[k] = -1;
-    }
+    const resoudre = (pls, prix) => {
+      if (!pls.length) return [];
+      const cout = pls.map((pl) => gens.map((p) => prix(pl, p)).concat(pls.map(() => VIDE)));
+      const choix = hongrois(cout);
+      const tenue = (k) => choix[k] >= 0 && choix[k] < gens.length && cout[k][choix[k]] < INTERDIT;
+      // Un débutant n'est jamais seul : si la place d'expert de son poste reste vide, sa place l'est aussi
+      for (let k = 0; k < pls.length; k++) {
+        if (!tenue(k) || RANG[gens[choix[k]].metiers[pls[k].metier]] !== 1) continue;
+        if (!pls.some((pl, x) => pl.poste === pls[k].poste && pl.expert && tenue(x))) choix[k] = -1;
+      }
+      return pls.map((pl, k) => (tenue(k) ? { place: pl, p: gens[choix[k]], cout: cout[k][choix[k]] } : { place: pl, p: null }));
+    };
+    const premier = resoudre(journee, prixJournee);
+    const enJournee = {};
+    for (const x of premier) if (x.p) enJournee[x.p.id] = x.place;
+    const prixSoir = (pl, p) => {
+      if (p.type === 'CDI' || !apte(p, pl)) return INTERDIT;      // les groupes du soir sont tenus par des extras
+      if (etat.interdits && etat.interdits.has(p.id + '|' + jour)) return INTERDIT;
+      if (!couvre(ctx, jour, reponses[p.id][jour], pl, p)) return INTERDIT;
+      const niv = RANG[p.metiers[pl.metier]];
+      const gaspille = !pl.expert && niv === 3 ? 5 : 0;
+      const debutant = niv === 1 ? 20 : 0;
+      const soirPuisMatin = extraDispoDemain(p) ? 30 : 0;
+      const la = enJournee[p.id];
+      if (la) {
+        // Déjà là dans la journée : il enchaîne, si sa journée tient en 10 heures
+        const t = travailPresence([la, pl]);
+        if (!enchainables(ctx, la, pl) || t > JOURNEE_MAX || deja(p.id) + t > HEBDO_MAX) return INTERDIT;
+        return 100 + gaspille + debutant + soirPuisMatin + (p.ordre || 0) * 0.01;
+      }
+      if (!reposOk(etat, p.id, iJour, pl)) return INTERDIT;
+      if ((etat.joursExtra[p.id] || 0) >= PLAFOND[p.ponderation]) return INTERDIT;
+      if (deja(p.id) + travailPresence([pl]) > HEBDO_MAX) return INTERDIT;
+      const tour = 100 * (((etat.joursExtra[p.id] || 0) + 1) / POIDS[p.ponderation]);
+      return 200 + SEUL_SOIR + tour + gaspille + debutant + soirPuisMatin + (p.ordre || 0) * 0.01;
+    };
+    const second = resoudre(soirs, prixSoir);
     const affectations = [], vides = [];
     let total = 0;
-    places.forEach((pl, k) => {
-      if (tenue(k)) {
-        affectations.push({ place: pl, personne: gens[choix[k]].id });
-        total += cout[k][choix[k]] - (gens[choix[k]].type === 'CDI' ? CDI_PLACE : 0);
-      } else vides.push(pl);
-    });
+    for (const x of premier.concat(second).sort((a, b) => places.indexOf(a.place) - places.indexOf(b.place))) {
+      if (x.p) { affectations.push({ place: x.place, personne: x.p.id }); total += x.cout - (x.p.type === 'CDI' ? CDI_PLACE : 0); }
+      else vides.push(x.place);
+    }
     return { affectations, vides, cout: total };
   }
 
   function affecterSemaine(ctx, joursCDI, extras, reponses, ajouts, interdits) {
-    const etat = { joursExtra: {}, fin: {}, interdits: interdits || new Set() };
+    const etat = { joursExtra: {}, fin: {}, minutes: {}, interdits: interdits || new Set() };
     const affectations = {};
     const manques = [];
     let cout = 0;
@@ -308,14 +415,17 @@
       const res = resoudreJour(
         ctx, i, places, cdis, ex, reponses, etat,
         (p) => !!demain && (joursCDI[p.id] || []).includes(demain),
-        (p) => !!demain && !!reponses[p.id] && dispoAvant(ctx, demain, reponses[p.id][demain], 12 * 60),
+        (p) => !!demain && !!reponses[p.id] && dispoAvant(ctx, demain, reponses[p.id][demain], 12 * 60, p),
       );
       affectations[jour] = res.affectations;
       manques.push(...res.vides);
       cout += res.cout;
-      for (const a of res.affectations) {
-        etat.fin[a.personne] = i * 1440 + a.place.fin;
-        if (ctx.personne[a.personne].type === 'Extra') etat.joursExtra[a.personne] = (etat.joursExtra[a.personne] || 0) + 1;
+      const parPersonne = {};
+      for (const a of res.affectations) (parPersonne[a.personne] = parPersonne[a.personne] || []).push(a.place);
+      for (const [id, pls] of Object.entries(parPersonne)) {
+        etat.fin[id] = i * 1440 + Math.max(...pls.map((x) => x.fin));
+        etat.minutes[id] = (etat.minutes[id] || 0) + travailJour(ctx, pls);
+        if (ctx.personne[id].type === 'Extra') etat.joursExtra[id] = (etat.joursExtra[id] || 0) + 1;
       }
     }
     return { joursCDI, affectations, manques, cout };
@@ -425,11 +535,9 @@
     for (let i = 0; i < ctx.jours.length; i++) {
       for (const a of plan.affectations[ctx.jours[i]] || []) toutes.push(Object.assign({ i }, a));
     }
-    // Temps de travail d'un poste : son amplitude moins sa pause
-    const travail = (deb, fin, pause) => fin - deb - (pause != null ? pause : (fin - deb > 6 * 60 ? 30 : 0));
+    // Les présences de chacun : [début, fin, travail]. La journée et la soirée enchaînées n'en font qu'une, avec une seule pause.
     const parPersonne = {};
-    for (const a of toutes) (parPersonne[a.personne] = parPersonne[a.personne] || []).push([a.i * 1440 + a.place.debut, a.i * 1440 + a.place.fin, a.place.pause]);
-    for (const m of Object.values(parPersonne)) m.sort((x, y) => x[0] - y[0]);
+    for (const id of new Set(toutes.map((a) => a.personne))) parPersonne[id] = presencesDe(ctx, plan, id).sort((x, y) => x[0] - y[0]);
     let e;
 
     // ----- Règles légales générales -----
@@ -456,14 +564,14 @@
     e = [];
     for (const [id, missions] of Object.entries(parPersonne)) {
       const parJour = {};
-      for (const [deb, fin, pause] of missions) { const j = Math.floor(deb / 1440); parJour[j] = (parJour[j] || 0) + travail(deb, fin, pause); }
+      for (const [deb, , t] of missions) { const j = Math.floor(deb / 1440); parJour[j] = (parJour[j] || 0) + t; }
       for (const [j, m] of Object.entries(parJour)) if (m > JOURNEE_MAX) e.push(ctx.personne[id].nom + ' : ' + duree(m) + ' de travail le ' + ctx.jour[ctx.jours[j]].nom.toLowerCase());
     }
     regle('legal', 'Durée quotidienne : pas plus de 10 heures de travail', e, 'Code du travail, art. L3121-18');
 
     e = [];
     for (const [id, missions] of Object.entries(parPersonne)) {
-      const total = missions.reduce((n, [deb, fin, pause]) => n + travail(deb, fin, pause), 0);
+      const total = missions.reduce((n, m) => n + m[2], 0);
       if (total > 48 * 60) e.push(ctx.personne[id].nom + ' : ' + duree(total) + ' de travail dans la semaine');
     }
     regle('legal', 'Durée hebdomadaire : pas plus de 48 heures de travail', e, 'Code du travail, art. L3121-20');
@@ -490,9 +598,9 @@
       if (p.type !== 'Extra') continue;
       if (!sollicites.has(p.id)) e.push(p.nom + ' planifié sans avoir été sollicité');
       else if (!reponses[p.id]) e.push(p.nom + ' planifié sans avoir répondu');
-      else if (!couvre(ctx, ctx.jours[a.i], reponses[p.id][ctx.jours[a.i]], a.place)) e.push(p.nom + ' planifié hors de ses créneaux (' + ctx.jour[ctx.jours[a.i]].nom.toLowerCase() + ', ' + texteHeure(a.place.debut) + ' à ' + texteHeure(a.place.fin) + ')');
+      else if (!couvre(ctx, ctx.jours[a.i], reponses[p.id][ctx.jours[a.i]], a.place, p)) e.push(p.nom + ' planifié sur ce qu’il n’a pas coché (' + ctx.jour[ctx.jours[a.i]].nom.toLowerCase() + ', ' + texteHeure(a.place.debut) + ' à ' + texteHeure(a.place.fin) + ')');
     }
-    regle('contrat', 'Un extra ne travaille que dans les créneaux horaires qu’il a donnés', e);
+    regle('contrat', 'Un extra ne travaille que sur ce qu’il a coché : la journée, aux horaires de son rôle, ou tel événement, à ses horaires', e);
 
     e = [];
     const travaillesCDI = {};
@@ -521,13 +629,13 @@
 
     e = [];
     for (const j of ctx.jours) {
-      const vu = {};
-      for (const a of plan.affectations[j] || []) {
-        if (vu[a.personne]) e.push(ctx.jour[j].nom + ' : ' + ctx.personne[a.personne].nom + ' sur deux postes');
-        vu[a.personne] = true;
+      const parP = {};
+      for (const a of plan.affectations[j] || []) (parP[a.personne] = parP[a.personne] || []).push(a.place);
+      for (const [id, pls] of Object.entries(parP)) {
+        if (pls.length > 1 && blocsDuJour(ctx, pls).length > 1) e.push(ctx.jour[j].nom + ' : ' + ctx.personne[id].nom + ' sur ' + pls.length + ' postes qui ne s’enchaînent pas');
       }
     }
-    regle('rkc', 'Une personne tient un seul poste dans la journée', e);
+    regle('rkc', 'Une personne tient un seul poste à la fois : sa journée, puis au plus l’événement du soir qui la suit', e);
 
     e = [];
     for (const a of toutes) {
@@ -564,7 +672,7 @@
     // ----- Préférences et pondérations -----
     e = [];
     const joursExtra = {};
-    for (const a of toutes) if (ctx.personne[a.personne].type === 'Extra') joursExtra[a.personne] = (joursExtra[a.personne] || 0) + 1;
+    for (const [id, pres] of Object.entries(parPersonne)) if (ctx.personne[id].type === 'Extra') joursExtra[id] = new Set(pres.map((m) => Math.floor(m[0] / 1440))).size;
     for (const [id, n] of Object.entries(joursExtra)) {
       const p = ctx.personne[id];
       if (n > PLAFOND[p.ponderation]) e.push(p.nom + ' : ' + n + ' jours de travail pour une pondération ' + p.ponderation + ' (' + PLAFOND[p.ponderation] + ' au plus)');
@@ -586,38 +694,44 @@
     const place = opts.place || (aff && aff.place);
     if (!place) return { place: null, candidats: [], ecartes: [] };
     const finVeille = {}, debutLendemain = {}, enPoste = {};
-    if (i > 0) for (const a of plan.affectations[ctx.jours[i - 1]] || []) finVeille[a.personne] = (i - 1) * 1440 + a.place.fin;
-    if (i < ctx.jours.length - 1) for (const a of plan.affectations[ctx.jours[i + 1]] || []) debutLendemain[a.personne] = (i + 1) * 1440 + a.place.debut;
-    for (const a of plan.affectations[jour] || []) enPoste[a.personne] = a.place;
+    if (i > 0) for (const a of plan.affectations[ctx.jours[i - 1]] || []) finVeille[a.personne] = Math.max(finVeille[a.personne] || 0, (i - 1) * 1440 + a.place.fin);
+    if (i < ctx.jours.length - 1) for (const a of plan.affectations[ctx.jours[i + 1]] || []) debutLendemain[a.personne] = Math.min(debutLendemain[a.personne] == null ? Infinity : debutLendemain[a.personne], (i + 1) * 1440 + a.place.debut);
+    for (const a of plan.affectations[jour] || []) (enPoste[a.personne] = enPoste[a.personne] || []).push(a.place);
     const deb = i * 1440 + place.debut, fin = i * 1440 + place.fin;
     const candidats = [], ecartes = [];
     for (const p of d.personnes) {
       if (p.id === absentId || !p.metiers[place.metier]) continue;
       const abs = absence(p, jour);
       if (abs) { ecartes.push({ id: p.id, nom: p.nom, raison: abs.motif }); continue; }
-      if (enPoste[p.id] && enPoste[p.id].id !== place.id) { ecartes.push({ id: p.id, nom: p.nom, raison: 'déjà en poste ce jour-là', poste: enPoste[p.id].poste }); continue; }
+      const la = (enPoste[p.id] || []).filter((x) => x.id !== place.id);
+      // Déjà là dans la journée : il peut enchaîner sur l'événement du soir, si sa journée tient en 10 heures
+      const surPlace = la.length === 1 && p.type === 'Extra' && enchainables(ctx, la[0], place);
+      if (la.length && !surPlace) { ecartes.push({ id: p.id, nom: p.nom, raison: 'déjà en poste ce jour-là', poste: la[0].poste }); continue; }
+      if (surPlace && travailPresence([la[0], place]) > JOURNEE_MAX) { ecartes.push({ id: p.id, nom: p.nom, raison: 'déjà là dans la journée, mais sa journée dépasserait 10 heures', poste: la[0].poste }); continue; }
       if (!apte(p, place)) { ecartes.push({ id: p.id, nom: p.nom, raison: 'niveau insuffisant pour ce poste' }); continue; }
       if (p.type === 'CDI' && place.soir) { ecartes.push({ id: p.id, nom: p.nom, raison: 'les soirées sont tenues par des extras' }); continue; }
       const r = reponses[p.id];
       const aRepondu = p.type === 'Extra' && sollicites.has(p.id) && r;
-      if (aRepondu && !couvre(ctx, jour, r[jour], place)) { ecartes.push({ id: p.id, nom: p.nom, raison: r[jour] ? 'pas disponible à ces heures-là' : 'pas disponible ce jour-là' }); continue; }
+      if (aRepondu && !couvre(ctx, jour, r[jour], place, p)) { ecartes.push({ id: p.id, nom: p.nom, raison: !r[jour] ? 'pas disponible ce jour-là' : estEvenement(ctx, place.activite) ? 'n’a pas coché cet événement' : 'n’a pas coché la journée' }); continue; }
       if (finVeille[p.id] != null && deb - finVeille[p.id] < REPOS_MIN) { ecartes.push({ id: p.id, nom: p.nom, raison: 'repos trop court : a fini à ' + texteHeure(finVeille[p.id]) + ' la veille' }); continue; }
       if (debutLendemain[p.id] != null && debutLendemain[p.id] - fin < REPOS_MIN) { ecartes.push({ id: p.id, nom: p.nom, raison: 'reprend trop tôt le lendemain' }); continue; }
       if (plusLongRepos(missionsDe(ctx, plan, p.id).concat([[deb, fin]]), ctx.jours.length * 1440) < REPOS_HEBDO) { ecartes.push({ id: p.id, nom: p.nom, raison: 'n’aurait plus 35 heures de repos d’affilée dans la semaine' }); continue; }
+      if (presencesDe(ctx, ajouter(plan, jour, place, p.id), p.id).reduce((n, m) => n + m[2], 0) > HEBDO_MAX) { ecartes.push({ id: p.id, nom: p.nom, raison: 'dépasserait 48 heures de travail dans la semaine' }); continue; }
       if (p.type === 'CDI') {
         candidats.push({ id: p.id, nom: p.nom, type: 'CDI', rang: 2, statut: 'En repos ce jour-là', detail: 'seulement avec son accord' });
         continue;
       }
-      const deja = Object.values(plan.affectations).reduce((n, affs) => n + affs.filter((a) => a.personne === p.id).length, 0);
+      const deja = ctx.jours.filter((j) => (plan.affectations[j] || []).some((a) => a.personne === p.id)).length;
       const semaine = deja ? 'déjà ' + deja + (deja > 1 ? ' jours' : ' jour') + ' de travail cette semaine' : '';
       if (!sollicites.has(p.id)) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 3, statut: 'Pas sollicité cette semaine', detail: 'à appeler directement' });
       else if (!r) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 3, statut: 'Pas de réponse à la demande', detail: 'à appeler directement' });
-      else if (deja >= PLAFOND[p.ponderation]) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 2.5, statut: 'Disponible, mais au-delà de sa pondération', detail: semaine });
-      else candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 1, statut: 'Disponible à ces heures-là selon sa réponse', detail: semaine, veille: finVeille[p.id] != null ? texteHeure(finVeille[p.id]) : null });
+      else if (!surPlace && deja >= PLAFOND[p.ponderation]) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 2.5, statut: 'Disponible, mais au-delà de sa pondération', detail: semaine });
+      else candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 1, surPlace, statut: surPlace ? 'Déjà là dans la journée et a coché cet événement : enchaîne après son poste' : estEvenement(ctx, place.activite) ? 'A coché cet événement dans l’appli' : 'A coché la journée dans l’appli', detail: semaine, veille: finVeille[p.id] != null ? texteHeure(finVeille[p.id]) : null });
     }
     const poids = (c) => (ctx.personne[c.id].ponderation ? POIDS[ctx.personne[c.id].ponderation] : 0);
     const niveau = (c) => RANG[ctx.personne[c.id].metiers[place.metier]];
-    candidats.sort((a, b) => a.rang - b.rang || niveau(b) - niveau(a) || poids(b) - poids(a) || (ctx.personne[a.id].ordre || 0) - (ctx.personne[b.id].ordre || 0));
+    // Ceux qui sont déjà là d'abord : on ne fait pas venir quelqu'un pour la seule soirée s'il y a une autre solution
+    candidats.sort((a, b) => a.rang - b.rang || Number(!!b.surPlace) - Number(!!a.surPlace) || niveau(b) - niveau(a) || poids(b) - poids(a) || (ctx.personne[a.id].ordre || 0) - (ctx.personne[b.id].ordre || 0));
     return { place, candidats, ecartes };
   }
 
@@ -686,10 +800,15 @@
 
   racine.PlanningRKC = {
     proposer, controler, remplacants, remplacer, ajouter, renforts, grille, texteHeure,
-    creneaux: (d, jour, dispo) => creneaux(contexte(d), jour, dispo),
+    creneaux: (d, jour, dispo, personne) => { const ctx = contexte(d); return creneaux(ctx, jour, dispo, typeof personne === 'string' ? ctx.personne[personne] : personne); },
+    journee: (d, jour, personne) => { const ctx = contexte(d); return journee(ctx, jour, typeof personne === 'string' ? ctx.personne[personne] : personne); },
+    evenementsPour: (d, jour, personne) => { const ctx = contexte(d); return evenementsPour(ctx, jour, typeof personne === 'string' ? ctx.personne[personne] : personne); },
+    estEvenement: (d, id) => estEvenement(contexte(d), id),
+    presences: (d, plan, id) => presencesDe(contexte(d), plan, id),
+    enchainables: (d, a, b) => enchainables(contexte(d), a, b),
     horairesActivite: (d, id, jour) => { const ctx = contexte(d); return horairesActivite(ctx, ctx.activite[id], jour); },
     libellePoste: (d, id) => libellePoste(contexte(d), id),
     placesDuJour: (d, jour, ajouts) => placesDuJour(contexte(d), jour, ajouts),
-    RANG, POIDS, PLAFOND, REPOS_MIN, JOURNEE_MAX, FAMILLES,
+    RANG, POIDS, PLAFOND, REPOS_MIN, JOURNEE_MAX, HEBDO_MAX, ENCHAINEMENT_MAX, FAMILLES,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

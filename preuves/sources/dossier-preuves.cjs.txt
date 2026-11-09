@@ -152,18 +152,49 @@ function horairesPoste(p, cle, acts) {
 // Pause comprise dans l'amplitude : 1 h pour une journée de 9 heures ou plus, 30 min au-delà de 6 heures
 const pauseAttendue = (p, amplitude) => (p && p.pause != null ? p.pause : amplitude >= 9 * 60 ? 60 : amplitude > 6 * 60 ? 30 : 0);
 const travail = (pl) => pl.fin - pl.debut - pauseAttendue(posteDe(pl.poste), pl.fin - pl.debut);
-// Les créneaux d'un extra un jour donné : « toute » la journée, un événement (ses horaires ce jour-là) ou « de-à » ;
-// deux créneaux qui se touchent n'en font qu'un (la location puis la soirée)
-function creneauxDonnes(cle, dispo, acts) {
+// Un événement : un groupe, une privatisation, une course. La location, la Piste Découverte, les licenciés et le magasin
+// font la journée.
+const estEvenementDossier = (a) => !!a && ['groupe', 'course'].includes(a.type);
+const activiteDePlace = (pl, acts, ajouts) => activite(pl.activite || (posteDe(pl.poste, ajouts) || {}).activite, acts);
+const nombreDe = (po, cle) => (typeof po.nombre === 'number' ? po.nombre : po.nombre[cle] != null ? po.nombre[cle] : jourDe(cle).weekend ? po.nombre.weekend : po.nombre.semaine);
+// La journée d'un extra, recalculée ici : de la première prise de poste à la dernière fin de poste des activités du jour
+// hors événements, pour les rôles qu'il tient (l'accueil, la piste, l'atelier, le magasin ont chacun leurs horaires)
+function journeeDe(cle, p, acts) {
+  let de = Infinity, fin = -Infinity;
+  for (const po of d.postes) {
+    const a = activite(po.activite, acts);
+    if (!a || estEvenementDossier(a) || !joursActivite(a).includes(cle) || (po.jours && !po.jours.includes(cle)) || !nombreDe(po, cle)) continue;
+    if (p && !p.metiers[po.metier]) continue;
+    const [x, y] = horairesPoste(po, cle, acts);
+    de = Math.min(de, x); fin = Math.max(fin, y);
+  }
+  return de < fin ? [de, fin] : null;
+}
+// Ce qu'un extra a coché un jour donné : la journée (aux horaires de son rôle), chaque événement (ses horaires ce jour-là) ;
+// le moteur lit aussi « toute » et un créneau « de-à ». Pour une place donnée, seul compte ce qui vaut pour elle : la
+// journée pour un poste de la journée, l'événement lui-même pour un poste d'événement. Sans place, chaque coche est listée
+// à part ; pour une place, les coches qui valent et se touchent n'en font qu'une.
+function creneauxDonnes(cle, dispo, acts, p, place) {
   if (!dispo) return [];
-  const items = (dispo === 'toute' ? ['toute'] : dispo).map((s) => {
+  const actPlace = place ? activiteDePlace(place, acts) : null;
+  const evtPlace = place ? estEvenementDossier(actPlace) : null;
+  const vaut = (s) => {
+    if (!place || s === 'toute') return true;
+    if (s === 'journee') return !evtPlace;
+    const a = activite(s, acts);
+    if (a) return estEvenementDossier(a) ? !!actPlace && s === actPlace.id : !evtPlace;
+    return true;
+  };
+  const items = (dispo === 'toute' ? ['toute'] : dispo).filter(vaut).map((s) => {
     if (s === 'toute') return { de: 0, fin: 2880, etiquettes: [], toute: true };
+    if (s === 'journee') { const jr = journeeDe(cle, p, acts); return jr && { de: jr[0], fin: jr[1], etiquettes: ['la journée'], journee: true }; }
     const a = activite(s, acts);
     if (a) { const [de, fin] = horairesActivite(a, cle); return { de, fin, etiquettes: [nomActivite(a)], activites: [a.id] }; }
     const [x, y] = s.split('-');
     const [de, fin] = intervalle(x, y);
     return { de, fin, etiquettes: [], libre: true };
-  }).sort((u, v) => u.de - v.de);
+  }).filter(Boolean).sort((u, v) => u.de - v.de);
+  if (!place) return items.map((c) => Object.assign({}, c, { activites: (c.activites || []).slice() }));
   const res = [];
   for (const c of items) {
     const der = res[res.length - 1];
@@ -173,18 +204,40 @@ function creneauxDonnes(cle, dispo, acts) {
       der.activites.push(...(c.activites || []));
       der.toute = der.toute || c.toute;
       der.libre = der.libre || c.libre;
+      der.journee = der.journee || c.journee;
     } else res.push(Object.assign({}, c, { etiquettes: c.etiquettes.slice(), activites: (c.activites || []).slice() }));
   }
   return res;
 }
-// « Location 1000 m, 12 h 30 à 20 h » ; « son créneau et Privatisation, 14 h à 23 h 30 » quand deux créneaux se suivent
+// « la journée, 12 h 30 à 20 h » ; « Privatisation, 20 h à 23 h 30 »
 const texteCreneau = (c) => {
   if (c.toute) return 'toute la journée';
   const noms = (c.libre && c.etiquettes.length ? ['son créneau'] : []).concat(c.etiquettes);
   return (noms.length ? et(noms) + ', ' : '') + plage(c.de, c.fin);
 };
-const texteDispo = (cle, dispo, acts) => creneauxDonnes(cle, dispo, acts).map(texteCreneau).join(' ; ');
-const creneauQuiCouvre = (cle, dispo, place, acts) => creneauxDonnes(cle, dispo, acts).find((c) => c.de <= place.debut && place.fin <= c.fin) || null;
+const texteDispo = (cle, dispo, p, acts) => creneauxDonnes(cle, dispo, acts, p).map(texteCreneau).join(' ; ');
+const creneauQuiCouvre = (cle, dispo, place, p, acts) => creneauxDonnes(cle, dispo, acts, p, place).find((c) => c.de <= place.debut && place.fin <= c.fin) || null;
+
+// La journée et la soirée enchaînées, recalculées ici : le soir, le RKC prend d'abord ceux qui sont déjà là. Une place de
+// la journée puis un événement qui commence à sa fin, ou au plus une heure après, le même jour : une seule présence, une
+// seule pause comptée sur toute l'amplitude (l'heure creuse entre les deux en tient lieu).
+const ENCHAINEMENT = 60;
+const sEnchainent = (a, b, acts, ajouts) => !estEvenementDossier(activiteDePlace(a, acts, ajouts)) && estEvenementDossier(activiteDePlace(b, acts, ajouts)) && b.debut >= a.fin && b.debut - a.fin <= ENCHAINEMENT;
+function presencesDossier(ms, acts, ajouts) {
+  const res = [];
+  for (const j of JOURS) {
+    const du = ms.filter((m) => m.j === j).sort((a, b) => a.pl.debut - b.pl.debut);
+    if (!du.length) continue;
+    const blocs = du.length === 2 && sEnchainent(du[0].pl, du[1].pl, acts, ajouts) ? [du] : du.map((m) => [m]);
+    for (const b of blocs) {
+      const i = b[0].i, de = b[0].pl.debut, fin = b[b.length - 1].pl.fin;
+      const amplitude = fin - de;
+      const t = b.length === 1 ? travail(b[0].pl) : amplitude - Math.max(pauseAttendue(null, amplitude), b[1].pl.debut - b[0].pl.fin);
+      res.push({ i, j, debut: i * 1440 + de, fin: i * 1440 + fin, travail: t, enchaine: b.length > 1, places: b.map((m) => m.pl) });
+    }
+  }
+  return res;
+}
 
 // ---------- Les calculs du moteur ----------
 const PLAN = P.proposer(d, { joursCDI: d.joursCDI });
@@ -194,12 +247,21 @@ const PLACES = Object.fromEntries(JOURS.map((j) => [j, P.placesDuJour(d, j)]));
 const total = JOURS.reduce((n, j) => n + PLACES[j].length, 0);
 const tenus = JOURS.reduce((n, j) => n + PLAN.affectations[j].length, 0);
 const identique = JSON.stringify(COMPLET.affectations) === JSON.stringify(PLAN.affectations) && JSON.stringify(COMPLET.joursCDI) === JSON.stringify(PLAN.joursCDI);
+// Le soir : combien de postes tenus par des extras déjà là dans la journée, jour par jour (recalculé ici)
+const SOIREES = JOURS.map((j) => {
+  const affs = PLAN.affectations[j];
+  const soir = affs.filter((a) => estEvenementDossier(activiteDePlace(a.place)) && a.place.debut >= 17 * 60);
+  if (!soir.length) return null;
+  const deJour = new Set(affs.filter((a) => !soir.includes(a)).map((a) => a.personne));
+  return { j, n: soir.length, la: soir.filter((a) => deJour.has(a.personne)).length };
+}).filter(Boolean);
+const soireesTexte = 'Postes du soir tenus par des extras déjà là dans la journée, qui enchaînent : ' + SOIREES.map((x) => nomJour(x.j) + ' ' + x.la + ' sur ' + x.n).join(', ') + '.';
 exiger(identique, 'Le calcul complet ne redonne pas la proposition affichée par la page (jours des CDI mémorisés dans donnees.js)');
 exiger(CTRL.ok, 'La proposition ne respecte pas toutes les règles : ' + CTRL.regles.filter((r) => !r.ok).map((r) => r.regle).join(' ; '));
 const regleNom = (debut) => (CTRL.regles.find((r) => r.regle.startsWith(debut)) || { regle: debut }).regle;
 const typeDe = (id) => personne(id).type;
 let journeesCDI = 0, journeesExtras = 0;
-for (const j of JOURS) for (const a of PLAN.affectations[j]) (typeDe(a.personne) === 'CDI' ? journeesCDI++ : journeesExtras++);
+for (const j of JOURS) for (const id of new Set(PLAN.affectations[j].map((a) => a.personne))) (typeDe(id) === 'CDI' ? journeesCDI++ : journeesExtras++);
 const affsDe = (plan, id) => JOURS.flatMap((j, i) => (plan.affectations[j] || []).filter((a) => a.personne === id).map((a) => ({ i, j, a })));
 const extrasEmployes = EXTRAS.filter((p) => affsDe(PLAN, p.id).length).length;
 const repondu = d.sollicites.filter((id) => d.reponses[id]);
@@ -555,7 +617,7 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
       const vu = C.defaut.urgences.find((x) => x.id === u.s.id);
       let attendu, affiche;
       if (u.type === 'remplacement') {
-        attendu = u.r.candidats.slice(0, 3).map((c) => c.nom + ' · ' + (personne(c.id).type === 'CDI' ? 'CDI' : 'extra'));
+        attendu = u.r.candidats.slice(0, 3).map((c) => c.nom + ', ' + (personne(c.id).type === 'CDI' ? 'CDI' : 'extra'));
         affiche = vu ? vu.candidats : [];
       } else {
         attendu = u.apres.places.map((x) => (x.choisi ? nom(x.choisi) : null));
@@ -586,7 +648,8 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
     '## En bref', '',
     '- La semaine d’exemple compte **' + total + ' postes**, de ' + minJ.n + ' (' + et(joursMin) + ') à ' + maxJ.n + ' (' + et(joursMax) + ') par jour. La proposition les tient tous : ' + tenus + ' postes tenus, ' + PLAN.manques.length + ' à pourvoir ; ' + journeesCDI + ' journées de CDI, ' + journeesExtras + ' journées d’extras.',
     '- **' + CTRL.regles.filter((r) => r.ok).length + ' règles sur ' + CTRL.regles.length + '** sont respectées. Elles sont contrôlées par une fonction séparée du calcul, qui ne lui fait pas confiance (partie 4), puis revérifiées personne par personne par ce dossier, avec son propre calcul des créneaux, des pauses et des repos (partie 6).',
-    '- Les disponibilités sont des **créneaux horaires** : un événement du programme, un créneau précis ou toute la journée. Chaque extra n’est placé que sur un poste qui tient entièrement dans un créneau qu’il a donné (parties 5 et 6).',
+    '- Les disponibilités se cochent dans l’appli, jour par jour : **la journée**, aux horaires du rôle de chacun, et **chaque événement**, avec ses horaires. Chaque extra n’est placé que sur ce qu’il a coché (parties 5 et 6).',
+    '- **Le soir, d’abord ceux qui sont déjà là.** ' + soireesTexte + ' Les autres viennent pour la seule soirée, faute d’autre solution : les CDI ne font pas les soirées, et la journée enchaînée ne dépasse jamais 10 heures de travail (parties 3 et 5).',
     C ? '- Le planning **n’est pas écrit dans la page** : elle le calcule au chargement avec le moteur. Vérifié dans Chrome : la page affiche les ' + tenus + ' mêmes noms, aux mêmes cases, que le moteur ; avec une seule donnée changée, elle affiche un autre planning, celui que calcule le moteur (partie 3.1).'
       : '- Le planning **n’est pas écrit dans la page** : elle le calcule au chargement avec le moteur (partie 3.1). La vérification dans Chrome n’a pas pu être faite cette fois : ' + PAGEV.raison + '.',
     '- Les **' + d.imprevus.length + ' urgences** de la page (' + et(d.imprevus.map((s) => minuscule(s.titre).replace(/^une? /, ''))) + ') sont recalculées par le moteur, avec les personnes proposées et les écartées' + (C ? ' ; la page propose les mêmes personnes' : '') + ' (partie 7.2).',
@@ -614,12 +677,13 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
     rangee('Accueil : ' + et([...new Set(JOURS.map((j) => PLACES[j].filter((x) => x.poste === 'accueil').length))].map(String)) + ' personnes selon les jours ; un mécanicien location ; mécanique compétition le samedi des licenciés', 'Choix de la maquette. Dans les plannings réels, l’accueil revient aux permanents, sans code d’activité', '**Hypothèse à valider**'),
     rangee('Pauses : 1 h pour une journée de 9 heures ou plus, 30 min au-delà de 6 heures', 'Plannings réels : « p01h00 » sur ' + REEL.pauses.permanents + ' % des journées de permanents, « p00h30 » sur ' + REEL.pauses.extras + ' % des journées d’extras', 'Calibré'),
     rangee('Un seul rôle par personne en général, magasin et mécanique compétition ensemble ; trois niveaux de pistard : commissaire de piste, commissaire de piste confirmé, directeur de course', 'Anthony, 8 novembre', '**Réel** : organisation et mots du RKC'),
-    rangee('Demande de disponibilités par SMS chaque semaine, environ sept jours avant ; réponse en créneaux : un événement du programme, un créneau, ou toute la journée', 'Fonctionnalité demandée par Anthony. Dans les courriels réels, le service commercial demande les « dispos » chaque semaine', '**Fonctionnalité demandée** ; envoi et réponses simulés'),
+    rangee('Demande de disponibilités chaque semaine dans l’appli, environ sept jours avant ; réponse en cases à cocher : la journée, aux horaires du rôle, et chaque événement, avec ses horaires', 'Fonctionnalité demandée par Anthony. Dans les courriels réels, le service commercial demande les « dispos » chaque semaine', '**Fonctionnalité demandée** ; envoi et réponses simulés'),
     rangee('CDI prioritaires ; deux jours de repos par semaine l’été, trois l’hiver, pris d’affilée', 'Anthony ; « d’affilée » est un choix de la maquette', 'Principe confirmé ; **à valider avec les contrats**'),
     rangee('Contrats des CDI : ' + contratsTexte, 'Choix de la maquette', '**Fictif**'),
     rangee('Pondération des extras (forte, normale, faible pour qui débute) et plafonds de jours (' + ['forte', 'normale', 'faible'].map((k) => k + ' ' + P.PLAFOND[k]).join(', ') + ')', 'Principe d’Anthony ; plafonds choisis par la maquette', 'Principe confirmé ; **valeurs à paramétrer**'),
     rangee('Les ' + CDIS.length + ' CDI et les ' + EXTRAS.length + ' extras : noms, rôles, niveaux, congés, arrêt, déplacement, pondérations', 'Inventés pour la maquette ; aucun nom des plannings réels n’est repris', '**Fictif**'),
-    rangee('Les ' + d.sollicites.length + ' extras sollicités et leurs ' + repondu.length + ' réponses en créneaux', 'Inventés pour la maquette', '**Fictif**'),
+    rangee('Les ' + d.sollicites.length + ' extras sollicités et leurs ' + repondu.length + ' réponses', 'Inventés pour la maquette', '**Fictif**'),
+    rangee('Le soir, d’abord ceux qui sont déjà là dans la journée : on ne fait pas venir un extra pour deux heures, sauf impossibilité ou urgence', 'Règle donnée par Anthony le 9 novembre 2026. Plannings réels : les codes doubles GP1000+LOC et GP1200+LOC sont fréquents, un extra enchaîne souvent la location et le GP du soir', '**Règle du RKC**, appliquée par le calcul'),
     rangee('Les ' + d.imprevus.length + ' urgences (' + et(d.imprevus.map((s) => minuscule(s.titre).replace(/^une? /, ''))) + ') et les réponses à la demande ciblée', 'Situations citées par Anthony ; personnes, heures et réponses inventées', 'Situations réelles, **détails fictifs**'),
     rangee('Repos quotidien de 11 heures, repos hebdomadaire de 35 heures d’affilée, 10 heures de travail par jour, 48 heures par semaine, 6 jours au plus', 'Code du travail, articles L3131-1, L3132-2, L3121-18, L3121-20, L3132-1', '**Minimums légaux généraux.** Des dérogations encadrées existent (accords, convention collective) : à vérifier pour le RKC'), '');
 
@@ -729,11 +793,11 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
   const S = PAGEV.statique;
   ecrire('## 3. Comment le planning est calculé, et ce qui est recalculé', '',
     '1. **Les jours des CDI.** Chaque CDI travaille le nombre de jours de son contrat (' + contratsTexte + '), hors congés et arrêt, avec ses jours de repos pris d’affilée, en semaine de préférence. Le moteur essaie les combinaisons possibles (' + nbCombinaisons.toLocaleString('fr-FR') + ' cette semaine) et garde celle qui tient le plus de postes au moindre coût.',
-    '2. **Les postes de chaque jour.** Chaque jour, une affectation optimale (méthode hongroise) place d’abord les CDI, à leur métier principal, puis les extras. Un poste n’est proposé qu’à quelqu’un qui a le rôle et le niveau, qui n’a pas déjà un poste ce jour-là et qui a eu ses 11 heures de repos. Pour un extra, il faut en plus que **le poste tienne entièrement dans un de ses créneaux** (deux créneaux qui se touchent, la location puis la soirée, n’en font qu’un) et qu’il reste sous le plafond de sa pondération ; les extras tournent selon leur pondération. Un commissaire de piste débutant n’est placé qu’à côté d’un directeur de course.',
+    '2. **Les postes de chaque jour, en deux temps.** D’abord la journée : une affectation optimale (méthode hongroise) place les CDI, à leur métier principal, puis les extras. Un poste n’est proposé qu’à quelqu’un qui a le rôle et le niveau, qui a eu ses 11 heures de repos et, pour un extra, **qui a coché la journée** et reste sous le plafond de sa pondération ; les extras tournent selon leur pondération. Ceux qui ont aussi coché l’événement du soir passent d’abord, pour pouvoir rester. Ensuite les événements du soir : **ceux qui sont déjà là et ont coché l’événement enchaînent**, si leur journée enchaînée tient en 10 heures de travail (une seule pause, 1 h). Un extra ne vient pour la seule soirée que s’il n’y a pas d’autre solution. Un commissaire de piste débutant n’est placé qu’à côté d’un directeur de course.',
     '3. **Le repos hebdomadaire.** Si un extra n’a pas 35 heures de repos d’affilée dans la semaine, le moteur lui retire un jour et recalcule, en gardant la solution qui couvre le mieux.',
     '4. **Le contrôle.** Une fonction séparée relit la proposition règle par règle, à partir des données brutes, sans faire confiance au calcul (partie 4).',
     '5. **Les urgences.** Pour une absence, le moteur liste qui peut tenir le poste, dans l’ordre : les extras disponibles à ces heures-là, puis les CDI en repos (avec leur accord), puis les extras au-delà de leur pondération, puis ceux qui n’ont pas répondu ; il dit pourquoi les autres sont écartés. Pour un événement ajouté, il calcule l’équipe comme pour tout groupe, puis la remplit place par place (partie 7.2).', '',
-    '**Ce que le moteur s’impose sans que le contrôle le vérifie.** Ce sont des préférences de calcul, pas des règles : les soirées sont tenues par des extras, jamais par des CDI ; un extra disponible le lendemain matin passe après les autres pour une soirée ; les experts sont gardés pour les places d’expert. Le contrôle de la partie 4 ne les signale donc pas si on les contourne à la main.', '',
+    '**Ce que le moteur s’impose sans que le contrôle le vérifie.** Ce sont des préférences de calcul, pas des règles : les soirées sont tenues par des extras, jamais par des CDI ; le soir, ceux qui sont déjà là passent avant ceux qu’il faudrait faire venir ; un extra disponible le lendemain matin passe après les autres pour une soirée ; les experts sont gardés pour les places d’expert. Le contrôle de la partie 4 ne les signale donc pas si on les contourne à la main.', '',
     '### 3.1 La page recalcule, elle ne lit pas un planning prérempli', '',
     '- **Le même calcul.** La page appelle `PlanningRKC.proposer()` au chargement, avec les jours des CDI mémorisés dans `donnees.js` (`joursCDI`) pour s’afficher aussitôt. Le calcul complet, qui essaie ' + (nbEssais === nbCombinaisons ? 'toutes les ' + nbCombinaisons.toLocaleString('fr-FR') + ' combinaisons' : 'les ' + nbEssais.toLocaleString('fr-FR') + ' premières combinaisons') + ' de jours des CDI, redonne exactement la même proposition : **' + (identique ? 'identique, ' + tenus + ' affectations sur ' + tenus : 'DIFFÉRENTE') + '**.',
     '- **Aucun planning écrit à la main.** `maquette/page/index.html` ne contient ' + (S.nomsIndex.length ? 'des noms : ' + S.nomsIndex.join(', ') : 'aucun des ' + d.personnes.length + ' noms') + ' ; `maquette/page/app.js` ' + (S.nomsApp.length ? 'contient des noms : ' + S.nomsApp.join(', ') : 'non plus') + '. La page ne charge aucun fichier (' + (S.chargements.length ? '**elle utilise ' + S.chargements.join(', ') + '**' : 'ni `fetch`, ni fichier JSON') + ') et tient tout ce qu’elle affiche du moteur : `' + S.appels.join('`, `') + '`. ' + (S.idsApp.length ? 'Elle ne cite que ' + pluriel(S.idsApp.length, 'identifiant', 'identifiants') + ' de personne (' + et(S.idsApp.map(nom)) + '), pour choisir qui sert d’exemple, jamais pour remplir une case.' : 'Elle ne cite aucune personne.') + ' L’ancien fichier `src/proposition.json` ' + (S.proposition ? '**est cité**' : 'n’est lu ni par la page ni par le moteur') + '.',
@@ -777,12 +841,12 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
     for (const a of PLAN.affectations[j]) {
       const p = personne(a.personne);
       if (exempleCreneau || p.type !== 'Extra') continue;
-      const c = creneauQuiCouvre(j, d.reponses[p.id] && d.reponses[p.id][j], a.place);
-      if (c && !c.toute && c.activites.length && !c.activites.includes(posteDe(a.place.poste).activite)) exempleCreneau = p.nom + ' a donné le ' + nomJour(j) + ' : ' + texteCreneau(c) + ' ; ' + 'l’outil ' + (fem(p) ? 'la' : 'le') + ' place en « ' + endroit(a.place.poste) + ' », de ' + plage(a.place.debut, a.place.fin) + ', ce qui tient dans ces horaires';
+      const c = creneauQuiCouvre(j, d.reponses[p.id] && d.reponses[p.id][j], a.place, p);
+      if (c && c.journee && (c.de !== a.place.debut || c.fin !== a.place.fin)) exempleCreneau = p.nom + ' a coché la journée du ' + nomJour(j) + ' (' + plage(c.de, c.fin) + ') ; l’outil ' + (fem(p) ? 'la' : 'le') + ' place en « ' + endroit(a.place.poste) + ' », de ' + plage(a.place.debut, a.place.fin) + ', ce qui tient dans ces horaires';
     }
   }
   ecrire('## 5. Tableau de contrôle, jour par jour', '', 'Pour chaque journée : le programme, les postes à couvrir, les personnes disponibles avec leurs créneaux, puis les personnes affectées, poste par poste, avec le créneau qui couvre le poste.', '',
-    'Un créneau donné pour un événement vaut pour ses horaires, pas pour un endroit : l’extra a dit quand il peut travailler, l’outil choisit où.' + (exempleCreneau ? ' Exemple : ' + exempleCreneau + '.' : ''), '');
+    'Dans l’appli, l’extra coche la journée (aux horaires de son rôle) et chaque événement qu’il peut tenir, avec leurs horaires. La journée vaut pour des horaires, pas pour un endroit : l’extra dit quand il peut venir, l’outil choisit où.' + (exempleCreneau ? ' Exemple : ' + exempleCreneau + '.' : '') + ' Le soir, l’outil prend d’abord ceux qui sont déjà là dans la journée : ils enchaînent, dans la limite de 10 heures de travail.', '');
   for (const j of JOURS) {
     const pls = PLACES[j], affs = PLAN.affectations[j];
     const cdiAu = CDIS.filter((p) => (d.joursCDI[p.id] || []).includes(j)).map((p) => p.nom);
@@ -791,7 +855,7 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
     for (const id of d.sollicites) {
       const r = d.reponses[id];
       if (!r) sansReponse.push(nom(id));
-      else if (r[j]) dispo.push(nom(id) + ' : ' + texteDispo(j, r[j]));
+      else if (r[j]) dispo.push(nom(id) + ' : ' + texteDispo(j, r[j], personne(id)));
       else indispo.push(nom(id));
     }
     const nonSollicites = EXTRAS.filter((p) => !d.sollicites.includes(p.id)).map((p) => p.nom + (absence(p, j) ? ' (' + absence(p, j).motif.toLowerCase() + ')' : ''));
@@ -808,8 +872,10 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
     const tries = affs.slice().sort((x, y) => ordreLigne(x.place.poste) - ordreLigne(y.place.poste) || d.postes.findIndex((p) => p.id === x.place.poste) - d.postes.findIndex((p) => p.id === y.place.poste) || indexPlace(x.place) - indexPlace(y.place));
     for (const a of tries) {
       const p = personne(a.personne);
-      const c = p.type === 'Extra' ? creneauQuiCouvre(j, d.reponses[p.id] && d.reponses[p.id][j], a.place) : null;
-      ecrire(rangee(endroit(a.place.poste), plage(a.place.debut, a.place.fin) + ', ' + textePause(a.place.pause), roleAffiche(p, a.place.role), p.nom, p.type === 'CDI' ? 'CDI' : 'Extra, pondération ' + p.ponderation, niveauDans(p, a.place.metier), p.type === 'CDI' ? 'contrat' : c ? texteCreneau(c) : '**hors de ses créneaux**'));
+      const c = p.type === 'Extra' ? creneauQuiCouvre(j, d.reponses[p.id] && d.reponses[p.id][j], a.place, p) : null;
+      const duJour = affs.filter((x) => x.personne === p.id).map((x) => x.place).sort((x, y) => x.debut - y.debut);
+      const enchaine = duJour.length === 2 && sEnchainent(duJour[0], duJour[1]) ? (a.place === duJour[1] ? ', enchaîne après sa journée' : ', reste pour la soirée') : '';
+      ecrire(rangee(endroit(a.place.poste), plage(a.place.debut, a.place.fin) + ', ' + textePause(a.place.pause) + enchaine, roleAffiche(p, a.place.role), p.nom, p.type === 'CDI' ? 'CDI' : 'Extra, pondération ' + p.ponderation, niveauDans(p, a.place.metier), p.type === 'CDI' ? 'contrat' : c ? texteCreneau(c) : '**hors de ce qu’il a coché**'));
     }
     ecrire('');
   }
@@ -824,17 +890,19 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
   const verifs = [];
   for (const p of d.personnes) {
     const ms = affsDe(PLAN, p.id).map((x) => ({ i: x.i, j: x.j, pl: x.a.place })).sort((a, b) => a.i * 1440 + a.pl.debut - (b.i * 1440 + b.pl.debut));
-    const debut = (m) => m.i * 1440 + m.pl.debut, fin = (m) => m.i * 1440 + m.pl.fin;
+    // Les présences : la journée et la soirée enchaînées n'en font qu'une, avec une seule pause
+    const pr = presencesDossier(ms);
     const jours = [...new Set(ms.map((m) => m.j))];
-    const heures = ms.reduce((n, m) => n + travail(m.pl), 0);
+    const heures = pr.reduce((n, x) => n + x.travail, 0);
     let reposMin = null;
-    for (let k = 1; k < ms.length; k++) { const e = debut(ms[k]) - fin(ms[k - 1]); reposMin = reposMin == null ? e : Math.min(reposMin, e); }
+    for (let k = 1; k < pr.length; k++) { const e = pr[k].debut - pr[k - 1].fin; reposMin = reposMin == null ? e : Math.min(reposMin, e); }
     let plusLong = null;
-    if (ms.length) {
-      plusLong = debut(ms[0]);
-      for (let k = 1; k < ms.length; k++) plusLong = Math.max(plusLong, debut(ms[k]) - fin(ms[k - 1]));
-      plusLong = Math.max(plusLong, JOURS.length * 1440 - fin(ms[ms.length - 1]));
+    if (pr.length) {
+      plusLong = pr[0].debut;
+      for (let k = 1; k < pr.length; k++) plusLong = Math.max(plusLong, pr[k].debut - pr[k - 1].fin);
+      plusLong = Math.max(plusLong, JOURS.length * 1440 - pr[pr.length - 1].fin);
     }
+    const unPosteOk = ms.length ? JOURS.every((j) => pr.filter((x) => x.j === j).length <= 1) : null;
     const abs = (p.absences || []).map((a) => a.motif + ' (' + texteJours(a.jours) + ')').join(', ') || 'aucune';
     let declare, creneauOk = null, contratOk, affileeOk = null;
     if (p.type === 'CDI') {
@@ -848,8 +916,8 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
       const r = d.reponses[p.id];
       if (!d.sollicites.includes(p.id)) declare = 'Pas sollicité cette semaine';
       else if (!r) declare = 'Sollicité, pas de réponse';
-      else declare = JOURS.filter((j) => r[j]).map((j) => court(j) + ' ' + texteDispo(j, r[j])).join(' ; ');
-      if (ms.length) creneauOk = ms.every((m) => d.sollicites.includes(p.id) && r && !!creneauQuiCouvre(m.j, r[m.j], m.pl));
+      else declare = JOURS.filter((j) => r[j]).map((j) => court(j) + ' ' + texteDispo(j, r[j], p)).join(' ; ');
+      if (ms.length) creneauOk = ms.every((m) => d.sollicites.includes(p.id) && r && !!creneauQuiCouvre(m.j, r[m.j], m.pl, p));
       contratOk = jours.length <= P.PLAFOND[p.ponderation];
     }
     let metierOk = null, absOk = null;
@@ -870,21 +938,21 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
       absOk = ms.every((m) => !absence(p, m.j));
     }
     const parJour = {};
-    for (const m of ms) parJour[m.j] = (parJour[m.j] || 0) + travail(m.pl);
+    for (const x of pr) parJour[x.j] = (parJour[x.j] || 0) + x.travail;
     const reposOk = ms.length ? reposMin == null || reposMin >= 11 * 60 : null;
     const hebdoOk = ms.length ? plusLong >= 35 * 60 : null;
     const jourOk = ms.length ? Object.values(parJour).every((x) => x <= 10 * 60) : null;
     const semaineOk = ms.length ? heures <= 48 * 60 && jours.length <= 6 : null;
     const so = (b) => (b == null ? 'sans objet' : oui(b));
-    verifs.push([p.nom, so(creneauOk), so(metierOk), so(absOk), oui(contratOk), so(reposOk), so(hebdoOk), so(jourOk), so(semaineOk), so(affileeOk)]);
-    for (const [ok, quoi] of [[creneauOk, 'créneaux'], [metierOk, 'rôle et niveau'], [absOk, 'absences'], [contratOk, p.type === 'CDI' ? 'contrat' : 'pondération'], [reposOk, 'repos de 11 heures'], [hebdoOk, 'repos de 35 heures'], [jourOk, '10 heures par jour'], [semaineOk, '48 heures et 6 jours'], [affileeOk, 'repos d’affilée']]) exiger(ok !== false, p.nom + ' : ' + quoi + ' non respecté (vérification personne par personne)');
+    verifs.push([p.nom, so(creneauOk), so(metierOk), so(unPosteOk), so(absOk), oui(contratOk), so(reposOk), so(hebdoOk), so(jourOk), so(semaineOk), so(affileeOk)]);
+    for (const [ok, quoi] of [[creneauOk, 'créneaux'], [metierOk, 'rôle et niveau'], [unPosteOk, 'un poste à la fois'], [absOk, 'absences'], [contratOk, p.type === 'CDI' ? 'contrat' : 'pondération'], [reposOk, 'repos de 11 heures'], [hebdoOk, 'repos de 35 heures'], [jourOk, '10 heures par jour'], [semaineOk, '48 heures et 6 jours'], [affileeOk, 'repos d’affilée']]) exiger(ok !== false, p.nom + ' : ' + quoi + ' non respecté (vérification personne par personne)');
     ecrire(rangee(p.nom, p.type + (p.ponderation ? ', pondération ' + p.ponderation : ''), rolesDe(p), abs, declare,
-      ms.map((m) => court(m.j) + ' ' + lieuEtRole(m.pl.poste, roleAffiche(p, m.pl.role)) + ', ' + plage(m.pl.debut, m.pl.fin)).join(' ; ') || 'aucun',
+      pr.map((x) => court(x.j) + ' ' + x.places.map((pl) => lieuEtRole(pl.poste, roleAffiche(p, pl.role)) + ', ' + plage(pl.debut, pl.fin)).join(', puis ')).join(' ; ') || 'aucun',
       jours.length, enHeures(heures), reposMin == null ? 'sans objet' : enHeures(reposMin), plusLong == null ? 'sans objet' : enHeures(plusLong)));
   }
-  ecrire('', 'Les heures comptent le temps de travail : l’amplitude de chaque poste moins sa pause. Le plus long repos d’affilée se mesure dans la semaine, du lundi 0 h au dimanche minuit.', '',
+  ecrire('', 'Les heures comptent le temps de travail : l’amplitude de chaque poste moins sa pause. La journée et la soirée enchaînées comptent pour une seule présence, avec une seule pause sur toute l’amplitude (1 h dès 9 heures). Le plus long repos d’affilée se mesure dans la semaine, du lundi 0 h au dimanche minuit.', '',
     '### 6.2 La vérification, règle par règle', '',
-    ...tete('Personne', 'Dans ses créneaux', 'Rôle et niveau', 'Pas en congés, arrêt ou déplacement', 'Contrat (CDI) ou plafond de pondération (extra)', 'Repos ≥ 11 h entre deux postes', 'Repos ≥ 35 h d’affilée', '≤ 10 h par jour', '≤ 48 h et ≤ 6 jours', 'Repos des CDI d’affilée'));
+    ...tete('Personne', 'Sur ce qu’il a coché', 'Rôle et niveau', 'Un poste à la fois (ou la journée puis la soirée)', 'Pas en congés, arrêt ou déplacement', 'Contrat (CDI) ou plafond de pondération (extra)', 'Repos ≥ 11 h entre deux postes', 'Repos ≥ 35 h d’affilée', '≤ 10 h par jour', '≤ 48 h et ≤ 6 jours', 'Repos des CDI d’affilée'));
   for (const v of verifs) ecrire(rangee(...v));
   const nbNon = verifs.reduce((n, v) => n + v.filter((x) => x.includes('NON')).length, 0);
   ecrire('', '**Résultat : ' + (nbNon ? nbNon + ' vérifications en échec' : 'toutes les vérifications passent') + '**, pour les ' + d.personnes.length + ' personnes. « Sans objet » : la personne ne travaille pas cette semaine, ou la règle ne la concerne pas.', '');
@@ -907,8 +975,8 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
     ['Sélection et réponses de la semaine (' + d.sollicites.length + ' extras sollicités, ' + repondu.length + ' réponses)', {}, false],
     ['Sans ' + nom('ines'), { retires: ['ines'] }, true],
     ['Sans ' + et(['ines', 'sarah', 'noa'].map(nom)), { retires: ['ines', 'sarah', 'noa'] }, true],
-    [nom('nathan') + ' ne peut plus le samedi qu’à partir de 16 h (au lieu de ' + texteDispo('sam', d.reponses.nathan.sam) + ')', { rep: { nathan: Object.assign({}, d.reponses.nathan, { sam: ['16:00-20:00'] }) } }, true],
-    [nom('emma') + ' n’est plus disponible le samedi', { rep: { emma: Object.fromEntries(Object.entries(d.reponses.emma).filter(([k]) => k !== 'sam')) } }, true],
+    [nom('eva') + ' ne coche plus la soirée du samedi (au lieu de ' + texteDispo('sam', d.reponses.eva.sam, personne('eva')) + ')', { rep: { eva: Object.fromEntries(Object.entries(d.reponses.eva).filter(([k]) => k !== 'sam')) } }, true],
+    [nom('maxime') + ' n’est plus disponible le samedi', { rep: { maxime: Object.fromEntries(Object.entries(d.reponses.maxime).filter(([k]) => k !== 'sam')) } }, true],
   ];
   for (const [libelle, o, recalc] of variantes) {
     const sol = d.sollicites.filter((x) => !(o.retires || []).includes(x));
@@ -970,7 +1038,7 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
       u.r.candidats.forEach((c, i) => {
         const p = personne(c.id);
         const r = d.reponses[c.id];
-        ecrire(rangee(i + 1, p.nom + ' (' + (p.type === 'CDI' ? 'CDI' : 'extra, pondération ' + p.ponderation) + ')', c.statut, c.detail || 'aucun', p.type === 'CDI' ? 'contrat : en repos ce jour-là' : r && r[s.jour] ? texteDispo(s.jour, r[s.jour]) : 'aucun'));
+        ecrire(rangee(i + 1, p.nom + ' (' + (p.type === 'CDI' ? 'CDI' : 'extra, pondération ' + p.ponderation) + ')', c.statut, c.detail || 'aucun', p.type === 'CDI' ? 'contrat : en repos ce jour-là' : r && r[s.jour] ? texteDispo(s.jour, r[s.jour], p) : 'aucun'));
       });
       ecrire('', '- **Écartés, avec la raison :** ' + groupeEcartes(u.r.ecartes) + '.',
         '- **Après acceptation de ' + (u.choisi ? u.choisi.nom : 'personne') + ' :** ' + u.controle.regles.filter((x) => x.ok).length + ' règles sur ' + u.controle.regles.length + ' respectées' + (u.sansInfo ? '. Le contrôle est informé de l’absence de ' + u.absent.nom + ' ; sans cette information, il lui reprocherait à tort ' + pluriel(u.sansInfo.regles.filter((x) => !x.ok).length, 'règle', 'règles') + ' (' + u.sansInfo.regles.filter((x) => !x.ok).map((x) => minuscule(x.regle.split(' (')[0])).join(' ; ') + ')' : '') + '.',
@@ -985,7 +1053,7 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
       ecrire('#### 7.2.' + (k + 1) + ' ' + s.titre + ' : ' + minuscule(s.quand), '',
         s.message + ' L’équipe se calcule comme pour tout groupe : ' + a.pilotes + ' pilotes, donc ' + pluriel(dc, 'directeur de course', 'directeurs de course') + ', ' + pluriel(com, 'commissaire de piste', 'commissaires de piste') + ' et ' + pluriel(mec, 'mécanicien', 'mécaniciens') + ' : **' + pls.length + ' postes, ' + dateJour(s.jour) + ', ' + plage(de, fin) + ', ' + a.piste + '**.', '',
         '- **Avec les réponses de la semaine :** ' + pluriel(u.avant.places.filter((x) => x.choisi).length, 'poste pourvu', 'postes pourvus') + ' sur ' + u.avant.places.length + '. ' + (u.avant.places.some((x) => x.choisi) ? '' : 'Personne n’avait donné ce créneau' + (() => { const recours = [...new Set(u.avant.places.flatMap((x) => x.candidats.map((c) => c.nom + ' (' + minuscule(c.statut) + ')')))]; return recours.length ? ' ; ' + (recours.length > 1 ? 'seuls apparaissent' : 'seul apparaît') + ', en dernier recours, ' + et(recours) : ''; })() + '.'),
-        '- **Demande ciblée** (« Besoin de monde ' + nomJour(s.jour) + ' soir ») : envoyée aux ' + u.cibles.length + ' extras qui pourraient tenir au moins un de ces postes s’ils disaient oui (bon rôle, bon niveau, reposés, pas déjà en poste, sous leur plafond) : ' + u.cibles.map(nom).join(', ') + '.',
+        '- **Demande ciblée** (« Besoin de monde ' + nomJour(s.jour) + ' soir ») : envoyée aux ' + u.cibles.length + ' extras qui pourraient tenir au moins un de ces postes s’ils disaient oui (bon rôle, bon niveau, reposés, sous leur plafond, en commençant par ceux qui sont déjà là ce jour-là) : ' + u.cibles.map(nom).join(', ') + '.',
         '- **Réponses :** ' + pluriel(u.oui.length, 'oui', 'oui') + ' (' + u.oui.map((id) => nom(id) + ' à ' + s.reponsesDemande[id].heure).join(', ') + ') ; ' + pluriel(u.non.length, 'non', 'non') + (u.non.length ? ' (' + u.non.map(nom).join(', ') + ')' : '') + ' ; sans réponse : ' + (sansReponse.map(nom).join(', ') || 'aucun') + '.' + (u.horsCible.length ? ' Réponses ignorées, de personnes qui ne pouvaient tenir aucun poste : ' + u.horsCible.map(nom).join(', ') + '.' : ''), '',
         ...tete('Place', 'Retenu', 'Autres candidats', 'Écartés, avec la raison'));
       for (const x of pls) {
@@ -1008,27 +1076,28 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
   const remplacerPar = (pl, j, ancien, nouveau, poste) => { A(pl, j, ancien, poste).personne = nouveau; };
   const pa = (j, id, poste) => A(PLAN, j, id, poste).place;
   const ph = (j, id, poste) => plage(pa(j, id, poste).debut, pa(j, id, poste).fin);
-  const joursDe = (id) => affsDe(PLAN, id).length;
+  const joursDe = (id) => new Set(affsDe(PLAN, id).map((x) => x.j)).size;
   const finAbsence = (id) => { const ab = personne(id).absences[0]; return ab.jours.length === JOURS.length ? 'toute la semaine' : 'jusqu’au ' + nomJour(ab.jours[ab.jours.length - 1]); };
   const erreurs = [
-    { regle: 'Un extra ne travaille que', creneau: true, texte: () => nom('nathan') + ' a donné le samedi de ' + texteDispo('sam', d.reponses.nathan.sam) + ' seulement ; échangé avec ' + nom('maxime') + ', il se retrouve sur la location de ' + ph('sam', 'maxime') + ' (créneau commencé trop tôt)', muter: (pl) => echanger(pl, 'sam', 'nathan', 'maxime') },
-    { regle: 'Un extra ne travaille que', creneau: true, texte: () => nom('lina') + ' n’a donné le jeudi que le ' + texteDispo('jeu', d.reponses.lina.jeu) + ' ; échangée avec ' + nom('adam') + ', elle se retrouve sur la location de ' + ph('jeu', 'adam') + ' (créneau du soir seulement)', muter: (pl) => echanger(pl, 'jeu', 'lina', 'adam') },
+    { regle: 'Un extra ne travaille que', creneau: true, texte: () => nom('clara') + ' n’a coché le samedi que ' + texteDispo('sam', d.reponses.clara.sam, personne('clara')) + ' ; échangée avec ' + nom('eva') + ', elle se retrouve sur la privatisation du soir (' + ph('sam', 'eva') + '), qu’elle n’a pas cochée', muter: (pl) => echanger(pl, 'sam', 'clara', 'eva') },
+    { regle: 'Un extra ne travaille que', creneau: true, texte: () => nom('mehdi') + ' n’a coché le mardi que ' + texteDispo('mar', d.reponses.mehdi.mar, personne('mehdi')) + ' ; échangé avec ' + nom('bastien') + ', il se retrouve sur la location de ' + ph('mar', 'bastien') + ', une journée qu’il n’a pas cochée', muter: (pl) => echanger(pl, 'mar', 'mehdi', 'bastien') },
     { regle: 'Un extra ne travaille que', texte: () => nom('yassine') + ', qui n’a pas répondu, mis à la place de ' + nom('tom') + ' le dimanche (' + endroit(pa('dim', 'tom').poste) + ')', muter: (pl) => remplacerPar(pl, 'dim', 'tom', 'yassine') },
     { regle: 'Personne n’est planifié', texte: () => nom('hugo') + ', en congés ' + finAbsence('hugo') + ', mis à la ' + endroit(pa('lun', 'bastien').poste) + ' le lundi à la place de ' + nom('bastien'), muter: (pl) => remplacerPar(pl, 'lun', 'bastien', 'hugo') },
-    { regle: 'Personne n’est planifié', texte: () => nom('karim') + ', en arrêt maladie ' + finAbsence('karim') + ', mis directeur de course de la location le mercredi à la place de ' + nom('sarah'), muter: (pl) => remplacerPar(pl, 'mer', 'sarah', 'karim') },
-    { regle: 'Repos quotidien', texte: () => nom('leo') + ', qui finit la ' + minuscule(endroit(pa('sam', 'leo').poste)) + ' du samedi à ' + h(pa('sam', 'leo').fin) + ', mis sur la location du dimanche à ' + h(pa('dim', 'tom').debut) + ' à la place de ' + nom('tom') + ' : ' + enHeures(pa('dim', 'tom').debut + 1440 - pa('sam', 'leo').fin) + ' de repos, alors que son créneau du dimanche le permettait', muter: (pl) => remplacerPar(pl, 'dim', 'tom', 'leo') },
+    { regle: 'Personne n’est planifié', texte: () => nom('karim') + ', en arrêt maladie ' + finAbsence('karim') + ', mis à la ' + endroit(pa('mer', 'emma').poste) + ' le mercredi à la place de ' + nom('emma'), muter: (pl) => remplacerPar(pl, 'mer', 'emma', 'karim') },
+    { regle: 'Repos quotidien', texte: () => nom('leo') + ', qui finit la ' + minuscule(endroit(pa('sam', 'leo').poste)) + ' du samedi à ' + h(pa('sam', 'leo').fin) + ', mis sur la location du dimanche à ' + h(pa('dim', 'tom').debut) + ' à la place de ' + nom('tom') + ' : ' + enHeures(pa('dim', 'tom').debut + 1440 - pa('sam', 'leo').fin) + ' de repos, alors qu’il avait coché la journée du dimanche', muter: (pl) => remplacerPar(pl, 'dim', 'tom', 'leo') },
     { regle: 'Repos hebdomadaire', texte: () => nom('sofiane') + ' (CDI, du ' + nomJour(d.joursCDI.sofiane[0]) + ' au ' + nomJour(d.joursCDI.sofiane[d.joursCDI.sofiane.length - 1]) + ') mis aussi au magasin le mardi à la place de ' + nom('theo') + ' : il ne garde plus 35 heures de repos d’affilée dans la semaine', muter: (pl) => remplacerPar(pl, 'mar', 'theo', 'sofiane') },
-    { regle: 'Durée quotidienne', texte: () => nom('camille') + ', directrice de course de la location du mardi (' + ph('mar', 'camille') + '), mise aussi à la direction de la ' + minuscule(endroit(pa('mar', 'yanis').poste)) + ' du soir (' + ph('mar', 'yanis') + ') à la place de ' + nom('yanis'), muter: (pl) => remplacerPar(pl, 'mar', 'yanis', 'camille') },
-    { regle: 'Pas plus de 6 jours', texte: () => nom('camille') + ' mise aussi le mercredi et le jeudi, directrice de course à la place de ' + nom('sarah') + ' puis de ' + nom('karim') + ' : 7 jours sur 7', muter: (pl) => { remplacerPar(pl, 'mer', 'sarah', 'camille'); remplacerPar(pl, 'jeu', 'karim', 'camille'); } },
-    { regle: 'Chaque CDI travaille', texte: () => nom('malik') + ' (CDI, contrat de ' + personne('malik').contrat.jours + ' jours) mis aussi à l’atelier le mardi, à la place de ' + nom('lucas') + ' : un sixième jour. La loi l’autorise ; le contrat d’exemple, non', muter: (pl) => remplacerPar(pl, 'mar', 'lucas', 'malik'), sixieme: true },
+    { regle: 'Durée quotidienne', texte: () => nom('camille') + ', directrice de course de la location du samedi (' + ph('sam', 'camille') + '), mise aussi à la direction de la privatisation du soir (' + ph('sam', 'ines', 'privSamPistes') + ') à la place de ' + nom('ines') + ' : la journée enchaînée dépasse 10 heures de travail', muter: (pl) => remplacerPar(pl, 'sam', 'ines', 'camille', 'privSamPistes') },
+    { regle: 'Pas plus de 6 jours', texte: () => { const rc = JOURS.filter((j) => !d.joursCDI.camille.includes(j)); return nom('camille') + ' mise aussi le ' + et(rc.map(nomJour)) + ', directrice de course de la location à la place de ' + et([...new Set(rc.map((j) => nom(PLAN.affectations[j].find((a) => a.place.poste === 'piste1000' && a.place.expert).personne)))]) + ' : 7 jours sur 7'; },
+      muter: (pl) => { for (const j of JOURS.filter((x) => !d.joursCDI.camille.includes(x))) remplacerPar(pl, j, PLAN.affectations[j].find((a) => a.place.poste === 'piste1000' && a.place.expert).personne, 'camille', 'piste1000'); } },
+    { regle: 'Chaque CDI travaille', texte: () => nom('malik') + ' (CDI, contrat de ' + personne('malik').contrat.jours + ' jours) mis aussi à l’atelier le mardi, à la place de ' + nom('lucas') + ' : un sixième jour. La loi l’autorise ; le contrat d’exemple, non', muter: (pl) => remplacerPar(pl, 'mar', 'lucas', 'malik', 'mecaLoc'), sixieme: true },
     { regle: 'Tous les postes sont tenus', texte: () => 'Le magasin du mardi laissé sans personne (' + nom('theo') + ' retiré)', muter: (pl) => { pl.affectations.mar = pl.affectations.mar.filter((a) => a.place.poste !== 'magasin'); } },
     { regle: 'Une personne tient un seul poste', texte: () => nom('camille') + ', qui dirige la location du dimanche, mise aussi à la ' + endroit(pa('dim', 'maxime').poste) + ' le même jour, à la place de ' + nom('maxime'), muter: (pl) => remplacerPar(pl, 'dim', 'maxime', 'camille') },
     { regle: 'Bon métier, bon niveau', texte: () => nom('julie') + ' (accueil) et ' + nom('bastien') + ' (pistard) échangés le lundi : l’accueil part en piste, le pistard à l’accueil', muter: (pl) => echanger(pl, 'lun', 'julie', 'bastien') },
-    { regle: 'Bon métier, bon niveau', texte: () => nom('clara') + ', commissaire de piste débutante, échangée avec ' + nom('sarah') + ' le vendredi : elle se retrouve directrice de la ' + endroit(pa('ven', 'sarah').poste), muter: (pl) => echanger(pl, 'ven', 'clara', 'sarah') },
-    { regle: 'Au plus un débutant', texte: () => nom('clara') + ', débutante, mise à la place de ' + nom('maxime') + ' sur la location du samedi, où ' + nom('manon') + ', débutante, est déjà', muter: (pl) => remplacerPar(pl, 'sam', 'maxime', 'clara') },
+    { regle: 'Bon métier, bon niveau', texte: () => nom('clara') + ', commissaire de piste débutante, mise à la place de ' + nom('sarah') + ' à la direction de la ' + endroit(pa('ven', 'sarah', 'course2hPistes').poste) + ' du vendredi', muter: (pl) => remplacerPar(pl, 'ven', 'sarah', 'clara', 'course2hPistes') },
+    { regle: 'Au plus un débutant', texte: () => nom('manon') + ', débutante, mise à la place de ' + nom('maxime') + ' sur la location du samedi, où ' + nom('clara') + ', débutante, est déjà', muter: (pl) => remplacerPar(pl, 'sam', 'maxime', 'manon') },
     { regle: 'Jours de repos des CDI', texte: () => nom('lea') + ' et ' + nom('julie') + ' échangent le lundi et le mercredi à l’accueil : ' + nom('julie') + ' se retrouve en repos le lundi, puis le jeudi et le vendredi', muter: (pl) => { const a = A(pl, 'mer', 'lea'), b = A(pl, 'lun', 'julie'); a.personne = 'julie'; b.personne = 'lea'; } },
-    { regle: 'Pondération des extras', texte: () => nom('lina') + ' (pondération ' + personne('lina').ponderation + ', déjà ' + joursDe('lina') + ' jours, son plafond est de ' + P.PLAFOND[personne('lina').ponderation] + ') mise aussi sur la location du lundi, à la place de ' + nom('noa'), muter: (pl) => remplacerPar(pl, 'lun', 'noa', 'lina') },
-    { regle: null, texte: () => 'Témoin : ' + nom('lina') + ' et ' + nom('maxime') + ' échangent leurs places le dimanche, la location (' + ph('dim', 'lina') + ') contre la ' + endroit(pa('dim', 'maxime').poste) + ' (' + ph('dim', 'maxime') + ') : même niveau, et leurs créneaux couvrent les deux', muter: (pl) => echanger(pl, 'dim', 'lina', 'maxime') },
+    { regle: 'Pondération des extras', texte: () => nom('noa') + ' (pondération ' + personne('noa').ponderation + ', déjà ' + joursDe('noa') + ' jours, son plafond est de ' + P.PLAFOND[personne('noa').ponderation] + ') mis aussi sur la location du mardi, à la place de ' + nom('nathan'), muter: (pl) => remplacerPar(pl, 'mar', 'nathan', 'noa', 'piste1000') },
+    { regle: null, texte: () => 'Témoin : ' + nom('noa') + ' et ' + nom('maxime') + ' échangent leurs places le dimanche, la location (' + ph('dim', 'noa') + ') contre la ' + endroit(pa('dim', 'maxime').poste) + ' (' + ph('dim', 'maxime') + ') : même niveau, et tous deux ont coché la journée', muter: (pl) => echanger(pl, 'dim', 'noa', 'maxime') },
   ];
   let attrapees = 0, nbErreurs = 0;
   const declenchees = new Set();
@@ -1069,10 +1138,10 @@ const quand = (ms) => { const x = new Date(ms); return x.getDate() + ' ' + MOIS[
   const viseesTexte = new Set(erreurs.filter((e) => e.regle).map((e) => regleNom(e.regle)));
   const parRicochet = CTRL.regles.filter((r) => declenchees.has(r.regle) && !viseesTexte.has(r.regle)).map((r) => '« ' + r.regle.split(' :')[0] + ' »');
   const nbCreneaux = erreurs.filter((e) => e.creneau).length;
-  ecrire('', '**Résultat : ' + attrapees + ' erreurs sur ' + nbErreurs + ' signalées par la bonne règle**, dont ' + nbCreneaux + ' où un extra est placé hors du créneau horaire qu’il a donné ; le témoin ne déclenche rien. Chacune des ' + CTRL.regles.length + ' règles est déclenchée au moins une fois : ' + couvertes + ' sur ' + CTRL.regles.length + (parRicochet.length ? ' (' + et(parRicochet) + ' par ricochet, sans erreur qui lui soit propre)' : '') + '.', '');
+  ecrire('', '**Résultat : ' + attrapees + ' erreurs sur ' + nbErreurs + ' signalées par la bonne règle**, dont ' + nbCreneaux + ' où un extra est placé sur ce qu’il n’a pas coché ; le témoin ne déclenche rien. Chacune des ' + CTRL.regles.length + ' règles est déclenchée au moins une fois : ' + couvertes + ' sur ' + CTRL.regles.length + (parRicochet.length ? ' (' + et(parRicochet) + ' par ricochet, sans erreur qui lui soit propre)' : '') + '.', '');
   exiger(couvertes === CTRL.regles.length, 'Toutes les règles ne sont pas déclenchées par les erreurs volontaires');
   const iBref = L.findIndex((x) => x.startsWith('- Le contrôle **attrape les erreurs**'));
-  if (iBref > -1) L[iBref] = '- Le contrôle **attrape les erreurs** : ' + attrapees + ' erreurs introduites volontairement sur ' + nbErreurs + ' sont signalées par la bonne règle, dont ' + nbCreneaux + ' où un extra est placé hors de son créneau horaire ; un échange permis, servant de témoin, ne déclenche rien (partie 7.3).';
+  if (iBref > -1) L[iBref] = '- Le contrôle **attrape les erreurs** : ' + attrapees + ' erreurs introduites volontairement sur ' + nbErreurs + ' sont signalées par la bonne règle, dont ' + nbCreneaux + ' où un extra est placé sur ce qu’il n’a pas coché ; un échange permis, servant de témoin, ne déclenche rien (partie 7.3).';
 
   // 7.4 Un changement à la main
   const lundiLea = !(d.joursCDI.lea || []).includes('lun') && !absence(personne('lea'), 'lun');

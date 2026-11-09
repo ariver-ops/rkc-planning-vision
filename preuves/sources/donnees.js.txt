@@ -13,10 +13,10 @@
 
   const activites = [
     { id: 'loc1000', type: 'location', libelle: 'Location', piste: 'Piste 1000 m', jours: 'tous', horaires: { semaine: ['12:30', '20:00'], weekend: ['10:00', '20:00'], ven: ['12:30', '18:30'] } },
-    { id: 'enfants', type: 'enfants', libelle: 'Location', piste: 'Piste Découverte', jours: 'tous', horaires: { semaine: ['13:00', '19:00'], weekend: ['10:00', '19:00'] } },
+    { id: 'enfants', type: 'enfants', libelle: 'Location', piste: 'Piste Découverte', jours: 'tous', horaires: { semaine: ['13:00', '19:00'], weekend: ['10:00', '19:00'], ven: ['13:00', '18:30'] } },
     { id: 'licencies', type: 'licencies', libelle: 'Licenciés', piste: 'Piste 1200 m', jours: ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam'], horaires: { semaine: ['10:00', '17:30'], sam: ['09:00', '17:30'] } },
     { id: 'soiree', type: 'groupe', libelle: 'Privatisation', format: 'Grand Prix', pilotes: 40, piste: 'Piste 1000 m', jours: ['mar'], debut: '20:00', fin: '23:30' },
-    { id: 'groupe', type: 'groupe', libelle: 'Challenge inter-entreprises', format: 'Endurance', pilotes: 20, piste: 'Piste 1200 m', jours: ['jeu'], debut: '19:00', fin: '22:30' },
+    { id: 'groupe', type: 'groupe', libelle: 'Challenge inter-entreprises', format: 'Endurance', pilotes: 20, piste: 'Piste 1200 m', jours: ['jeu'], debut: '20:00', fin: '23:30' },
     { id: 'course2h', type: 'groupe', libelle: 'Course 2H RKC', format: 'Course de nuit par équipes', pilotes: 24, piste: 'Piste 1000 m', jours: ['ven'], debut: '18:30', fin: '22:00' },
     { id: 'privSam', type: 'groupe', libelle: 'Privatisation', format: 'Grand Prix', pilotes: 20, piste: 'Piste 1000 m', jours: ['sam'], debut: '20:00', fin: '23:30' },
     { id: 'course', type: 'course', libelle: '6 Heures RKC', format: 'Endurance par équipes', piste: 'Piste 1200 m', jours: ['dim'], debut: '08:00', fin: '18:00' },
@@ -84,7 +84,7 @@
     ],
 
     // Les jours travaillés des CDI cette semaine, tels que l'outil les a calculés (contrat, congés, arrêt maladie)
-    joursCDI: { camille: ['lun', 'mar', 'ven', 'sam', 'dim'], karim: ['jeu', 'ven', 'sam', 'dim'], bastien: ['lun', 'jeu', 'ven', 'sam', 'dim'], hugo: [], lea: ['mer', 'jeu', 'ven', 'sam', 'dim'], julie: ['lun', 'mar', 'sam', 'dim'], malik: ['lun', 'jeu', 'ven', 'sam', 'dim'], sofiane: ['mer', 'jeu', 'ven', 'sam', 'dim'] },
+    joursCDI: { camille: ['lun', 'mar', 'mer', 'sam', 'dim'], karim: ['jeu', 'ven', 'sam', 'dim'], bastien: ['lun', 'mar', 'mer', 'sam', 'dim'], hugo: [], lea: ['mer', 'jeu', 'ven', 'sam', 'dim'], julie: ['lun', 'mar', 'sam', 'dim'], malik: ['mer', 'jeu', 'ven', 'sam', 'dim'], sofiane: ['mer', 'jeu', 'ven', 'sam', 'dim'] },
 
     // Les deux viviers. En général un seul rôle par personne.
     personnes: [
@@ -129,36 +129,37 @@
     demande: { envoi: 'lundi 26 mai', echeance: 'jeudi 29 mai à 18 h' },
     sollicites: ['ines', 'sarah', 'yanis', 'noa', 'emma', 'nathan', 'lina', 'mehdi', 'adam', 'maxime', 'eva', 'sami', 'tom', 'clara', 'leo', 'manon', 'yassine', 'jade', 'chloe', 'lucas', 'bilal', 'theo'],
 
-    // Les réponses reçues, jour par jour : un événement du programme (on reprend ses horaires),
-    // un créneau « de-à », ou « toute » la journée. Yassine n'a pas encore répondu.
+    // Les réponses reçues, jour par jour, telles que chaque extra les a cochées dans l'appli :
+    // « journee » pour la journée, aux horaires de son rôle, et chaque événement coché (on reprend ses horaires).
+    // L'extra ne choisit ni sa piste ni son poste : le planning le place. Yassine n'a pas encore répondu.
     reponses: {
-      ines: { lun: 'toute', mar: ['soiree'], jeu: ['groupe'], sam: 'toute', dim: ['course'] },
-      sarah: { lun: ['loc1000'], mar: ['loc1000'], mer: 'toute', ven: ['course2h'], dim: 'toute' },
-      yanis: { mar: ['soiree'], mer: ['loc1000'], ven: 'toute', sam: ['privSam'], dim: ['course'] },
-      noa: { lun: ['loc1000'], mar: ['loc1000', 'soiree'], jeu: ['groupe'], ven: ['loc1000'], sam: 'toute', dim: 'toute' },
-      emma: { mer: ['loc1000'], ven: ['loc1000'], sam: 'toute', dim: 'toute' },
-      nathan: { mar: ['soiree'], mer: ['loc1000'], jeu: ['loc1000'], sam: ['14:00-20:00'], dim: ['course'] },
-      lina: { lun: ['loc1000'], mar: ['loc1000'], mer: ['enfants'], jeu: ['groupe'], ven: ['course2h'], dim: ['loc1000'] },
-      mehdi: { mar: ['soiree'], jeu: ['loc1000'], ven: ['course2h'], sam: ['loc1000'], dim: ['course'] },
-      adam: { lun: ['loc1000'], mar: ['13:00-20:00'], jeu: ['loc1000', 'groupe'], ven: ['course2h'], dim: ['course'] },
-      maxime: { sam: ['loc1000'], dim: 'toute' },
-      eva: { sam: ['privSam'], dim: ['loc1000'] },
+      ines: { lun: ['journee'], mar: ['journee', 'soiree'], jeu: ['journee', 'groupe'], sam: ['journee', 'privSam'], dim: ['course'] },
+      sarah: { lun: ['journee'], mar: ['journee', 'soiree'], mer: ['journee'], ven: ['journee', 'course2h'], dim: ['journee', 'course'] },
+      yanis: { mar: ['soiree'], mer: ['journee'], ven: ['journee', 'course2h'], sam: ['journee', 'privSam'], dim: ['course'] },
+      noa: { lun: ['journee'], mar: ['journee', 'soiree'], jeu: ['journee', 'groupe'], ven: ['journee', 'course2h'], sam: ['journee', 'privSam'], dim: ['journee', 'course'] },
+      emma: { mer: ['journee'], jeu: ['journee', 'groupe'], ven: ['journee', 'course2h'], sam: ['journee', 'privSam'], dim: ['journee', 'course'] },
+      nathan: { mar: ['journee', 'soiree'], mer: ['journee'], jeu: ['journee', 'groupe'], sam: ['journee'], dim: ['course'] },
+      lina: { lun: ['journee'], mar: ['journee', 'soiree'], mer: ['journee'], jeu: ['groupe'], ven: ['course2h'], dim: ['journee'] },
+      mehdi: { mar: ['soiree'], jeu: ['journee', 'groupe'], ven: ['course2h'], sam: ['journee', 'privSam'], dim: ['course'] },
+      adam: { lun: ['journee'], mar: ['journee', 'soiree'], jeu: ['journee', 'groupe'], ven: ['course2h'], dim: ['course'] },
+      maxime: { sam: ['journee', 'privSam'], dim: ['journee', 'course'] },
+      eva: { sam: ['privSam'], dim: ['journee'] },
       sami: { dim: ['course'] },
-      tom: { mar: ['soiree'], mer: ['loc1000'], jeu: ['groupe'], dim: ['loc1000'] },
-      clara: { lun: ['loc1000'], mar: ['loc1000'], mer: ['loc1000'], ven: ['course2h'], sam: ['loc1000'], dim: ['loc1000'] },
-      leo: { mar: ['soiree'], jeu: ['groupe'], sam: ['14:00-20:00', 'privSam'], dim: 'toute' },
-      manon: { sam: ['loc1000'], dim: ['loc1000'] },
-      jade: { lun: ['loc1000'], mar: ['loc1000'], mer: ['loc1000'], sam: 'toute', dim: 'toute' },
-      chloe: { jeu: ['loc1000'], ven: ['loc1000'], sam: ['loc1000'], dim: ['loc1000'] },
-      lucas: { mar: ['loc1000'], mer: ['loc1000'], jeu: ['groupe'], ven: ['course2h'], dim: ['loc1000'] },
-      bilal: { lun: ['loc1000'], mar: ['soiree'], jeu: ['groupe'], ven: ['course2h'], sam: ['privSam'] },
-      theo: { lun: ['boutique'], mar: ['boutique'], sam: 'toute', dim: ['course'] },
+      tom: { mar: ['soiree'], mer: ['journee'], jeu: ['groupe'], dim: ['journee'] },
+      clara: { lun: ['journee'], mar: ['journee'], mer: ['journee'], ven: ['course2h'], sam: ['journee'], dim: ['journee'] },
+      leo: { mar: ['soiree'], jeu: ['groupe'], sam: ['journee', 'privSam'], dim: ['journee', 'course'] },
+      manon: { sam: ['journee'], dim: ['journee'] },
+      jade: { lun: ['journee'], mar: ['journee'], mer: ['journee'], sam: ['journee'], dim: ['journee'] },
+      chloe: { jeu: ['journee'], ven: ['journee'], sam: ['journee'], dim: ['journee'] },
+      lucas: { mar: ['journee', 'soiree'], mer: ['journee'], jeu: ['groupe'], ven: ['course2h'], dim: ['journee'] },
+      bilal: { lun: ['journee'], mar: ['soiree'], jeu: ['groupe'], ven: ['course2h'], sam: ['privSam'] },
+      theo: { lun: ['journee'], mar: ['journee'], sam: ['journee'], dim: ['course'] },
     },
 
     // Les urgences, toutes tirées de cette même semaine
     imprevus: [
       { id: 'arret', titre: 'Un arrêt maladie', quand: 'Dimanche 8 juin, 8 h 05', message: 'Léa D. prévient qu’elle est en arrêt maladie.', absent: 'lea', jour: 'dim' },
-      { id: 'absence', titre: 'Un extra absent', quand: 'Samedi 7 juin, 8 h 20', message: 'Manon V. prévient qu’elle ne pourra pas venir.', absent: 'manon', jour: 'sam' },
+      { id: 'absence', titre: 'Un extra absent', quand: 'Samedi 7 juin, 8 h 20', message: 'Clara P. prévient qu’elle ne pourra pas venir.', absent: 'clara', jour: 'sam' },
       // Une course réservée après la validation : l'équipe se calcule comme pour tout groupe, selon le nombre de pilotes
       { id: 'courseajoutee', titre: 'Une course ajoutée', quand: 'Mardi 3 juin, 15 h', jour: 'mer',
         message: 'Une entreprise réserve une course pour mercredi soir : 24 pilotes sur la Piste 1200 m, de 20 h à 23 h.',
@@ -167,11 +168,11 @@
           { id: 'courseMerPistes', activite: 'courseMer', role: 'Commissaire de piste', roleExpert: 'Directeur de course', metier: 'piste', nombre: 1 + commissaires(24), experts: 1 },
           { id: 'courseMerMeca', activite: 'courseMer', role: 'Mécanicien', metier: 'mecaLoc', nombre: 1 },
         ],
-        // Les réponses à la demande ciblée, envoyée par SMS aux extras qui peuvent tenir ces postes
+        // Les réponses à la demande ciblée, envoyée dans l'appli et par SMS : d'abord à ceux qui sont déjà là ce jour-là
         reponsesDemande: {
-          ines: { reponse: 'oui', heure: '15 h 04' }, maxime: { reponse: 'oui', heure: '15 h 06' }, bilal: { reponse: 'oui', heure: '15 h 09' },
-          eva: { reponse: 'oui', heure: '15 h 12' }, clara: { reponse: 'non', heure: '15 h 14' }, leo: { reponse: 'oui', heure: '15 h 17' },
-          sami: { reponse: 'oui', heure: '15 h 26' },
+          yanis: { reponse: 'oui', heure: '15 h 03' }, emma: { reponse: 'oui', heure: '15 h 05' }, tom: { reponse: 'oui', heure: '15 h 07' },
+          maxime: { reponse: 'oui', heure: '15 h 11' }, clara: { reponse: 'non', heure: '15 h 14' }, sami: { reponse: 'oui', heure: '15 h 19' },
+          bilal: { reponse: 'oui', heure: '15 h 26' },
         } },
     ],
   };
