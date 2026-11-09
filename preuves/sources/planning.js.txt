@@ -559,7 +559,7 @@
       plusLong = Math.max(plusLong, finSemaine - missions[missions.length - 1][1]);
       if (plusLong < 35 * 60) e.push(ctx.personne[id].nom + ' : ' + duree(Math.max(0, plusLong)) + ' de repos d’affilée au plus dans la semaine');
     }
-    regle('legal', 'Repos hebdomadaire : au moins 35 heures d’affilée dans la semaine (24 heures plus les 11 heures quotidiennes)', e, 'Code du travail, art. L3132-2');
+    regle('legal', 'Repos hebdomadaire : au moins 35 heures d’affilée dans la semaine, soit 24 heures plus les 11 heures quotidiennes', e, 'Code du travail, art. L3132-2');
 
     e = [];
     for (const [id, missions] of Object.entries(parPersonne)) {
@@ -713,7 +713,7 @@
       const r = reponses[p.id];
       const aRepondu = p.type === 'Extra' && sollicites.has(p.id) && r;
       if (aRepondu && !couvre(ctx, jour, r[jour], place, p)) { ecartes.push({ id: p.id, nom: p.nom, raison: !r[jour] ? 'pas disponible ce jour-là' : estEvenement(ctx, place.activite) ? 'n’a pas coché cet événement' : 'n’a pas coché la journée' }); continue; }
-      if (finVeille[p.id] != null && deb - finVeille[p.id] < REPOS_MIN) { ecartes.push({ id: p.id, nom: p.nom, raison: 'repos trop court : a fini à ' + texteHeure(finVeille[p.id]) + ' la veille' }); continue; }
+      if (finVeille[p.id] != null && deb - finVeille[p.id] < REPOS_MIN) { ecartes.push({ id: p.id, nom: p.nom, raison: 'a fini à ' + texteHeure(finVeille[p.id]) + ' la veille, repos trop court' }); continue; }
       if (debutLendemain[p.id] != null && debutLendemain[p.id] - fin < REPOS_MIN) { ecartes.push({ id: p.id, nom: p.nom, raison: 'reprend trop tôt le lendemain' }); continue; }
       if (plusLongRepos(missionsDe(ctx, plan, p.id).concat([[deb, fin]]), ctx.jours.length * 1440) < REPOS_HEBDO) { ecartes.push({ id: p.id, nom: p.nom, raison: 'n’aurait plus 35 heures de repos d’affilée dans la semaine' }); continue; }
       if (presencesDe(ctx, ajouter(plan, jour, place, p.id), p.id).reduce((n, m) => n + m[2], 0) > HEBDO_MAX) { ecartes.push({ id: p.id, nom: p.nom, raison: 'dépasserait 48 heures de travail dans la semaine' }); continue; }
@@ -726,7 +726,7 @@
       if (!sollicites.has(p.id)) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 3, statut: 'Pas sollicité cette semaine', detail: 'à appeler directement' });
       else if (!r) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 3, statut: 'Pas de réponse à la demande', detail: 'à appeler directement' });
       else if (!surPlace && deja >= PLAFOND[p.ponderation]) candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 2.5, statut: 'Disponible, mais au-delà de sa pondération', detail: semaine });
-      else candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 1, surPlace, statut: surPlace ? 'Déjà là dans la journée et a coché cet événement : enchaîne après son poste' : estEvenement(ctx, place.activite) ? 'A coché cet événement dans l’appli' : 'A coché la journée dans l’appli', detail: semaine, veille: finVeille[p.id] != null ? texteHeure(finVeille[p.id]) : null });
+      else candidats.push({ id: p.id, nom: p.nom, type: 'Extra', rang: 1, surPlace, statut: surPlace ? 'Déjà là dans la journée, a coché cet événement et enchaîne après son poste' : estEvenement(ctx, place.activite) ? 'A coché cet événement dans l’appli' : 'A coché la journée dans l’appli', detail: semaine, veille: finVeille[p.id] != null ? texteHeure(finVeille[p.id]) : null });
     }
     const poids = (c) => (ctx.personne[c.id].ponderation ? POIDS[ctx.personne[c.id].ponderation] : 0);
     const niveau = (c) => RANG[ctx.personne[c.id].metiers[place.metier]];
